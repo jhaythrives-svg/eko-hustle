@@ -53,6 +53,7 @@
   .btn.asset{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:none;color:#eff6ff}
   .btn.owambe{background:linear-gradient(135deg,#8b5cf6,#d946ef);border:none;color:#fff;grid-column:span 2;}
   .btn.share{background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;width:100%;font-size:16px;margin-top:10px;}
+  .btn.invite{background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;width:100%;font-size:14px;margin-top:8px;}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
     letter-spacing:.8px;margin:18px 0 8px}
   .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
@@ -321,7 +322,7 @@ async function cloudPull(){
 }
 
 /* ---------------- NEW GAME ---------------- */
-function newGame(name,originId,dreamId){
+async function newGame(name,originId,dreamId){
   const o=ORIGINS.find(x=>x.id===originId), d=DREAMS.find(x=>x.id===dreamId);
   S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
@@ -330,6 +331,19 @@ function newGame(name,originId,dreamId){
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
     log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString(),lastOwambe:0};
   applyFx(o.fx);applyFx(d.fx);
+  
+  // Check for Referral
+  const urlParams = new URLSearchParams(window.location.search);
+  const refId = urlParams.get('ref');
+  if (refId && sb && session?.user) {
+    S.cash += 2000; // New player bonus
+    addLog("🎁 Welcome bonus: +₦2,000 from invite link!");
+    try {
+      await sb.rpc('reward_referrer', { inviter_id: refId });
+    } catch(e) {}
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   addLog(`You land in Lagos with ₦${fmtMoney(S.cash)}. ${o.label}. Dream: ${d.label}.`);
   save();renderGame();
 }
@@ -510,6 +524,11 @@ window.openProfile = function() {
   const shareText = encodeURIComponent(`I'm on Day ${S.day} with ₦${fmtMoney(S.cash)} and ${S.reputation} Rep in Eko Hustle! 🏃🏾‍♂️💨\n\nCan you beat my hustle? Play free here: https://jhaythrives-svg.github.io/eko-hustle/`);
   const waLink = `https://wa.me/?text=${shareText}`;
 
+  const inviteBaseUrl = window.location.origin + window.location.pathname;
+  const myRefLink = session?.user ? `${inviteBaseUrl}?ref=${session.user.id}` : inviteBaseUrl;
+  const inviteText = encodeURIComponent(`Join me in Eko Hustle! Let's see who becomes the biggest Hustler in Lagos.\n\nClick my link to get a ₦2,000 welcome bonus: ${myRefLink}`);
+  const inviteWaLink = `https://wa.me/?text=${inviteText}`;
+
   openModal(`
     <h3 style="text-align:center">👤 Player Profile</h3>
     <div class="profile-header">
@@ -523,8 +542,15 @@ window.openProfile = function() {
     </div>
     <div class="section-title" style="margin-top:0">My Lagos Assets</div>
     ${assetHtml}
-    <a href="${waLink}" target="_blank" class="btn share">💬 Flex on WhatsApp</a>
-    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button>
+    
+    <div class="section-title">Invite & Earn</div>
+    <p style="color:#8fa39a;font-size:12px;margin-bottom:8px;text-align:center">You get ₦10,000 when a friend joins using your link. They get ₦2,000.</p>
+    <a href="${inviteWaLink}" target="_blank" class="btn invite">🎁 Invite Friends (+₦10k)</a>
+    
+    <div class="section-title">Flex</div>
+    <a href="${waLink}" target="_blank" class="btn share">💬 Brag on WhatsApp</a>
+    
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
   `);
 };
 
