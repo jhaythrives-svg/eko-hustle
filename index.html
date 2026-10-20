@@ -520,6 +520,7 @@ window.doWork=function(jobId){
 };
 
 window.openAssets=function(){
+    if (!S.assets) S.assets = [];
   const html = ASSETS.map(a => {
     const owned = S.assets.includes(a.id);
     if(owned) return `<button class="opt locked" style="border-color:var(--green)">${a.emoji} ${a.name} <span class="sub" style="color:var(--green)">✅ Owned</span></button>`;
@@ -537,6 +538,7 @@ window.openAssets=function(){
 };
 
 window.buyAsset = function(id) {
+    if (!S.assets) S.assets = [];
   const a = ASSETS.find(x => x.id === id);
   if(!a || S.assets.includes(id)) return;
   if(S.cash < a.cost) return toast("Not enough cash!");
