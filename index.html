@@ -9,7 +9,7 @@
 <title>Eko Hustle</title>
 <style>
   :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
-    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;}
+    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;--gold:#fbbf24;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -52,6 +52,7 @@
   .btn.warn{background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#1a0f00}
   .btn.asset{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:none;color:#eff6ff}
   .btn.owambe{background:linear-gradient(135deg,#8b5cf6,#d946ef);border:none;color:#fff;grid-column:span 2;}
+  .btn.vip{background:linear-gradient(135deg,#fbbf24,#d97706);border:none;color:#451a03;grid-column:span 2;}
   .btn.share{background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;width:100%;font-size:16px;margin-top:10px;}
   .btn.invite{background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;width:100%;font-size:14px;margin-top:8px;}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
@@ -332,7 +333,7 @@ async function newGame(name,originId,dreamId){
   S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
-    assets:[], 
+    assets:[], vipUntil:0,
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
     log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString(),lastOwambe:0};
   applyFx(o.fx);applyFx(d.fx);
@@ -400,6 +401,7 @@ async function render(){
   }else S=local;
   if(!S)return renderOnboarding();
   if(!S.assets) S.assets = [];
+  if(!S.vipUntil) S.vipUntil = 0;
   if(!S.lastOwambe) S.lastOwambe = 0;
   
   checkReset();checkAppts();renderGame();
@@ -463,9 +465,11 @@ function renderGame(){
   const energyPct=Math.round((S.energy/S.maxEnergy)*100);
   const appts=S.appointments.filter(a=>a.status!=="done");
   const now=Date.now();
+  const isVip = S.vipUntil > now;
+  
   $app.innerHTML=`
     <div class="topbar">
-      <div class="brand">Eko <span>Hustle</span></div>
+      <div class="brand">Eko <span>Hustle</span> ${isVip ? '👑' : ''}</div>
       <div class="topbar-right">
         <div class="day">Day ${S.day}</div>
         <button class="icon-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
@@ -490,11 +494,12 @@ function renderGame(){
     </div>
     <div class="loc"><div class="name">${loc.emoji} ${loc.name}</div><div class="desc">${loc.desc}</div></div>
     <div class="actions">
-      <button class="btn primary" onclick="openWork()">💼 Work</button>
+      <button class="btn primary" onclick="openWork()">💼 Work ${isVip ? '(2x)' : ''}</button>
       <button class="btn asset" onclick="openAssets()">🏠 Assets</button>
       <button class="btn" onclick="openTravel()">🚌 Travel</button>
       <button class="btn warn" onclick="doAjo()">🪙 Ajo${S.ajo.streak>0?` (${S.ajo.streak})`:""}</button>
       <button class="btn owambe" onclick="openOwambe()">🎉 Attend Owambe</button>
+      ${!isVip ? `<button class="btn vip" onclick="openVipStore()">👑 Go VIP (2x Cash)</button>` : ''}
     </div>
     ${appts.length?`<div class="section-title">Appointments</div>`+appts.map(a=>apptCard(a,now)).join(""):""}
     <div class="section-title">Log</div>
@@ -536,10 +541,44 @@ function apptCard(a,now){
   </div>`;
 }
 
+/* ---------------- VIP STORE ---------------- */
+window.openVipStore = function() {
+  openModal(`
+    <h3 style="text-align:center;color:var(--gold)">👑 Eko VIP Pass</h3>
+    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px;text-align:center">Get an unfair advantage. Show Lagos who is the real Big Man.</p>
+    
+    <div class="opt" style="border-color:var(--gold); background:linear-gradient(135deg,#1a1a0b,#2a2010)">
+      <div style="font-weight:800;font-size:16px;color:var(--gold)">24-Hour VIP Pass</div>
+      <div class="sub">• 2x Cash from all jobs<br>• Instant Full Energy<br>• Gold Badge on Profile</div>
+      <div style="font-weight:800;margin-top:8px;font-size:18px">₦1,000</div>
+    </div>
+    
+    <button class="btn primary" style="width:100%;background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;margin-top:12px" onclick="buyVip()">Pay with Paystack (Mock)</button>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Maybe Later</button>
+  `);
+};
+
+window.buyVip = function() {
+  // SIMULATED PAYMENT GATEWAY
+  // In the future, this is where you call Paystack/Flutterwave
+  toast("Processing payment...");
+  
+  setTimeout(() => {
+    S.vipUntil = Date.now() + (24 * HOUR);
+    S.energy = S.maxEnergy;
+    addLog("👑 Upgraded to VIP! 2x cash for 24 hours.");
+    save();
+    closeModal();
+    renderGame();
+    toast("👑 VIP Activated! You are now a Big Man.");
+  }, 1500);
+};
+
 /* ---------------- PROFILE & SHARE ---------------- */
 window.openProfile = function() {
   const d = DREAMS.find(x => x.id === S.dream);
   const dreamLabel = d ? d.label : "Hustler";
+  const isVip = S.vipUntil > Date.now();
   
   let assetHtml = "";
   if(!S.assets || S.assets.length === 0) {
@@ -562,7 +601,7 @@ window.openProfile = function() {
   openModal(`
     <h3 style="text-align:center">👤 Player Profile</h3>
     <div class="profile-header">
-      <div class="profile-name">${esc(S.name)}</div>
+      <div class="profile-name">${esc(S.name)} ${isVip ? '👑' : ''}</div>
       <div class="profile-dream">Dream: ${dreamLabel}</div>
     </div>
     <div class="chips" style="justify-content:center">
@@ -600,10 +639,15 @@ window.doWork=function(jobId){
   const job=(JOBS[S.location]||[]).find(j=>j.id===jobId);
   if(!job)return;
   if(S.energy<job.energy)return toast("Not enough energy. Rest first.");
-  const pay=rand(job.pay[0],job.pay[1]);
+  
+  let pay=rand(job.pay[0],job.pay[1]);
+  const isVip = S.vipUntil > Date.now();
+  if(isVip) pay = pay * 2;
+  
   S.energy-=job.energy;S.cash+=pay;applyFx(job.fx);
   S.flags.workCount=(S.flags.workCount||0)+1;
-  addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}.`);
+  addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}${isVip ? " (VIP 2x)" : ""}.`);
+  
   if(!S.flags.firstGigDone){
     S.flags.firstGigDone=true;
     scheduleAppt({id:"tunde_"+Date.now(),title:"Tunde: Come to Yaba",
@@ -622,7 +666,7 @@ window.doWork=function(jobId){
   }
   save();closeModal();
   if(Math.random()<0.35){renderGame();triggerEvent();}
-  else{renderGame();toast(`+₦${fmtMoney(pay)}`);}
+  else{renderGame();toast(`+₦${fmtMoney(pay)}${isVip ? " (2x)" : ""}`);}
 };
 
 window.openAssets=function(){
