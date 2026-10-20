@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0f0e"/>
+<link rel="manifest" href="manifest.json">
 <title>Eko Hustle</title>
 <style>
   :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
@@ -117,11 +118,20 @@
 const SUPABASE_URL = "https://cdwcqzpnsfypijoriwul.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg";
 
-const KEY="ekohustle_v1", HOUR=3600000, DAY=86400000;
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
-});
+const IS_SUPABASE_CONFIGURED = 
+  SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
+  SUPABASE_KEY && SUPABASE_KEY.indexOf("PASTE") === -1;
 
+let sb = null;
+if (IS_SUPABASE_CONFIGURED) {
+  try {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+    });
+  } catch (e) { console.warn("Supabase init failed:", e); }
+}
+
+const KEY="ekohustle_v1", HOUR=3600000, DAY=86400000;
 let S=null, currentEvent=null, cloudTimer=null, syncStatus="idle", session=null, authError=null;
 const $app=document.getElementById("app"), $modal=document.getElementById("modal-root"), $toast=document.getElementById("toast");
 
@@ -246,6 +256,7 @@ function applyFx(fx){
 
 /* ---------------- AUTH ---------------- */
 async function ensureAuth(){
+  if(!sb) return null;
   if(session?.user)return session;
   const { data:{ session:s1 } } = await sb.auth.getSession();
   if(s1?.user){session=s1;return s1;}
@@ -263,12 +274,12 @@ function save(){
   scheduleCloudSync();
 }
 function scheduleCloudSync(){
-  if(!S||!session?.user)return;
+  if(!S||!session?.user||!sb)return;
   clearTimeout(cloudTimer);
   cloudTimer=setTimeout(cloudPush,1500);
 }
 async function cloudPush(){
-  if(!S||!session?.user)return;
+  if(!S||!session?.user||!sb)return;
   syncStatus="syncing";
   try{
     const { error } = await sb.from("saves").upsert({
@@ -280,7 +291,7 @@ async function cloudPush(){
   }catch(e){syncStatus="offline";}
 }
 async function cloudPull(){
-  if(!session?.user)return null;
+  if(!session?.user||!sb)return null;
   try{
     const { data, error } = await sb.from("saves")
       .select("state,updated_at").eq("user_id", session.user.id).maybeSingle();
@@ -349,6 +360,22 @@ async function render(){
   }else S=local;
   if(!S)return renderOnboarding();
   checkReset();checkAppts();renderGame();
+  
+  // Daily Login Bonus Check
+  const today = new Date().toDateString();
+  if (S.lastLoginDate !== today) {
+    S.lastLoginDate = today;
+    S.cash += 1000;
+    S.energy = S.maxEnergy;
+    save();
+    setTimeout(() => {
+      openModal(`<h3>☀️ Daily Login Bonus!</h3>
+        <p style="color:#c8d6ce;font-size:14px;margin:0 0 12px">Welcome back to Eko Hustle. You've been granted your daily allotment.</p>
+        <div class="opt">💵 +₦1,000 Cash</div>
+        <div class="opt">⚡ +100 Energy</div>
+        <button class="btn primary" style="margin-top:12px" onclick="closeModal();renderGame()">Collect & Hustle</button>`);
+    }, 500);
+  }
 }
 
 function renderOnboarding(){
@@ -369,6 +396,7 @@ function renderOnboarding(){
       </label>
       <button class="btn primary" id="startBtn" style="width:100%">Start your hustle</button>
       ${authError?`<div class="sync" style="color:#fca5a5">Auth error: ${esc(authError)}</div>`:""}
+      ${!sb?`<div class="sync" style="color:var(--amber)">⚠ Cloud not configured. Playing locally.</div>`:""}
     </div>`;
   document.querySelectorAll("[data-origin]").forEach(b=>b.onclick=()=>{
     sel.origin=b.dataset.origin;
@@ -384,6 +412,7 @@ function renderOnboarding(){
     if(!sel.origin)return toast("Choose where you come from");
     if(!sel.dream)return toast("Choose your dream");
     if(!document.getElementById("agree").checked)return toast("Agree to privacy notice to continue");
+    S = {lastLoginDate: new Date().toDateString()}; // Set initial login date
     newGame(name,sel.origin,sel.dream);
   };
 }
@@ -399,7 +428,6 @@ function renderGame(){
       <div class="topbar-right">
         <div class="day">Day ${S.day}</div>
         <button class="icon-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
-        <button class="icon-btn" onclick="openReminders()" title="Reminders">🔔</button>
         <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
       </div>
     </div>
@@ -424,7 +452,7 @@ function renderGame(){
     ${appts.length?`<div class="section-title">Appointments</div>`+appts.map(a=>apptCard(a,now)).join(""):""}
     <div class="section-title">Log</div>
     <div class="log">${S.log.slice(0,10).map(l=>`<div>${esc(l.text)}</div>`).join("")||"<div>Nothing yet. Go hustle.</div>"}</div>
-    <div class="sync">${syncStatus==="syncing"?"↻ syncing…":syncStatus==="synced"?"✓ cloud saved":syncStatus==="offline"?"⚡ offline":syncStatus==="error"?"⚠ sync error":syncStatus==="ratelimited"?"⏱ syncing slowly":""}</div>`;
+    <div class="sync">${!sb?"⚠ Local only":syncStatus==="syncing"?"↻ syncing…":syncStatus==="synced"?"✓ cloud saved":syncStatus==="offline"?"⚡ offline":syncStatus==="error"?"⚠ sync error":" "}</div>`;
 }
 
 function apptCard(a,now){
@@ -534,6 +562,7 @@ window.claimAppt=function(id){
 
 /* ---------------- LEADERBOARD ---------------- */
 window.openLeaderboard=async function(){
+  if(!sb)return toast("Cloud not configured. Play locally.");
   openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">Loading…</div>`);
   if(!session?.user){openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">Sign-in required. Reload the page.</div><button class="opt" onclick="closeModal()">Close</button>`);return;}
   const { data, error } = await sb.rpc("get_leaderboard");
@@ -546,34 +575,10 @@ window.openLeaderboard=async function(){
   openModal(`<h3>🏆 Top Hustlers</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
 };
 
-/* ---------------- REMINDERS ---------------- */
-window.openReminders=async function(){
-  if(!session?.user)return toast("Sign-in failed. Reload page.");
-  const token=crypto.randomUUID().replace(/-/g,"").slice(0,12);
-  const { error } = await sb.from("link_tokens").insert({
-    token, user_id: session.user.id,
-    expires_at: new Date(Date.now()+15*60000).toISOString()
-  });
-  if(error)return toast("Couldn't create token. Try again.");
-  openModal(`<h3>🔔 Reminders</h3>
-    <p style="color:#c8d6ce;font-size:13px;line-height:1.5;margin:0 0 12px">Free Telegram alerts when an appointment unlocks. Token valid for 15 minutes, single-use.</p>
-    <p style="color:#8fa39a;font-size:12px;margin:0 0 8px">1. Open Telegram → message our bot</p>
-    <p style="color:#8fa39a;font-size:12px;margin:0 0 8px">2. Send this exact message:</p>
-    <div class="code-box">/start ${token}</div>
-    <button class="opt" onclick="copyCode('${token}')">📋 Copy message</button>
-    <button class="opt" onclick="closeModal()">Close</button>`);
-};
-window.copyCode=function(t){
-  const text=`/start ${t}`;
-  if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>toast("Copied. Paste in Telegram."));
-  else toast(text);
-};
-
 /* ---------------- SETTINGS + PRIVACY ---------------- */
 window.openSettings=function(){
   openModal(`<h3>⚙️ Settings</h3>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
-    <button class="opt" onclick="openReminders()">Telegram reminders</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
     <button class="opt" onclick="closeModal()">Close</button>`);
 };
@@ -591,7 +596,7 @@ window.showPrivacy=function(){
     <button class="opt" onclick="closeModal()">Close</button>`);
 };
 window.deleteMyData=async function(){
-  if(!session?.user)return;
+  if(!session?.user||!sb)return;
   if(!confirm("Delete your save and account? This cannot be undone."))return;
   try{
     await sb.from("subscriptions").delete().eq("user_id", session.user.id);
