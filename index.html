@@ -9,7 +9,7 @@
 <title>Eko Hustle</title>
 <style>
   :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
-    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;}
+    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -51,6 +51,7 @@
   .btn.primary{background:linear-gradient(135deg,#16a34a,#22c55e);border:none;color:#04140a}
   .btn.warn{background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#1a0f00}
   .btn.asset{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:none;color:#eff6ff}
+  .btn.owambe{background:linear-gradient(135deg,#8b5cf6,#d946ef);border:none;color:#fff;grid-column:span 2;}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
     letter-spacing:.8px;margin:18px 0 8px}
   .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
@@ -118,7 +119,7 @@
 "use strict";
 
 const SUPABASE_URL = "https://cdwcqzpnsfypijoriwul.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjUxNTQ5NSwiZXhwIjoyMTA4MDkxNDk1fQ.thptQiJZ9fwL3hWDSQgE4rfMqnBUk3k7yG-Ss2WrBX8";
 
 const IS_SUPABASE_CONFIGURED = 
   SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
@@ -261,7 +262,7 @@ function applyFx(fx){
     else if(k==="reputation")S.reputation=Math.max(0,S.reputation+fx[k]);
     else if(k==="network")S.network=Math.max(0,S.network+fx[k]);
     else if(k==="energy")S.energy=clamp(S.energy+fx[k],0,S.maxEnergy);
-    else if(k==="maxEnergy")S.maxEnergy=Math.max(100, S.maxEnergy+fx[k]); // Increase max cap
+    else if(k==="maxEnergy")S.maxEnergy=Math.max(100, S.maxEnergy+fx[k]);
   }
 }
 
@@ -317,9 +318,9 @@ function newGame(name,originId,dreamId){
   S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
-    assets:[], // Track bought assets
+    assets:[], 
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
-    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString()};
+    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString(),lastOwambe:0};
   applyFx(o.fx);applyFx(d.fx);
   addLog(`You land in Lagos with ₦${fmtMoney(S.cash)}. ${o.label}. Dream: ${d.label}.`);
   save();renderGame();
@@ -371,6 +372,9 @@ async function render(){
     else S=local;
   }else S=local;
   if(!S)return renderOnboarding();
+  if(!S.assets) S.assets = [];
+  if(!S.lastOwambe) S.lastOwambe = 0;
+  
   checkReset();checkAppts();renderGame();
   
   const today = new Date().toDateString();
@@ -458,6 +462,7 @@ function renderGame(){
       <button class="btn asset" onclick="openAssets()">🏠 Assets</button>
       <button class="btn" onclick="openTravel()">🚌 Travel</button>
       <button class="btn warn" onclick="doAjo()">🪙 Ajo${S.ajo.streak>0?` (${S.ajo.streak})`:""}</button>
+      <button class="btn owambe" onclick="openOwambe()">🎉 Attend Owambe</button>
     </div>
     ${appts.length?`<div class="section-title">Appointments</div>`+appts.map(a=>apptCard(a,now)).join(""):""}
     <div class="section-title">Log</div>
@@ -520,7 +525,7 @@ window.doWork=function(jobId){
 };
 
 window.openAssets=function(){
-    if (!S.assets) S.assets = [];
+  if (!S.assets) S.assets = [];
   const html = ASSETS.map(a => {
     const owned = S.assets.includes(a.id);
     if(owned) return `<button class="opt locked" style="border-color:var(--green)">${a.emoji} ${a.name} <span class="sub" style="color:var(--green)">✅ Owned</span></button>`;
@@ -538,7 +543,7 @@ window.openAssets=function(){
 };
 
 window.buyAsset = function(id) {
-    if (!S.assets) S.assets = [];
+  if (!S.assets) S.assets = [];
   const a = ASSETS.find(x => x.id === id);
   if(!a || S.assets.includes(id)) return;
   if(S.cash < a.cost) return toast("Not enough cash!");
@@ -551,6 +556,49 @@ window.buyAsset = function(id) {
   closeModal();
   renderGame();
   toast(`Bought ${a.name}!`);
+};
+
+window.openOwambe = function() {
+  if(!S.lastOwambe) S.lastOwambe = 0;
+  const now = Date.now();
+  const hoursSince = (now - S.lastOwambe) / HOUR;
+  if(hoursSince < 24) return toast(`Owambe is resting. Come back in ${Math.ceil(24 - hoursSince)} hours.`);
+  
+  const html = `
+    <button class="opt" onclick="attendOwambe(2000, 'Corporate', 5, 2)">👔 Corporate <span class="sub">₦2,000 • +5 Rep, +2 Net</span></button>
+    <button class="opt" onclick="attendOwambe(5000, 'Aso Ebi', 15, 5)">👗 Aso Ebi <span class="sub">₦5,000 • +15 Rep, +5 Net</span></button>
+    <button class="opt" onclick="attendOwambe(15000, 'Agbada', 30, 10)">🧥 Agbada <span class="sub">₦15,000 • +30 Rep, +10 Net, +10 Happy</span></button>
+  `;
+  openModal(`<h3>🎉 Weekend Owambe</h3><p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">A big Lagos party. Spend money to rub minds with the elites. Choose your outfit carefully.</p>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+};
+
+window.attendOwambe = function(cost, outfit, rep, net) {
+  if(S.cash < cost) return toast("Not enough cash for this outfit!");
+  S.cash -= cost;
+  S.reputation += rep;
+  S.network += net;
+  S.happiness = clamp(S.happiness + 10);
+  S.lastOwambe = Date.now();
+  addLog(`Attended Owambe in ${outfit}. -₦${fmtMoney(cost)}, +${rep} Rep, +${net} Net.`);
+  save();
+  closeModal();
+  renderGame();
+  toast(`You made a statement at Owambe! +${rep} Rep`);
+  
+  if (Math.random() < 0.4) {
+    scheduleAppt({
+      id: "chief_"+Date.now(),
+      title: "Chief wants to see you",
+      desc: "A Chief at the Owambe was impressed by your outfit. He wants to discuss business.",
+      loc: S.location,
+      unlockAt: Date.now() + 10*60000,
+      expiresAt: Date.now() + DAY,
+      reward: {cash: 20000, reputation: 10},
+      penalty: {happiness: -5},
+      status: "pending"
+    });
+    addLog("📞 A Chief wants to see you in 10 minutes.");
+  }
 };
 
 window.doRest=function(){
