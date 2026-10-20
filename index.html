@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0f0e"/>
 <link rel="manifest" href="manifest.json">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃🏾‍♂️</text></svg>">
 <title>Eko Hustle</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃🏾‍♂️</text></svg>">
 <style>
   :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
     --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;}
@@ -50,6 +50,7 @@
   .btn:active{transform:scale(.98);border-color:var(--green)}
   .btn.primary{background:linear-gradient(135deg,#16a34a,#22c55e);border:none;color:#04140a}
   .btn.warn{background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#1a0f00}
+  .btn.asset{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:none;color:#eff6ff}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
     letter-spacing:.8px;margin:18px 0 8px}
   .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
@@ -165,6 +166,14 @@ const JOBS={
     {id:"hawk",name:"Hawking",emoji:"🥤",pay:[1200,2600],energy:20,fx:{network:1}}]
 };
 
+const ASSETS = [
+  {id:"keke", type:"car", name:"Keke Napep", emoji:"🛺", cost:40000, fx:{reputation:5}, desc:"Small transport. Big relief."},
+  {id:"camry", type:"car", name:"Tokunbo Camry", emoji:"🚗", cost:150000, fx:{reputation:15, network:5}, desc:"You don blow. Chinedu is jealous."},
+  {id:"suv", type:"car", name:"Brand New SUV", emoji:"🚙", cost:500000, fx:{reputation:30, network:10}, desc:"Big man ting."},
+  {id:"selfcon", type:"house", name:"Self-Contained", emoji:"🏠", cost:100000, fx:{maxEnergy:20}, desc:"No more landlord trouble. +20 Max Energy."},
+  {id:"duplex", type:"house", name:"Lekki Duplex", emoji:"🏡", cost:500000, fx:{maxEnergy:50}, desc:"Ajah landlord. +50 Max Energy."}
+];
+
 const EVENTS=[
   {id:"conductor",title:"Danfo conductor",text:"The conductor wants ₦100 extra because of \u201chold-up\u201d.",choices:[
     {label:"Pay quietly",fx:{cash:-100},res:"You pay. Lagos no dey carry last."},
@@ -252,6 +261,7 @@ function applyFx(fx){
     else if(k==="reputation")S.reputation=Math.max(0,S.reputation+fx[k]);
     else if(k==="network")S.network=Math.max(0,S.network+fx[k]);
     else if(k==="energy")S.energy=clamp(S.energy+fx[k],0,S.maxEnergy);
+    else if(k==="maxEnergy")S.maxEnergy=Math.max(100, S.maxEnergy+fx[k]); // Increase max cap
   }
 }
 
@@ -307,8 +317,9 @@ function newGame(name,originId,dreamId){
   S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
+    assets:[], // Track bought assets
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
-    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now()};
+    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString()};
   applyFx(o.fx);applyFx(d.fx);
   addLog(`You land in Lagos with ₦${fmtMoney(S.cash)}. ${o.label}. Dream: ${d.label}.`);
   save();renderGame();
@@ -362,7 +373,6 @@ async function render(){
   if(!S)return renderOnboarding();
   checkReset();checkAppts();renderGame();
   
-  // Daily Login Bonus Check
   const today = new Date().toDateString();
   if (S.lastLoginDate !== today) {
     S.lastLoginDate = today;
@@ -413,7 +423,6 @@ function renderOnboarding(){
     if(!sel.origin)return toast("Choose where you come from");
     if(!sel.dream)return toast("Choose your dream");
     if(!document.getElementById("agree").checked)return toast("Agree to privacy notice to continue");
-    S = {lastLoginDate: new Date().toDateString()}; // Set initial login date
     newGame(name,sel.origin,sel.dream);
   };
 }
@@ -446,7 +455,7 @@ function renderGame(){
     <div class="loc"><div class="name">${loc.emoji} ${loc.name}</div><div class="desc">${loc.desc}</div></div>
     <div class="actions">
       <button class="btn primary" onclick="openWork()">💼 Work</button>
-      <button class="btn" onclick="doRest()">😴 Rest ₦200</button>
+      <button class="btn asset" onclick="openAssets()">🏠 Assets</button>
       <button class="btn" onclick="openTravel()">🚌 Travel</button>
       <button class="btn warn" onclick="doAjo()">🪙 Ajo${S.ajo.streak>0?` (${S.ajo.streak})`:""}</button>
     </div>
@@ -508,6 +517,38 @@ window.doWork=function(jobId){
   save();closeModal();
   if(Math.random()<0.35){renderGame();triggerEvent();}
   else{renderGame();toast(`+₦${fmtMoney(pay)}`);}
+};
+
+window.openAssets=function(){
+  const html = ASSETS.map(a => {
+    const owned = S.assets.includes(a.id);
+    if(owned) return `<button class="opt locked" style="border-color:var(--green)">${a.emoji} ${a.name} <span class="sub" style="color:var(--green)">✅ Owned</span></button>`;
+    const canAfford = S.cash >= a.cost;
+    let fxText = [];
+    if(a.fx.reputation) fxText.push(`+${a.fx.reputation} Rep`);
+    if(a.fx.network) fxText.push(`+${a.fx.network} Net`);
+    if(a.fx.maxEnergy) fxText.push(`+${a.fx.maxEnergy} Max Energy`);
+    return `<button class="opt ${canAfford ? "" : "locked"}" onclick="buyAsset('${a.id}')">
+      ${a.emoji} ${a.name} <span class="sub">₦${fmtMoney(a.cost)} • ${fxText.join(", ")}</span>
+      <span class="sub" style="color:var(--muted);font-style:italic">${a.desc}</span>
+    </button>`;
+  }).join("");
+  openModal(`<h3>🏠 Lagos Dream</h3><p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Buy assets to boost your stats permanently.</p>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+};
+
+window.buyAsset = function(id) {
+  const a = ASSETS.find(x => x.id === id);
+  if(!a || S.assets.includes(id)) return;
+  if(S.cash < a.cost) return toast("Not enough cash!");
+  
+  S.cash -= a.cost;
+  S.assets.push(a.id);
+  applyFx(a.fx);
+  addLog(`Bought ${a.name}! -₦${fmtMoney(a.cost)}.`);
+  save();
+  closeModal();
+  renderGame();
+  toast(`Bought ${a.name}!`);
 };
 
 window.doRest=function(){
