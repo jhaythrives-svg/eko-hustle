@@ -52,6 +52,7 @@
   .btn.warn{background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#1a0f00}
   .btn.asset{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:none;color:#eff6ff}
   .btn.owambe{background:linear-gradient(135deg,#8b5cf6,#d946ef);border:none;color:#fff;grid-column:span 2;}
+  .btn.share{background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;width:100%;font-size:16px;margin-top:10px;}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
     letter-spacing:.8px;margin:18px 0 8px}
   .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
@@ -108,6 +109,13 @@
   .legal a{color:var(--green);text-decoration:none}
   .code-box{background:#0b0f0e;border:1px solid #26302b;border-radius:10px;padding:12px;
     font-family:monospace;font-size:14px;word-break:break-all;margin-bottom:12px;text-align:center;letter-spacing:2px}
+  .profile-header{text-align:center;margin-bottom:16px}
+  .profile-name{font-size:24px;font-weight:800}
+  .profile-dream{color:var(--amber);font-size:14px;font-weight:600;margin-top:4px}
+  .asset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+  .asset-card{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+  .asset-card .emoji{font-size:24px}
+  .asset-card .name{font-size:12px;font-weight:600;margin-top:4px}
 </style>
 </head>
 <body>
@@ -119,7 +127,7 @@
 "use strict";
 
 const SUPABASE_URL = "https://cdwcqzpnsfypijoriwul.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjUxNTQ5NSwiZXhwIjoyMTA4MDkxNDk1fQ.thptQiJZ9fwL3hWDSQgE4rfMqnBUk3k7yG-Ss2WrBX8";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg";
 
 const IS_SUPABASE_CONFIGURED = 
   SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
@@ -442,6 +450,7 @@ function renderGame(){
       <div class="topbar-right">
         <div class="day">Day ${S.day}</div>
         <button class="icon-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
+        <button class="icon-btn" onclick="openProfile()" title="Profile">👤</button>
         <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
       </div>
     </div>
@@ -482,6 +491,42 @@ function apptCard(a,now){
     ${claimable?`<button class="btn primary go" onclick="claimAppt('${a.id}')">Claim reward</button>`:""}
   </div>`;
 }
+
+/* ---------------- PROFILE & SHARE ---------------- */
+window.openProfile = function() {
+  const d = DREAMS.find(x => x.id === S.dream);
+  const dreamLabel = d ? d.label : "Hustler";
+  
+  let assetHtml = "";
+  if(!S.assets || S.assets.length === 0) {
+    assetHtml = "<p style='color:#8fa39a;font-size:13px;text-align:center'>No assets yet. Keep hustling!</p>";
+  } else {
+    assetHtml = `<div class="asset-grid">` + S.assets.map(id => {
+      const a = ASSETS.find(x => x.id === id);
+      return `<div class="asset-card"><div class="emoji">${a.emoji}</div><div class="name">${a.name}</div></div>`;
+    }).join("") + `</div>`;
+  }
+
+  const shareText = encodeURIComponent(`I'm on Day ${S.day} with ₦${fmtMoney(S.cash)} and ${S.reputation} Rep in Eko Hustle! 🏃🏾‍♂️💨\n\nCan you beat my hustle? Play free here: https://jhaythrives-svg.github.io/eko-hustle/`);
+  const waLink = `https://wa.me/?text=${shareText}`;
+
+  openModal(`
+    <h3 style="text-align:center">👤 Player Profile</h3>
+    <div class="profile-header">
+      <div class="profile-name">${esc(S.name)}</div>
+      <div class="profile-dream">Dream: ${dreamLabel}</div>
+    </div>
+    <div class="chips" style="justify-content:center">
+      <span class="chip">Day <b>${S.day}</b></span>
+      <span class="chip">Cash <b>₦${fmtMoney(S.cash)}</b></span>
+      <span class="chip">Rep <b>${S.reputation}</b></span>
+    </div>
+    <div class="section-title" style="margin-top:0">My Lagos Assets</div>
+    ${assetHtml}
+    <a href="${waLink}" target="_blank" class="btn share">💬 Flex on WhatsApp</a>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button>
+  `);
+};
 
 /* ---------------- ACTIONS ---------------- */
 window.openWork=function(){
