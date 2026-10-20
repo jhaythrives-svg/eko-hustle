@@ -22,8 +22,10 @@
   .brand span{color:var(--green)}
   .topbar-right{display:flex;align-items:center;gap:6px}
   .icon-btn{background:var(--card);border:1px solid var(--line);border-radius:999px;
-    padding:6px 10px;font-size:14px;cursor:pointer;color:var(--text)}
+    padding:6px 10px;font-size:14px;cursor:pointer;color:var(--text);position:relative}
   .icon-btn:active{border-color:var(--green)}
+  .badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;
+    font-size:9px;font-weight:bold;border-radius:999px;padding:2px 5px;display:none}
   .day{font-size:12px;color:var(--muted);background:var(--card);
     padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
   .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
@@ -123,6 +125,12 @@
   .asset-card{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
   .asset-card .emoji{font-size:24px}
   .asset-card .name{font-size:12px;font-weight:600;margin-top:4px}
+  .mission{display:flex;justify-content:space-between;align-items:center;
+    background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+  .mission.done{border-color:var(--green);background:#0f2016}
+  .mission .m-title{font-weight:600;font-size:14px}
+  .mission .m-desc{font-size:12px;color:var(--muted);margin-top:2px}
+  .mission .m-check{font-size:20px}
 </style>
 </head>
 <body>
@@ -134,7 +142,8 @@
 "use strict";
 
 const SUPABASE_URL = "https://cdwcqzpnsfypijoriwul.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg
+";
 
 const IS_SUPABASE_CONFIGURED = 
   SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
@@ -327,26 +336,50 @@ async function cloudPull(){
   }catch(e){return null;}
 }
 
+/* ---------------- MISSIONS ---------------- */
+function getMissions() {
+  const today = new Date().toDateString();
+  if (!S.missions || S.missions.date !== today) {
+    S.missions = { date: today, work: 0, travel: 0, social: 0, claimed: false };
+  }
+  return S.missions;
+}
+
+function updateMission(type) {
+  const m = getMissions();
+  if (m.claimed) return;
+  if (type === 'work') m.work++;
+  if (type === 'travel') m.travel++;
+  if (type === 'social') m.social++;
+  
+  if (m.work >= 3 && m.travel >= 2 && m.social >= 1 && !m.claimed) {
+    m.claimed = true;
+    S.cash += 5000;
+    S.energy = S.maxEnergy;
+    addLog("🏆 Daily Missions Completed! +₦5,000 and Full Energy.");
+    toast("🏆 Missions Complete! +₦5,000");
+    postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
+  }
+  save();
+}
+
 /* ---------------- NEW GAME ---------------- */
 async function newGame(name,originId,dreamId){
   const o=ORIGINS.find(x=>x.id===originId), d=DREAMS.find(x=>x.id===dreamId);
   S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
-    assets:[], vipUntil:0,
+    assets:[], vipUntil:0, missions:null,
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
     log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString(),lastOwambe:0};
   applyFx(o.fx);applyFx(d.fx);
   
-  // Check for Referral
   const urlParams = new URLSearchParams(window.location.search);
   const refId = urlParams.get('ref');
   if (refId && sb && session?.user) {
-    S.cash += 2000; // New player bonus
+    S.cash += 2000;
     addLog("🎁 Welcome bonus: +₦2,000 from invite link!");
-    try {
-      await sb.rpc('reward_referrer', { inviter_id: refId });
-    } catch(e) {}
+    try { await sb.rpc('reward_referrer', { inviter_id: refId }); } catch(e) {}
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
@@ -403,6 +436,7 @@ async function render(){
   if(!S.assets) S.assets = [];
   if(!S.vipUntil) S.vipUntil = 0;
   if(!S.lastOwambe) S.lastOwambe = 0;
+  if(!S.missions) S.missions = { date: new Date().toDateString(), work: 0, travel: 0, social: 0, claimed: false };
   
   checkReset();checkAppts();renderGame();
   
@@ -467,11 +501,18 @@ function renderGame(){
   const now=Date.now();
   const isVip = S.vipUntil > now;
   
+  const m = getMissions();
+  const missionCount = (m.work >= 3 ? 1 : 0) + (m.travel >= 2 ? 1 : 0) + (m.social >= 1 ? 1 : 0);
+  const showMissionBadge = missionCount > 0 && !m.claimed;
+  
   $app.innerHTML=`
     <div class="topbar">
       <div class="brand">Eko <span>Hustle</span> ${isVip ? '👑' : ''}</div>
       <div class="topbar-right">
         <div class="day">Day ${S.day}</div>
+        <button class="icon-btn" onclick="openMissions()" title="Missions">📋
+          ${showMissionBadge ? '<span class="badge" style="display:block">!</span>' : ''}
+        </button>
         <button class="icon-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
         <button class="icon-btn" onclick="openProfile()" title="Profile">👤</button>
         <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
@@ -541,6 +582,38 @@ function apptCard(a,now){
   </div>`;
 }
 
+/* ---------------- MISSIONS UI ---------------- */
+window.openMissions = function() {
+  const m = getMissions();
+  const workDone = m.work >= 3;
+  const travelDone = m.travel >= 2;
+  const socialDone = m.social >= 1;
+  
+  openModal(`
+    <h3>📋 Daily Hustler Quests</h3>
+    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Complete all 3 missions to earn ₦5,000 and Full Energy. Resets at midnight.</p>
+    
+    <div class="mission ${workDone ? 'done' : ''}">
+      <div><div class="m-title">Work 3 Times</div><div class="m-desc">${m.work}/3 completed</div></div>
+      <div class="m-check">${workDone ? '✅' : '⏳'}</div>
+    </div>
+    
+    <div class="mission ${travelDone ? 'done' : ''}">
+      <div><div class="m-title">Travel to 2 Places</div><div class="m-desc">${m.travel}/2 completed</div></div>
+      <div class="m-check">${travelDone ? '✅' : '⏳'}</div>
+    </div>
+    
+    <div class="mission ${socialDone ? 'done' : ''}">
+      <div><div class="m-title">Attend Owambe or Pay Ajo</div><div class="m-desc">${m.social}/1 completed</div></div>
+      <div class="m-check">${socialDone ? '✅' : '⏳'}</div>
+    </div>
+    
+    ${m.claimed ? '<p style="color:var(--green);text-align:center;font-weight:bold;margin-top:12px">All missions claimed for today!</p>' : ''}
+    
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
+  `);
+};
+
 /* ---------------- VIP STORE ---------------- */
 window.openVipStore = function() {
   openModal(`
@@ -559,10 +632,7 @@ window.openVipStore = function() {
 };
 
 window.buyVip = function() {
-  // SIMULATED PAYMENT GATEWAY
-  // In the future, this is where you call Paystack/Flutterwave
   toast("Processing payment...");
-  
   setTimeout(() => {
     S.vipUntil = Date.now() + (24 * HOUR);
     S.energy = S.maxEnergy;
@@ -648,6 +718,8 @@ window.doWork=function(jobId){
   S.flags.workCount=(S.flags.workCount||0)+1;
   addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}${isVip ? " (VIP 2x)" : ""}.`);
   
+  updateMission('work');
+  
   if(!S.flags.firstGigDone){
     S.flags.firstGigDone=true;
     scheduleAppt({id:"tunde_"+Date.now(),title:"Tunde: Come to Yaba",
@@ -693,6 +765,8 @@ window.buyAsset = function(id) {
   if(!a || S.assets.includes(id)) return;
   if(S.cash < a.cost) return toast("Not enough cash!");
   
+  const isFirstAsset = S.assets.length === 0;
+  
   S.cash -= a.cost;
   S.assets.push(a.id);
   applyFx(a.fx);
@@ -703,6 +777,19 @@ window.buyAsset = function(id) {
   toast(`Bought ${a.name}!`);
   
   postToFeed(`${esc(S.name)} just bought a ${a.name}! 💰`);
+  
+  if (isFirstAsset) {
+    const shareText = encodeURIComponent(`I just bought my first asset (${a.name} ${a.emoji}) in Eko Hustle! The hustle is real. 💰\n\nJoin me and let's build an empire: https://jhaythrives-svg.github.io/eko-hustle/`);
+    const waLink = `https://wa.me/?text=${shareText}`;
+    setTimeout(() => {
+      openModal(`
+        <h3 style="text-align:center">🎉 Major Milestone!</h3>
+        <p style="color:#c8d6ce;font-size:14px;text-align:center;margin-bottom:16px">You just bought your first asset! Let the world know you're moving up.</p>
+        <a href="${waLink}" target="_blank" class="btn share">💬 Share this Flex on WhatsApp</a>
+        <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Maybe Later</button>
+      `);
+    }, 800);
+  }
 };
 
 window.openOwambe = function() {
@@ -727,6 +814,9 @@ window.attendOwambe = function(cost, outfit, rep, net) {
   S.happiness = clamp(S.happiness + 10);
   S.lastOwambe = Date.now();
   addLog(`Attended Owambe in ${outfit}. -₦${fmtMoney(cost)}, +${rep} Rep, +${net} Net.`);
+  
+  updateMission('social');
+  
   save();
   closeModal();
   renderGame();
@@ -773,6 +863,9 @@ window.doTravel=function(id){
   if(S.energy<TRAVEL_ENERGY)return toast("Too tired.");
   S.cash-=cost;S.energy-=TRAVEL_ENERGY;S.location=id;
   addLog(`Traveled to ${l.name}. -₦${fmtMoney(cost)}.`);
+  
+  updateMission('travel');
+  
   save();closeModal();renderGame();
   if(Math.random()<0.3)triggerEvent();
 };
@@ -783,6 +876,9 @@ window.doAjo=function(){
   if(S.cash<500)return toast("Ajo is ₦500.");
   S.cash-=500;S.ajo.total+=500;S.ajo.streak+=1;S.ajo.lastPaid=today;
   addLog(`Ajo paid. Streak: ${S.ajo.streak}.`);
+  
+  updateMission('social');
+  
   if(S.ajo.streak%7===0){
     const p=5000;S.cash+=p;S.ajo.payouts+=1;
     addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);
