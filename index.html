@@ -137,13 +137,24 @@
 <div id="app"></div>
 <div id="modal-root"></div>
 <div id="toast" class="toast"></div>
+<script>
+// ERROR CATCHER: If the game crashes, show the error on screen instead of a black screen.
+window.onerror = function(msg, url, line, col, error) {
+  document.body.innerHTML = `<div style="color:white; padding:20px; font-family:sans-serif;">
+    <h3 style="color:#ef4444">⚠ Game Crashed</h3>
+    <p><b>Error:</b> ${msg}</p>
+    <p><b>Line:</b> ${line}</p>
+    <button style="padding:10px; background:#22c55e; border:none; color:white; border-radius:8px; margin-top:10px;" onclick="localStorage.clear(); location.reload()">Reset Save & Reload</button>
+  </div>`;
+  return false;
+};
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
 <script>
 "use strict";
 
 const SUPABASE_URL = "https://cdwcqzpnsfypijoriwul.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg
-";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkd2NxenBuc2Z5cGlqb3Jpd3VsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1MTU0OTUsImV4cCI6MjEwODA5MTQ5NX0.Y_CuzCPHKSw-2qjGCdvWPTAWJ5AVHifQeMtyuU44yNg";
 
 const IS_SUPABASE_CONFIGURED = 
   SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
@@ -290,6 +301,33 @@ function applyFx(fx){
   }
 }
 
+/* ---------------- MISSIONS ---------------- */
+function getMissions() {
+  const today = new Date().toDateString();
+  if (!S.missions || S.missions.date !== today) {
+    S.missions = { date: today, work: 0, travel: 0, social: 0, claimed: false };
+  }
+  return S.missions;
+}
+
+function updateMission(type) {
+  const m = getMissions();
+  if (m.claimed) return;
+  if (type === 'work') m.work++;
+  if (type === 'travel') m.travel++;
+  if (type === 'social') m.social++;
+  
+  if (m.work >= 3 && m.travel >= 2 && m.social >= 1 && !m.claimed) {
+    m.claimed = true;
+    S.cash += 5000;
+    S.energy = S.maxEnergy;
+    addLog("🏆 Daily Missions Completed! +₦5,000 and Full Energy.");
+    toast("🏆 Missions Complete! +₦5,000");
+    postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
+  }
+  save();
+}
+
 /* ---------------- AUTH ---------------- */
 async function ensureAuth(){
   if(!sb) return null;
@@ -334,33 +372,6 @@ async function cloudPull(){
     if(error||!data)return null;
     return data;
   }catch(e){return null;}
-}
-
-/* ---------------- MISSIONS ---------------- */
-function getMissions() {
-  const today = new Date().toDateString();
-  if (!S.missions || S.missions.date !== today) {
-    S.missions = { date: today, work: 0, travel: 0, social: 0, claimed: false };
-  }
-  return S.missions;
-}
-
-function updateMission(type) {
-  const m = getMissions();
-  if (m.claimed) return;
-  if (type === 'work') m.work++;
-  if (type === 'travel') m.travel++;
-  if (type === 'social') m.social++;
-  
-  if (m.work >= 3 && m.travel >= 2 && m.social >= 1 && !m.claimed) {
-    m.claimed = true;
-    S.cash += 5000;
-    S.energy = S.maxEnergy;
-    addLog("🏆 Daily Missions Completed! +₦5,000 and Full Energy.");
-    toast("🏆 Missions Complete! +₦5,000");
-    postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
-  }
-  save();
 }
 
 /* ---------------- NEW GAME ---------------- */
@@ -996,6 +1007,13 @@ setInterval(()=>{
 },1000);
 
 render();
+
+// Register Service Worker for offline support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed', err));
+  });
+}
 </script>
 </body>
 </html>
