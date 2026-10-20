@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#0b0f0e"/>
+<title>Eko Hustle</title>
+<style>
+  :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
+    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  body{min-height:100dvh}
+  #app{max-width:480px;margin:0 auto;padding:12px 12px 40px;
+    padding-bottom:calc(40px + env(safe-area-inset-bottom))}
+  h1,h2,h3{margin:0}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+  .brand{font-weight:800;letter-spacing:.5px;font-size:20px;flex-shrink:0}
+  .brand span{color:var(--green)}
+  .topbar-right{display:flex;align-items:center;gap:6px}
+  .icon-btn{background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:6px 10px;font-size:14px;cursor:pointer;color:var(--text)}
+  .icon-btn:active{border-color:var(--green)}
+  .day{font-size:12px;color:var(--muted);background:var(--card);
+    padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .stat .v{font-size:18px;font-weight:700;margin-top:2px}
+  .bar{height:8px;background:#0a1f12;border-radius:999px;overflow:hidden;margin-top:6px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);
+    width:0%;transition:width .3s}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;
+    padding:6px 10px;font-size:12px;color:var(--muted)}
+  .chip b{color:var(--text);margin-left:4px}
+  .loc{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px;margin-bottom:12px}
+  .loc .name{font-size:18px;font-weight:700}
+  .loc .desc{font-size:13px;color:var(--muted);margin-top:2px}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+  button{font-family:inherit}
+  .btn{background:var(--card2);border:1px solid var(--line);color:var(--text);
+    padding:14px 12px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:transform .05s,border-color .2s}
+  .btn:active{transform:scale(.98);border-color:var(--green)}
+  .btn.primary{background:linear-gradient(135deg,#16a34a,#22c55e);border:none;color:#04140a}
+  .btn.warn{background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#1a0f00}
+  .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
+    letter-spacing:.8px;margin:18px 0 8px}
+  .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
+    border-radius:14px;padding:14px;margin-bottom:10px}
+  .appt.ready{border-color:var(--amber);box-shadow:0 0 0 1px rgba(245,158,11,.3) inset}
+  .appt.missed{opacity:.5;border-color:var(--red)}
+  .appt .t{font-weight:700;font-size:15px}
+  .appt .d{font-size:13px;color:var(--muted);margin-top:3px}
+  .appt .meta{font-size:12px;margin-top:8px;color:var(--amber);font-weight:600}
+  .appt .go{margin-top:10px}
+  .log{font-size:12px;color:var(--muted);line-height:1.6}
+  .log div{padding:4px 0;border-bottom:1px dashed #1e2722}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;
+    align-items:flex-end;justify-content:center;z-index:50;padding:0}
+  .modal{background:var(--card);border:1px solid var(--line);
+    border-radius:18px 18px 0 0;width:100%;max-width:480px;padding:18px 16px 24px;
+    max-height:85vh;overflow:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
+  .modal h3{font-size:16px;margin-bottom:10px}
+  .opt{display:block;width:100%;text-align:left;background:var(--card2);
+    border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;
+    color:var(--text);font-size:14px;cursor:pointer}
+  .opt:active{border-color:var(--green)}
+  .opt .sub{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+  .opt.locked{opacity:.45;pointer-events:none}
+  .rank{display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:var(--card2);border:1px solid var(--line);border-radius:12px;margin-bottom:6px}
+  .rank .n{width:24px;font-weight:700;color:var(--amber);text-align:center}
+  .rank .info{flex:1}
+  .rank .h{font-weight:600}
+  .rank .m{font-size:12px;color:var(--muted);margin-top:2px}
+  .rank.me{border-color:var(--green)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:#0f1a14;border:1px solid #2a4033;color:var(--text);padding:10px 14px;
+    border-radius:12px;font-size:13px;opacity:0;transition:.25s;z-index:100;
+    max-width:90vw;text-align:center;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .onb{padding-top:20px}
+  .onb .hero{font-size:26px;font-weight:800;line-height:1.15;margin-bottom:6px}
+  .onb .hero span{color:var(--green)}
+  .onb .sub{color:var(--muted);font-size:14px;margin-bottom:20px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;
+    text-transform:uppercase;letter-spacing:.6px}
+  .field input{width:100%;background:var(--card);border:1px solid var(--line);
+    border-radius:12px;padding:14px;color:var(--text);font-size:16px;outline:none}
+  .field input:focus{border-color:var(--green)}
+  .pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pick .opt{margin:0;text-align:center;padding:14px 10px}
+  .pick .opt.sel{border-color:var(--green);background:#0f2016}
+  .reset{font-size:11px;color:#5b6b63;text-align:center;margin-top:24px;
+    background:none;border:none;cursor:pointer;text-decoration:underline}
+  .sync{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;min-height:14px}
+  .legal{font-size:11px;color:#6b7c73;text-align:center;margin-top:12px;line-height:1.5}
+  .legal a{color:var(--green);text-decoration:none}
+  .code-box{background:#0b0f0e;border:1px solid #26302b;border-radius:10px;padding:12px;
+    font-family:monospace;font-size:14px;word-break:break-all;margin-bottom:12px;text-align:center;letter-spacing:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+<script>
+"use strict";
+
+const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL_HERE";
+const SUPABASE_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+
+const KEY="ekohustle_v1", HOUR=3600000, DAY=86400000;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+});
+
+let S=null, currentEvent=null, cloudTimer=null, syncStatus="idle", session=null, authError=null;
+const $app=document.getElementById("app"), $modal=document.getElementById("modal-root"), $toast=document.getElementById("toast");
+
+/* ---------------- DATA ---------------- */
+const LOCS={
+  ojota:{name:"Ojota",emoji:"🚌",desc:"Bus terminal. Where journeys start.",tier:1},
+  yaba:{name:"Yaba",emoji:"💻",desc:"Tech hub. Gigs and startups.",tier:1},
+  ikeja:{name:"Ikeja",emoji:"🛍️",desc:"Trade and commerce. Money moves.",tier:1},
+  surulere:{name:"Surulere",emoji:"🎬",desc:"Entertainment. Creators and vibes.",tier:1},
+  vi:{name:"Victoria Island",emoji:"🏢",desc:"Corporate. Suits and deals.",tier:2},
+  lekki:{name:"Lekki",emoji:"🌴",desc:"New money. Big dreams.",tier:2},
+  ajah:{name:"Ajah",emoji:"🏠",desc:"Residential. Rest and rent.",tier:2}
+};
+const TRAVEL_COST={1:200,2:500}, TRAVEL_ENERGY=10;
+
+const JOBS={
+  yaba:[{id:"gig",name:"Delivery gig",emoji:"📦",pay:[1500,3000],energy:20,fx:{reputation:1,network:1}},
+    {id:"jdev",name:"Junior dev task",emoji:"💻",pay:[4000,7000],energy:30,fx:{reputation:3,network:2},req:{reputation:20}}],
+  ikeja:[{id:"pos",name:"POS agent shift",emoji:"💳",pay:[2000,3500],energy:20,fx:{reputation:1}},
+    {id:"market",name:"Market sales",emoji:"🧺",pay:[2500,4500],energy:25,fx:{network:2},req:{network:10}}],
+  surulere:[{id:"content",name:"Content shoot",emoji:"📸",pay:[2000,5000],energy:25,fx:{happiness:3,network:2}},
+    {id:"usher",name:"Event ushering",emoji:"🎟️",pay:[3000,6000],energy:30,fx:{network:3,reputation:2},req:{network:15}}],
+  vi:[{id:"office",name:"Office assistant",emoji:"🗂️",pay:[4000,6000],energy:30,fx:{reputation:2},req:{reputation:15}},
+    {id:"intern",name:"Corporate intern",emoji:"👔",pay:[6000,9000],energy:35,fx:{reputation:4,network:2},req:{reputation:40}}],
+  lekki:[{id:"driver",name:"Driver shift",emoji:"🚗",pay:[5000,8000],energy:35,fx:{network:2},req:{network:25}},
+    {id:"pa",name:"Personal assistant",emoji:"📋",pay:[8000,12000],energy:35,fx:{reputation:4,network:3},req:{reputation:60}}],
+  ajah:[{id:"landl",name:"Help landlord",emoji:"🔑",pay:[1500,2500],energy:15,fx:{network:1}},
+    {id:"tutor",name:"Home tutor",emoji:"📚",pay:[3000,5000],energy:25,fx:{reputation:2},req:{reputation:10}}],
+  ojota:[{id:"load",name:"Load bus luggage",emoji:"🧳",pay:[1000,2000],energy:15,fx:{health:-2}},
+    {id:"hawk",name:"Hawking",emoji:"🥤",pay:[1200,2600],energy:20,fx:{network:1}}]
+};
+
+const EVENTS=[
+  {id:"conductor",title:"Danfo conductor",text:"The conductor wants ₦100 extra because of \u201chold-up\u201d.",choices:[
+    {label:"Pay quietly",fx:{cash:-100},res:"You pay. Lagos no dey carry last."},
+    {label:"Argue am",fx:{happiness:-5,reputation:1},res:"You argue and win. Small win, big joy."},
+    {label:"Jump out",fx:{energy:-10,health:-5},res:"Rough landing. But you saved ₦100."}]},
+  {id:"alaye",title:"Area boys",text:"Three guys block your way. \u201cOga, anything for the boys?\u201d",choices:[
+    {label:"Drop ₦500",fx:{cash:-500},res:"They nod. You pass."},
+    {label:"Walk fast",fx:{energy:-15,health:-5},res:"You jog. They laugh. You're safe."},
+    {label:"Shout",fx:{reputation:2,happiness:-3},res:"People look. They back off. Small respect."}]},
+  {id:"rain",title:"Sudden rain",text:"Eko rain catch you outside.",choices:[
+    {label:"Buy umbrella",fx:{cash:-800,health:2},res:"You stay dry. Smart."},
+    {label:"Run",fx:{energy:-15,health:-8},res:"You arrive soaked. Health down."},
+    {label:"Wait it out",fx:{energy:-5,happiness:-3},res:"You wait. Time lost."}]},
+  {id:"sidehustle",title:"Side hustle offer",text:"A friend wants you to join a \u201cquick money\u201d scheme.",choices:[
+    {label:"Join with ₦2000",fx:{cash:-2000},res:"You join. You may never see it again.",tag:"mystery"},
+    {label:"Decline",fx:{reputation:1},res:"You decline. Wise."}]},
+  {id:"freefood",title:"Free food",text:"Aunty at the buka offers you jollof on the house.",choices:[
+    {label:"Accept",fx:{happiness:5,energy:10,health:2},res:"Free jollof. Life is good."},
+    {label:"Politely decline",fx:{reputation:1},res:"She respects you. Small rep."}]},
+  {id:"phone",title:"Phone battery",text:"Your phone is at 3%. No power at home.",choices:[
+    {label:"Charge at shop ₦300",fx:{cash:-300,energy:3},res:"Charged. Back in business."},
+    {label:"Manage",fx:{happiness:-4},res:"You switch off. Life is harder today."}]},
+  {id:"oldfriend",title:"Old friend",text:"Chinedu from secondary school sees you. He's driving a Camry.",choices:[
+    {label:"Hail am",fx:{network:3,happiness:-3},res:"He gives you his card. \u201cCall me.\u201d"},
+    {label:"Avoid am",fx:{happiness:2},res:"You dodge. Pride intact."}]},
+  {id:"gigoffer",title:"Gig offer",text:"A stranger says he has a quick job \u2014 ₦3,000 for 2 hours.",choices:[
+    {label:"Accept",fx:{cash:3000,energy:-20},res:"You work. It's real. Cash in hand."},
+    {label:"Ask questions first",fx:{reputation:1,energy:-3},res:"He respects you. But the job goes to another."}]},
+  {id:"bet",title:"Betting slip",text:"A friend wants you to put ₦1,000 on a sure game.",choices:[
+    {label:"Play",fx:{cash:-1000},res:"You play. You'll know soon.",tag:"mystery"},
+    {label:"No",fx:{happiness:-2},res:"You decline. He laughs at you."}]},
+  {id:"marketdeal",title:"Market deal",text:"A trader offers you goods at half price to resell.",choices:[
+    {label:"Buy ₦2500",fx:{cash:-2500},res:"You buy. Soon we'll know.",tag:"mystery"},
+    {label:"Pass",fx:{},res:"You pass. Safe."}]},
+  {id:"pastor",title:"Street preacher",text:"A preacher says your breakthrough is near. Give seed.",choices:[
+    {label:"Give ₦500",fx:{cash:-500,happiness:4},res:"You feel lighter. Hope is currency."},
+    {label:"Walk on",fx:{},res:"You move on."}]},
+  {id:"helper",title:"Helping hand",text:"A woman needs help carrying her bags.",choices:[
+    {label:"Help her",fx:{energy:-8,network:2,reputation:2,cash:500},res:"She tips you ₦500 and collects your number."},
+    {label:"Ignore",fx:{},res:"You move on."}]}
+];
+
+const ORIGINS=[
+  {id:"lagos",label:"Lagos born",fx:{network:8}},
+  {id:"ibadan",label:"From Ibadan",fx:{cash:2000}},
+  {id:"enugu",label:"From Enugu",fx:{cash:2000}},
+  {id:"kano",label:"From Kano",fx:{cash:2000}},
+  {id:"abroad",label:"Returned from abroad",fx:{cash:10000,reputation:-5}}
+];
+const DREAMS=[
+  {id:"bigman",label:"Become a big man",fx:{reputation:2}},
+  {id:"japa",label:"Japa",fx:{happiness:10}},
+  {id:"landlord",label:"Own a house",fx:{cash:3000}},
+  {id:"tech",label:"Tech founder",fx:{network:3}}
+];
+
+/* ---------------- HELPERS ---------------- */
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null;}catch(e){return null;}}
+function clamp(v,lo=0,hi=100){return Math.max(lo,Math.min(hi,v));}
+function fmtMoney(n){return Math.max(0,Math.round(n)).toLocaleString("en-NG");}
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function cleanName(n){return String(n||"").replace(/[\x00-\x1F\x7F]/g,"").trim().slice(0,20);}
+function fmtDur(ms){
+  if(ms<=0)return"0s";
+  const s=Math.floor(ms/1000);
+  if(s<60)return s+"s";
+  const m=Math.floor(s/60);
+  if(m<60)return m+"m "+(s%60)+"s";
+  const h=Math.floor(m/60);
+  if(h<24)return h+"h "+(m%60)+"m";
+  return Math.floor(h/24)+"d "+(h%24)+"h";
+}
+function toast(msg){
+  $toast.textContent=msg;$toast.classList.add("show");
+  clearTimeout(toast._t);toast._t=setTimeout(()=>$toast.classList.remove("show"),2200);
+}
+function addLog(t){S.log.unshift({t:Date.now(),text:t});if(S.log.length>30)S.log.length=30;}
+function applyFx(fx){
+  if(!fx)return;
+  for(const k in fx){
+    if(k==="cash")S.cash+=fx[k];
+    else if(k==="health")S.health=clamp(S.health+fx[k]);
+    else if(k==="happiness")S.happiness=clamp(S.happiness+fx[k]);
+    else if(k==="reputation")S.reputation=Math.max(0,S.reputation+fx[k]);
+    else if(k==="network")S.network=Math.max(0,S.network+fx[k]);
+    else if(k==="energy")S.energy=clamp(S.energy+fx[k],0,S.maxEnergy);
+  }
+}
+
+/* ---------------- AUTH ---------------- */
+async function ensureAuth(){
+  if(session?.user)return session;
+  const { data:{ session:s1 } } = await sb.auth.getSession();
+  if(s1?.user){session=s1;return s1;}
+  const { data, error } = await sb.auth.signInAnonymously();
+  if(error){authError=error.message;return null;}
+  session=data.session;
+  return session;
+}
+
+/* ---------------- SAVE / SYNC ---------------- */
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function save(){
+  if(S)S.lastSaved=Date.now();
+  saveLocal();
+  scheduleCloudSync();
+}
+function scheduleCloudSync(){
+  if(!S||!session?.user)return;
+  clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(cloudPush,1500);
+}
+async function cloudPush(){
+  if(!S||!session?.user)return;
+  syncStatus="syncing";
+  try{
+    const { error } = await sb.from("saves").upsert({
+      user_id: session.user.id,
+      handle: cleanName(S.name),
+      state: S
+    }, { onConflict: "user_id" });
+    syncStatus = error ? (String(error.message).includes("Too many") ? "ratelimited" : "error") : "synced";
+  }catch(e){syncStatus="offline";}
+}
+async function cloudPull(){
+  if(!session?.user)return null;
+  try{
+    const { data, error } = await sb.from("saves")
+      .select("state,updated_at").eq("user_id", session.user.id).maybeSingle();
+    if(error||!data)return null;
+    return data;
+  }catch(e){return null;}
+}
+
+/* ---------------- NEW GAME ---------------- */
+function newGame(name,originId,dreamId){
+  const o=ORIGINS.find(x=>x.id===originId), d=DREAMS.find(x=>x.id===dreamId);
+  S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
+    energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
+    location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
+    appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
+    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now()};
+  applyFx(o.fx);applyFx(d.fx);
+  addLog(`You land in Lagos with ₦${fmtMoney(S.cash)}. ${o.label}. Dream: ${d.label}.`);
+  save();renderGame();
+}
+
+/* ---------------- DAILY RESET ---------------- */
+function checkReset(){
+  if(!S)return;
+  const now=Date.now();
+  if(now-S.lastReset>=DAY){
+    const days=Math.floor((now-S.lastReset)/DAY);
+    S.day+=days;S.lastReset=now;S.energy=S.maxEnergy;
+    const chargeableDays=Math.max(0,S.day-3-(Math.max(0,S.day-days-3)));
+    const upkeep=1500*Math.max(0,Math.min(days,chargeableDays));
+    if(upkeep>0){
+      if(S.cash>=upkeep){S.cash-=upkeep;addLog(`Day ${S.day}. Upkeep ₦${fmtMoney(upkeep)} paid.`);}
+      else{
+        const short=upkeep-S.cash;S.cash=0;
+        S.health=clamp(S.health-15*days);S.happiness=clamp(S.happiness-15*days);
+        addLog(`Day ${S.day}. Couldn't pay ₦${fmtMoney(short)} upkeep.`);
+      }
+    }else addLog(`Day ${S.day}. Grace period \u2014 no upkeep yet.`);
+    save();
+  }
+}
+
+/* ---------------- APPOINTMENTS ---------------- */
+function scheduleAppt(a){S.appointments.push(a);save();}
+function checkAppts(){
+  if(!S)return false;
+  const now=Date.now();let changed=false;
+  S.appointments.forEach(a=>{
+    if(a.status==="pending"&&now>=a.unlockAt){a.status="ready";changed=true;toast("🔥 Appointment ready: "+a.title);}
+    if(a.status==="ready"&&now>a.expiresAt){a.status="missed";applyFx(a.penalty);addLog(`Missed: ${a.title}.`);changed=true;}
+  });
+  if(changed)save();
+  return changed;
+}
+
+/* ---------------- BOOT / RENDER ---------------- */
+async function render(){
+  await ensureAuth();
+  const local=load();
+  const cloud=await cloudPull();
+  if(cloud?.state){
+    const cloudTime=new Date(cloud.updated_at).getTime();
+    const localTime=local?(local.lastSaved||local.createdAt||0):0;
+    if(cloudTime>localTime){S=cloud.state;saveLocal();}
+    else S=local;
+  }else S=local;
+  if(!S)return renderOnboarding();
+  checkReset();checkAppts();renderGame();
+}
+
+function renderOnboarding(){
+  let sel={origin:null,dream:null,agree:false};
+  $app.innerHTML=`
+    <div class="onb">
+      <div class="hero">Eko <span>Hustle</span></div>
+      <div class="sub">You land in Lagos with ₦5,000. No connection. No house. Build a life.</div>
+      <div class="field"><label>Your name</label>
+        <input id="pname" placeholder="e.g. Tunde" maxlength="20" autocomplete="off"/></div>
+      <div class="field"><label>Where you come from</label>
+        <div class="pick" id="origins">${ORIGINS.map(o=>`<button class="opt" data-origin="${o.id}">${o.label}</button>`).join("")}</div></div>
+      <div class="field"><label>Your dream</label>
+        <div class="pick" id="dreams">${DREAMS.map(d=>`<button class="opt" data-dream="${d.id}">${d.label}</button>`).join("")}</div></div>
+      <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-bottom:14px">
+        <input type="checkbox" id="agree" style="margin-top:2px"/>
+        <span>I agree to the <a href="#" onclick="showPrivacy();return false" style="color:var(--green)">privacy notice</a>. No email or phone collected. Display name only.</span>
+      </label>
+      <button class="btn primary" id="startBtn" style="width:100%">Start your hustle</button>
+      ${authError?`<div class="sync" style="color:#fca5a5">Auth error: ${esc(authError)}</div>`:""}
+    </div>`;
+  document.querySelectorAll("[data-origin]").forEach(b=>b.onclick=()=>{
+    sel.origin=b.dataset.origin;
+    document.querySelectorAll("[data-origin]").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  document.querySelectorAll("[data-dream]").forEach(b=>b.onclick=()=>{
+    sel.dream=b.dataset.dream;
+    document.querySelectorAll("[data-dream]").forEach(x=>x.classList.toggle("sel",x===b));
+  });
+  document.getElementById("startBtn").onclick=()=>{
+    const name=cleanName(document.getElementById("pname").value);
+    if(!name)return toast("Enter a name");
+    if(!sel.origin)return toast("Choose where you come from");
+    if(!sel.dream)return toast("Choose your dream");
+    if(!document.getElementById("agree").checked)return toast("Agree to privacy notice to continue");
+    newGame(name,sel.origin,sel.dream);
+  };
+}
+
+function renderGame(){
+  const loc=LOCS[S.location];
+  const energyPct=Math.round((S.energy/S.maxEnergy)*100);
+  const appts=S.appointments.filter(a=>a.status!=="done");
+  const now=Date.now();
+  $app.innerHTML=`
+    <div class="topbar">
+      <div class="brand">Eko <span>Hustle</span></div>
+      <div class="topbar-right">
+        <div class="day">Day ${S.day}</div>
+        <button class="icon-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
+        <button class="icon-btn" onclick="openReminders()" title="Reminders">🔔</button>
+        <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="k">Cash</div><div class="v">₦${fmtMoney(S.cash)}</div></div>
+      <div class="stat"><div class="k">Energy</div><div class="v">${S.energy}/${S.maxEnergy}</div>
+        <div class="bar"><i style="width:${energyPct}%"></i></div></div>
+    </div>
+    <div class="chips">
+      <span class="chip">❤️ Health <b>${S.health}</b></span>
+      <span class="chip">😊 Happy <b>${S.happiness}</b></span>
+      <span class="chip">⭐ Rep <b>${S.reputation}</b></span>
+      <span class="chip">🤝 Network <b>${S.network}</b></span>
+    </div>
+    <div class="loc"><div class="name">${loc.emoji} ${loc.name}</div><div class="desc">${loc.desc}</div></div>
+    <div class="actions">
+      <button class="btn primary" onclick="openWork()">💼 Work</button>
+      <button class="btn" onclick="doRest()">😴 Rest ₦200</button>
+      <button class="btn" onclick="openTravel()">🚌 Travel</button>
+      <button class="btn warn" onclick="doAjo()">🪙 Ajo${S.ajo.streak>0?` (${S.ajo.streak})`:""}</button>
+    </div>
+    ${appts.length?`<div class="section-title">Appointments</div>`+appts.map(a=>apptCard(a,now)).join(""):""}
+    <div class="section-title">Log</div>
+    <div class="log">${S.log.slice(0,10).map(l=>`<div>${esc(l.text)}</div>`).join("")||"<div>Nothing yet. Go hustle.</div>"}</div>
+    <div class="sync">${syncStatus==="syncing"?"↻ syncing…":syncStatus==="synced"?"✓ cloud saved":syncStatus==="offline"?"⚡ offline":syncStatus==="error"?"⚠ sync error":syncStatus==="ratelimited"?"⏱ syncing slowly":""}</div>`;
+}
+
+function apptCard(a,now){
+  let meta="";
+  if(a.status==="pending")meta=`⏳ Unlocks in <span data-cd="${a.id}">${fmtDur(a.unlockAt-now)}</span>`;
+  else if(a.status==="ready")meta=`🔥 Ready at ${LOCS[a.loc].name} — expires in <span data-cd="${a.id}">${fmtDur(a.expiresAt-now)}</span>`;
+  else if(a.status==="missed")meta="❌ Missed";
+  const claimable=a.status==="ready"&&S.location===a.loc;
+  return `<div class="appt ${a.status}">
+    <div class="t">${esc(a.title)}</div><div class="d">${esc(a.desc)}</div>
+    <div class="meta">${meta}</div>
+    ${claimable?`<button class="btn primary go" onclick="claimAppt('${a.id}')">Claim reward</button>`:""}
+  </div>`;
+}
+
+/* ---------------- ACTIONS ---------------- */
+window.openWork=function(){
+  const jobs=JOBS[S.location]||[];
+  const html=jobs.map(j=>{
+    const locked=j.req&&!Object.entries(j.req).every(([k,v])=>S[k]>=v);
+    const reqTxt=j.req?Object.entries(j.req).map(([k,v])=>`${v} ${k}`).join(", "):"";
+    return `<button class="opt ${locked?"locked":""}" ${locked?"":`onclick="doWork('${j.id}')"`}>
+      ${j.emoji} ${j.name}<span class="sub">₦${fmtMoney(j.pay[0])}–₦${fmtMoney(j.pay[1])} • ${j.energy} energy ${locked?`• needs ${reqTxt}`:""}</span></button>`;
+  }).join("");
+  openModal(`<h3>Work in ${LOCS[S.location].name}</h3>${html||"<p style='color:#8fa39a'>No jobs here.</p>"}<button class="opt" onclick="closeModal()">Close</button>`);
+};
+
+window.doWork=function(jobId){
+  const job=(JOBS[S.location]||[]).find(j=>j.id===jobId);
+  if(!job)return;
+  if(S.energy<job.energy)return toast("Not enough energy. Rest first.");
+  const pay=rand(job.pay[0],job.pay[1]);
+  S.energy-=job.energy;S.cash+=pay;applyFx(job.fx);
+  S.flags.workCount=(S.flags.workCount||0)+1;
+  addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}.`);
+  if(!S.flags.firstGigDone){
+    S.flags.firstGigDone=true;
+    scheduleAppt({id:"tunde_"+Date.now(),title:"Tunde: Come to Yaba",
+      desc:"Tunde says he has a big gig for you. Don't be late.",loc:"yaba",
+      unlockAt:Date.now()+90000,expiresAt:Date.now()+90000+DAY,
+      reward:{cash:8000,reputation:5,network:3},penalty:{happiness:-10},status:"pending"});
+    addLog("📅 New appointment: Tunde in Yaba.");
+  }
+  if(S.flags.workCount===3&&!S.flags.mysteryScheduled){
+    S.flags.mysteryScheduled=true;
+    scheduleAppt({id:"mystery_"+Date.now(),title:"Unknown caller",
+      desc:"Someone says they have news for you. They'll reach out soon.",loc:S.location,
+      unlockAt:Date.now()+4*HOUR,expiresAt:Date.now()+4*HOUR+DAY,
+      reward:{cash:rand(2000,6000)},penalty:{happiness:-5},status:"pending"});
+    addLog("📞 A mystery caller will reach you soon.");
+  }
+  save();closeModal();
+  if(Math.random()<0.35){renderGame();triggerEvent();}
+  else{renderGame();toast(`+₦${fmtMoney(pay)}`);}
+};
+
+window.doRest=function(){
+  if(S.energy>=S.maxEnergy)return toast("Energy is full.");
+  if(S.cash<200)return toast("You need ₦200 for food.");
+  S.cash-=200;S.energy=clamp(S.energy+35,0,S.maxEnergy);S.happiness=clamp(S.happiness+2);
+  addLog("Rested and ate. +35 energy.");save();renderGame();toast("+35 energy");
+};
+
+window.openTravel=function(){
+  const html=Object.entries(LOCS).map(([id,l])=>{
+    if(id===S.location)return `<button class="opt locked">📍 ${l.emoji} ${l.name} (here)</button>`;
+    return `<button class="opt" onclick="doTravel('${id}')">${l.emoji} ${l.name}
+      <span class="sub">₦${fmtMoney(TRAVEL_COST[l.tier])} • ${TRAVEL_ENERGY} energy</span></button>`;
+  }).join("");
+  openModal(`<h3>Travel</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+};
+
+window.doTravel=function(id){
+  const l=LOCS[id];if(!l)return;
+  const cost=TRAVEL_COST[l.tier];
+  if(S.cash<cost)return toast("Not enough cash.");
+  if(S.energy<TRAVEL_ENERGY)return toast("Too tired.");
+  S.cash-=cost;S.energy-=TRAVEL_ENERGY;S.location=id;
+  addLog(`Traveled to ${l.name}. -₦${fmtMoney(cost)}.`);
+  save();closeModal();renderGame();
+  if(Math.random()<0.3)triggerEvent();
+};
+
+window.doAjo=function(){
+  const today=new Date().toDateString();
+  if(S.ajo.lastPaid===today)return toast("Ajo already paid today.");
+  if(S.cash<500)return toast("Ajo is ₦500.");
+  S.cash-=500;S.ajo.total+=500;S.ajo.streak+=1;S.ajo.lastPaid=today;
+  addLog(`Ajo paid. Streak: ${S.ajo.streak}.`);
+  if(S.ajo.streak%7===0){const p=5000;S.cash+=p;S.ajo.payouts+=1;addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);}
+  else toast(`Ajo paid. Streak ${S.ajo.streak}/7`);
+  save();renderGame();
+};
+
+window.claimAppt=function(id){
+  const a=S.appointments.find(x=>x.id===id);if(!a)return;
+  if(a.status!=="ready")return toast("Not ready yet.");
+  if(S.location!==a.loc)return toast(`Go to ${LOCS[a.loc].name}.`);
+  applyFx(a.reward);a.status="done";
+  const parts=[];
+  if(a.reward.cash)parts.push(`+₦${fmtMoney(a.reward.cash)}`);
+  if(a.reward.reputation)parts.push(`+${a.reward.reputation} rep`);
+  if(a.reward.network)parts.push(`+${a.reward.network} net`);
+  addLog(`✅ Claimed: ${a.title}. ${parts.join(", ")}`);
+  toast(parts.join(" · ")||"Claimed.");save();renderGame();
+};
+
+/* ---------------- LEADERBOARD ---------------- */
+window.openLeaderboard=async function(){
+  openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">Loading…</div>`);
+  if(!session?.user){openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">Sign-in required. Reload the page.</div><button class="opt" onclick="closeModal()">Close</button>`);return;}
+  const { data, error } = await sb.rpc("get_leaderboard");
+  if(error||!data?.length){openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">No ranked players yet.</div><button class="opt" onclick="closeModal()">Close</button>`);return;}
+  const html=data.map((r,i)=>`<div class="rank${r.is_me?" me":""}">
+    <div class="n">${i+1}</div><div class="info">
+      <div class="h">${esc(r.handle)}${r.is_me?" (you)":""}</div>
+      <div class="m">Day ${r.day} · ⭐ ${r.reputation} · ₦${fmtMoney(r.cash)}</div>
+    </div></div>`).join("");
+  openModal(`<h3>🏆 Top Hustlers</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+};
+
+/* ---------------- REMINDERS ---------------- */
+window.openReminders=async function(){
+  if(!session?.user)return toast("Sign-in failed. Reload page.");
+  const token=crypto.randomUUID().replace(/-/g,"").slice(0,12);
+  const { error } = await sb.from("link_tokens").insert({
+    token, user_id: session.user.id,
+    expires_at: new Date(Date.now()+15*60000).toISOString()
+  });
+  if(error)return toast("Couldn't create token. Try again.");
+  openModal(`<h3>🔔 Reminders</h3>
+    <p style="color:#c8d6ce;font-size:13px;line-height:1.5;margin:0 0 12px">Free Telegram alerts when an appointment unlocks. Token valid for 15 minutes, single-use.</p>
+    <p style="color:#8fa39a;font-size:12px;margin:0 0 8px">1. Open Telegram → message our bot</p>
+    <p style="color:#8fa39a;font-size:12px;margin:0 0 8px">2. Send this exact message:</p>
+    <div class="code-box">/start ${token}</div>
+    <button class="opt" onclick="copyCode('${token}')">📋 Copy message</button>
+    <button class="opt" onclick="closeModal()">Close</button>`);
+};
+window.copyCode=function(t){
+  const text=`/start ${t}`;
+  if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>toast("Copied. Paste in Telegram."));
+  else toast(text);
+};
+
+/* ---------------- SETTINGS + PRIVACY ---------------- */
+window.openSettings=function(){
+  openModal(`<h3>⚙️ Settings</h3>
+    <button class="opt" onclick="showPrivacy()">Privacy notice</button>
+    <button class="opt" onclick="openReminders()">Telegram reminders</button>
+    <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
+    <button class="opt" onclick="closeModal()">Close</button>`);
+};
+window.showPrivacy=function(){
+  openModal(`<h3>Privacy</h3>
+    <div style="color:#c8d6ce;font-size:13px;line-height:1.6">
+      <p><b>What we store:</b> an anonymous account (random ID), the display name you type, and your game save.</p>
+      <p><b>What we never collect:</b> real name, email, phone, location, contacts, photos.</p>
+      <p><b>Where:</b> Supabase (Postgres, EU/US). Encrypted in transit.</p>
+      <p><b>Who can see it:</b> only you. Leaderboard shows display name, cash, reputation, day. No IDs.</p>
+      <p><b>Delete:</b> Settings → Delete all my data. Immediate and permanent.</p>
+      <p><b>Retention:</b> inactive saves over 90 days are deleted.</p>
+      <p style="color:#8fa39a;font-size:12px;margin-top:12px">NDPR-aligned. Questions: reply on our WhatsApp Channel.</p>
+    </div>
+    <button class="opt" onclick="closeModal()">Close</button>`);
+};
+window.deleteMyData=async function(){
+  if(!session?.user)return;
+  if(!confirm("Delete your save and account? This cannot be undone."))return;
+  try{
+    await sb.from("subscriptions").delete().eq("user_id", session.user.id);
+    await sb.from("link_tokens").delete().eq("user_id", session.user.id);
+    await sb.from("saves").delete().eq("user_id", session.user.id);
+    await sb.auth.signOut();
+  }catch(e){}
+  localStorage.removeItem(KEY);
+  S=null;session=null;closeModal();
+  toast("Data deleted.");
+  location.reload();
+};
+
+/* ---------------- EVENTS ---------------- */
+function triggerEvent(){
+  renderGame();
+  const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
+  currentEvent=ev;
+  const html=ev.choices.map((c,i)=>`<button class="opt" onclick="pickChoice(${i})">${esc(c.label)}</button>`).join("");
+  openModal(`<h3>${esc(ev.title)}</h3><p style="color:#c8d6ce;font-size:14px;margin:0 0 12px">${esc(ev.text)}</p>${html}`);
+}
+
+window.pickChoice=function(i){
+  if(!currentEvent)return;
+  const c=currentEvent.choices[i];
+  applyFx(c.fx);
+  if(c.tag==="mystery"){
+    const win=Math.random()<0.5;
+    scheduleAppt({id:"myst_"+Date.now(),
+      title: win?"🎲 Your gamble paid off":"🎲 Your gamble failed",
+      desc: win?"The bet landed. Come collect.":"The bet didn't land. Lesson learned.",
+      loc:S.location,unlockAt:Date.now()+60000,expiresAt:Date.now()+DAY,
+      reward: win?{cash:4000}:{happiness:-3},penalty:{},status:"pending"});
+    addLog("🎲 Gamble placed. Result in 60 seconds.");
+  }
+  addLog(c.res);currentEvent=null;closeModal();save();renderGame();toast(c.res);
+};
+
+/* ---------------- MODAL ---------------- */
+function openModal(html){
+  $modal.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+}
+window.closeModal=function(){$modal.innerHTML="";};
+
+/* ---------------- TICK ---------------- */
+setInterval(()=>{
+  if(!S)return;
+  if(checkAppts())renderGame();
+  const now=Date.now();
+  document.querySelectorAll("[data-cd]").forEach(el=>{
+    const a=S.appointments.find(x=>x.id===el.getAttribute("data-cd"));
+    if(!a)return;
+    if(a.status==="pending")el.textContent=fmtDur(a.unlockAt-now);
+    else if(a.status==="ready")el.textContent=fmtDur(a.expiresAt-now);
+  });
+},1000);
+
+render();
+</script>
+</body>
+</html>
