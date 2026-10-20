@@ -66,6 +66,11 @@
   .appt .go{margin-top:10px}
   .log{font-size:12px;color:var(--muted);line-height:1.6}
   .log div{padding:4px 0;border-bottom:1px dashed #1e2722}
+  .feed{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 12px;font-size:12px;color:var(--amber);margin-bottom:12px;
+    display:flex;align-items:center;gap:8px;overflow:hidden}
+  .feed-text{white-space:nowrap;animation:slide 15s linear infinite;}
+  @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;
     align-items:flex-end;justify-content:center;z-index:50;padding:0}
   .modal{background:var(--card);border:1px solid var(--line);
@@ -468,6 +473,10 @@ function renderGame(){
         <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
       </div>
     </div>
+    <div class="feed" id="live-feed">
+      <span style="flex-shrink:0">📡 LIVE:</span>
+      <div class="feed-text" id="feed-text">Loading feed...</div>
+    </div>
     <div class="stats">
       <div class="stat"><div class="k">Cash</div><div class="v">₦${fmtMoney(S.cash)}</div></div>
       <div class="stat"><div class="k">Energy</div><div class="v">${S.energy}/${S.maxEnergy}</div>
@@ -491,6 +500,27 @@ function renderGame(){
     <div class="section-title">Log</div>
     <div class="log">${S.log.slice(0,10).map(l=>`<div>${esc(l.text)}</div>`).join("")||"<div>Nothing yet. Go hustle.</div>"}</div>
     <div class="sync">${!sb?"⚠ Local only":syncStatus==="syncing"?"↻ syncing…":syncStatus==="synced"?"✓ cloud saved":syncStatus==="offline"?"⚡ offline":syncStatus==="error"?"⚠ sync error":" "}</div>`;
+    
+  fetchFeed();
+}
+
+async function fetchFeed() {
+  const $feedText = document.getElementById("feed-text");
+  if(!$feedText || !sb) return;
+  try {
+    const { data } = await sb.from('public_events').select('message').order('created_at', {ascending: false}).limit(5);
+    if (data && data.length > 0) {
+      const messages = data.map(d => d.message).join('  •  ');
+      $feedText.textContent = messages;
+    } else {
+      $feedText.textContent = "Quiet in Lagos today... Start a hustle to make news!";
+    }
+  } catch(e) {}
+}
+
+async function postToFeed(msg) {
+  if(!sb || !session?.user) return;
+  try { await sb.from('public_events').insert({ message: msg }); } catch(e) {}
 }
 
 function apptCard(a,now){
@@ -627,6 +657,8 @@ window.buyAsset = function(id) {
   closeModal();
   renderGame();
   toast(`Bought ${a.name}!`);
+  
+  postToFeed(`${esc(S.name)} just bought a ${a.name}! 💰`);
 };
 
 window.openOwambe = function() {
@@ -655,6 +687,8 @@ window.attendOwambe = function(cost, outfit, rep, net) {
   closeModal();
   renderGame();
   toast(`You made a statement at Owambe! +${rep} Rep`);
+  
+  postToFeed(`${esc(S.name)} just stepped out in ${outfit} at Owambe! 🎉`);
   
   if (Math.random() < 0.4) {
     scheduleAppt({
@@ -705,7 +739,11 @@ window.doAjo=function(){
   if(S.cash<500)return toast("Ajo is ₦500.");
   S.cash-=500;S.ajo.total+=500;S.ajo.streak+=1;S.ajo.lastPaid=today;
   addLog(`Ajo paid. Streak: ${S.ajo.streak}.`);
-  if(S.ajo.streak%7===0){const p=5000;S.cash+=p;S.ajo.payouts+=1;addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);}
+  if(S.ajo.streak%7===0){
+    const p=5000;S.cash+=p;S.ajo.payouts+=1;
+    addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);
+    postToFeed(`${esc(S.name)} just won a ₦5,000 Ajo payout! 🪙`);
+  }
   else toast(`Ajo paid. Streak ${S.ajo.streak}/7`);
   save();renderGame();
 };
