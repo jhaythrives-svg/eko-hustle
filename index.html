@@ -188,6 +188,42 @@
   .tz{position:absolute;left:33%;width:34%;top:0;bottom:0;background:rgba(34,197,94,.28)}
   .tz:after{content:"";position:absolute;left:29.4%;width:41%;top:0;bottom:0;background:rgba(251,191,36,.6)}
   .tm{position:absolute;top:0;bottom:0;width:6px;background:#fff;border-radius:3px;transform:translateX(-50%)}
+  /* V4 ANIMATED SCENE */
+  .scene{position:relative;height:190px;border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-bottom:6px;transition:background 1s}
+  .scene.rainy{filter:brightness(.78) saturate(.85)}
+  .celest{position:absolute;font-size:30px;z-index:1;animation:bob 4s ease-in-out infinite}
+  .star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:tw 2s ease-in-out infinite alternate}
+  @keyframes tw{to{opacity:.2}}
+  .sk{position:absolute;left:0;width:200%;display:flex;z-index:2;animation:scr 70s linear infinite}
+  .sk svg{width:50%;height:auto;display:block}
+  .sk1{bottom:44px;opacity:.9}.sk2{bottom:38px;z-index:3;animation-duration:32s}
+  @keyframes scr{to{transform:translateX(-50%)}}
+  .ground{position:absolute;left:0;right:0;bottom:0;height:50px;background:linear-gradient(#3a3f44,#1a1d20);z-index:4}
+  .ground:after{content:"";position:absolute;left:0;right:0;bottom:12px;height:3px;background:repeating-linear-gradient(90deg,#f5d76e 0 22px,transparent 22px 48px);background-size:48px 3px;animation:lane 1s linear infinite;opacity:.7}
+  @keyframes lane{to{background-position:-48px 0}}
+  .veh{position:absolute;font-size:34px;z-index:4;white-space:nowrap}
+  @keyframes drive{from{left:-15%}to{left:110%}}
+  @keyframes driveL{from{left:110%}to{left:-15%}}
+  .prop{position:absolute;left:46%;bottom:44px;font-size:40px;z-index:3;filter:drop-shadow(0 2px 4px #000)}
+  .av{position:absolute;left:14%;bottom:20px;z-index:6;animation:bob 2.4s ease-in-out infinite}
+  .av img{height:96px;display:block}.av b{font-size:72px;line-height:1;display:block}
+  .npc{position:absolute;left:66%;bottom:20px;z-index:5}
+  .npc img{height:96px;display:block}.npc b{font-size:72px;line-height:1;display:block}
+  .bubble{position:absolute;top:-20px;left:50%;transform:translateX(-50%);background:#fff;color:#000;border-radius:10px;padding:0 7px;font-size:14px;z-index:7;animation:bob 1s ease-in-out infinite}
+  .locname{position:absolute;left:10px;top:8px;z-index:8;background:rgba(0,0,0,.5);padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
+  .rain{position:absolute;inset:0;z-index:7;opacity:.5;pointer-events:none;background:repeating-linear-gradient(105deg,rgba(255,255,255,.5) 0 1px,transparent 1px 10px);background-size:20px 40px;animation:rn .35s linear infinite}
+  @keyframes rn{to{background-position:-20px 40px}}
+  .scene.work .av{animation:wk .35s ease-in-out 4}
+  @keyframes wk{0%,100%{transform:rotate(0)}30%{transform:rotate(-10deg) translateY(-8px)}70%{transform:rotate(8deg) translateY(-3px)}}
+  .scene.arrive .av{animation:runin 1s ease-out}
+  @keyframes runin{from{transform:translateX(-170px) skewX(-10deg)}to{transform:none}}
+  .scene.arrive .sk{animation-duration:2.5s}
+  .coin{position:absolute;bottom:110px;font-style:normal;font-size:22px;z-index:9;animation:cn 1.1s ease-out both}
+  @keyframes cn{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-80px) rotate(45deg)}}
+  .visual-area{height:auto;flex-direction:row;align-items:center;gap:10px;margin:8px 0}
+  .character-img{max-height:64px;width:64px;border-radius:50%;border:2px solid var(--line);object-fit:cover}
+  .char-em{font-size:44px;animation:none}
+  .dialogue-box{margin-top:0}
 </style>
 </head>
 <body>
@@ -241,7 +277,7 @@ const CHAR_IMAGES = {
 const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓🏾"},avatar:{c:"var(--blue)",e:"🏃🏾‍♂️"}};
 let DLG={k:null,t:"Welcome to Lagos. What will you do today?"},dlgTimer=null,typeTimer=null;
 function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${CHAR_IMAGES[DLG.k]}"`:""} style="display:${m?"block":"none"}" onerror="this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?m.e:""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
-function paintDlg(type){const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
+function paintDlg(type){const n=document.getElementById("npc");if(n)n.innerHTML=npcInner();const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
 window.showCharacter=function(k,text,hideAfter=0){if(!CHAR_META[k])return;DLG={k,t:text};clearTimeout(dlgTimer);if(hideAfter>0)dlgTimer=setTimeout(()=>{DLG={k:null,t:"What will you do next?"};paintDlg(false);},hideAfter);paintDlg(true);};
 
 /* ---------------- DATA ---------------- */
@@ -597,6 +633,27 @@ function checkAppts(){
   return changed;
 }
 
+/* ---------------- V4: ANIMATED SCENE ENGINE ---------------- */
+function rng(seed){let s=seed;return()=>((s=(s*9301+49297)%233280)/233280);}
+function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
+const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
+function charImg(k){const m=CHAR_META[k]||CHAR_META.avatar;return `<img src="${CHAR_IMAGES[k]}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='block'"><b style="display:none">${m.e}</b>`;}
+function npcKey(){if(DLG.k&&DLG.k!=="avatar")return DLG.k;const a=(S.appointments||[]).find(x=>x.status==="ready"&&x.loc===S.location);return a?(a.id.startsWith("chief")?"chief":a.id.startsWith("tunde")?"tunde":null):null;}
+function npcInner(){const k=npcKey();return k?`<div class="bubble">${DLG.k===k?"💬":"❗"}</div>${charImg(k)}`:"";}
+function sceneHtml(){
+  const h=new Date().getHours(),L=LOCS[S.location],c=SCN[S.location],ids=Object.keys(LOCS),li=ids.indexOf(S.location);
+  const night=h<5||h>=20,dusk=h>=17&&h<20,dawn=h>=5&&h<7,rainy=(S.day*7+li)%5===0;
+  const sky=night?"linear-gradient(#050a14,#14243f)":dusk?"linear-gradient(#3a2a5a,#f59e0b)":dawn?"linear-gradient(#5a4a7a,#fbbf77)":"linear-gradient(#4aa3df,#bfe3f5)";
+  const cx=night?72:Math.max(8,Math.min(85,(h-6)/12*80+8)),R=rng(S.day*13+li);
+  const stars=night?Array.from({length:16},()=>`<i class="star" style="left:${R()*100}%;top:${R()*60}px;animation-delay:${R()*2}s"></i>`).join(""):"";
+  const lit=night||dusk,far=night?"#141c26":"#3b5568",near=night?"#0b1018":"#22303a";
+  const veh=c.v.map((e,i)=>{const d=9+i*4+li,dl=-(i*3.3+li),b=4+i*9,left=(i+li)%2===0;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s">${left?e:`<span style="display:inline-block;transform:scaleX(-1)">${e}</span>`}</div>`;}).join("");
+  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${sky}"><div class="locname">${L.emoji} ${L.name}${rainy?" 🌧️":night?" 🌙":""}</div><div class="celest" style="left:${cx}%;top:${night?18:Math.abs(cx-45)/3+10}px">${night?"🌙":"☀️"}</div>${stars}<div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}</div><div class="prop">${c.p}</div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}</div>`;
+}
+function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive");void s.offsetWidth;s.classList.add(t);if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent=i%2?"💰":(e||"🪙");c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
+function workGo(id){const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
+window.doTravel=function(id){const p=S.location;doTravelCore(id);if(S.location!==p)setTimeout(()=>sceneFx("arrive"),30);};
+
 /* ---------------- V3: MINIGAME, STORY, BACKDROPS ---------------- */
 let _mg=null;
 window.doWork=function(id){
@@ -608,8 +665,8 @@ window.doWork=function(id){
   const loop=t=>{const m=document.getElementById("tm");if(!m)return;const p=(Math.sin((t-t0)*sp*Math.PI*1.2-Math.PI/2)+1)/2;m.style.left=(p*100)+"%";m.dataset.p=p;_mg=requestAnimationFrame(loop);};
   _mg=requestAnimationFrame(loop);
 };
-window.stopMg=function(id){const m=document.getElementById("tm"),b=document.getElementById("stopbtn");if(!m||b.disabled)return;cancelAnimationFrame(_mg);b.disabled=true;const d=Math.abs(parseFloat(m.dataset.p)-0.5);let x=0.8,l="Miss… x0.8",c="#ef4444";if(d<0.07){x=1.5;l="🎯 PERFECT! x1.5";c="#fbbf24";burst();sfx(3);buzz([30,20,60]);}else if(d<0.17){x=1.2;l="👍 Good! x1.2";c="#22c55e";sfx(2);}document.getElementById("tres").innerHTML=`<b style="color:${c};font-size:18px">${l}</b>`;window._perf=x;setTimeout(()=>doWorkCore(id),700);};
-window.mgSkip=function(id){cancelAnimationFrame(_mg);window._perf=1;doWorkCore(id);};
+window.stopMg=function(id){const m=document.getElementById("tm"),b=document.getElementById("stopbtn");if(!m||b.disabled)return;cancelAnimationFrame(_mg);b.disabled=true;const d=Math.abs(parseFloat(m.dataset.p)-0.5);let x=0.8,l="Miss… x0.8",c="#ef4444";if(d<0.07){x=1.5;l="🎯 PERFECT! x1.5";c="#fbbf24";burst();sfx(3);buzz([30,20,60]);}else if(d<0.17){x=1.2;l="👍 Good! x1.2";c="#22c55e";sfx(2);}document.getElementById("tres").innerHTML=`<b style="color:${c};font-size:18px">${l}</b>`;window._perf=x;setTimeout(()=>workGo(id),700);};
+window.mgSkip=function(id){cancelAnimationFrame(_mg);window._perf=1;workGo(id);};
 
 const LOCBG={ojota:"linear-gradient(135deg,#1a1a0b,#4a3a12)",yaba:"linear-gradient(135deg,#0d1b2a,#1d4a7c)",ikeja:"linear-gradient(135deg,#2a1a0d,#6b3a12)",surulere:"linear-gradient(135deg,#2a0d2a,#6b1d6b)",vi:"linear-gradient(135deg,#10202a,#2a5a6b)",lekki:"linear-gradient(135deg,#0d2a1a,#1d6b3a)",ajah:"linear-gradient(135deg,#1d1d1d,#4a4a4a)"};
 const pr=(a,b)=>Math.min(1,a/b);
@@ -789,6 +846,7 @@ function renderGame(){
       <div class="feed-text" id="feed-text">Loading feed...</div>
     </div>
     
+    ${sceneHtml()}
     ${dlgHtml()}
 
     <div class="level-bar">
@@ -812,7 +870,7 @@ function renderGame(){
       <span class="chip">🤝 Network <b>${S.network}</b></span>
       <span class="chip">🔥 Streak <b>${S.streak||0}</b></span>
     </div>
-    <div class="loc" style="background:${LOCBG[S.location]};position:relative;overflow:hidden"><div style="position:absolute;right:10px;top:-2px;font-size:64px;opacity:.22">${loc.emoji}</div><div class="name">${loc.emoji} ${loc.name}</div><div class="desc">${loc.desc}</div></div>
+    
     ${chapCard()}${rivalCard()}
     <div class="actions">
       <button class="btn primary" onclick="openWork()">💼 Work ${isVip ? '(2x)' : ''}</button>
@@ -1162,7 +1220,7 @@ window.openTravel=function(){
   openModal(`<h3>Travel</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
 };
 
-window.doTravel=function(id){
+window.doTravelCore=function(id){
   const l=LOCS[id];if(!l)return;
   const cost=TRAVEL_COST[l.tier];
   if(S.cash<cost)return toast("Not enough cash.");
