@@ -3,144 +3,252 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<meta name="theme-color" content="#0b0f0e"/>
+<meta name="theme-color" content="#05070a"/>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃🏾‍♂️</text></svg>">
 <title>Eko Hustle</title>
 <style>
-  :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
-    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;--gold:#fbbf24;--blue:#3b82f6;}
-  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
-  body{min-height:100dvh}
-  #app{max-width:480px;margin:0 auto;padding:12px 12px 40px;
-    padding-bottom:calc(40px + env(safe-area-inset-bottom))}
-  h1,h2,h3{margin:0}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
-  .brand{font-weight:800;letter-spacing:.5px;font-size:20px;flex-shrink:0}
-  .brand span{color:var(--green)}
-  .topbar-right{display:flex;align-items:center;gap:6px}
-  .icon-btn{background:var(--card);border:1px solid var(--line);border-radius:999px;
-    padding:6px 10px;font-size:14px;cursor:pointer;color:var(--text);position:relative}
-  .icon-btn:active{border-color:var(--green)}
-  .badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;
-    font-size:9px;font-weight:bold;border-radius:999px;padding:2px 5px;display:none}
-  .day{font-size:12px;color:var(--muted);background:var(--card);
-    padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
-  .level-bar{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:12px}
-  .level-top{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px}
-  .xp-bar{height:6px;background:#0a1f12;border-radius:999px;overflow:hidden}
-  .xp-bar > i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);width:0%;transition:width .3s}
-  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-  .stat .v{font-size:18px;font-weight:700;margin-top:2px}
-  .bar{height:8px;background:#0a1f12;border-radius:999px;overflow:hidden;margin-top:6px}
-  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);width:0%;transition:width .3s}
-  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
-  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;
-    padding:6px 10px;font-size:12px;color:var(--muted)}
-  .chip b{color:var(--text);margin-left:4px}
-  .loc{background:var(--card);border:1px solid var(--line);border-radius:14px;
-    padding:14px;margin-bottom:12px}
-  .loc .name{font-size:18px;font-weight:700}
-  .loc .desc{font-size:13px;color:var(--muted);margin-top:2px}
-  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
-  button{font-family:inherit}
-  .btn{background:var(--card2);border:1px solid var(--line);color:var(--text);
-    padding:14px 12px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;gap:8px;
-    transition:transform .05s,border-color .2s}
-  .btn:active{transform:scale(.98);border-color:var(--green)}
-  .btn.primary{background:linear-gradient(135deg,#16a34a,#22c55e);border:none;color:#04140a}
-  .btn.warn{background:linear-gradient(135deg,#b45309,#f59e0b);border:none;color:#1a0f00}
-  .btn.asset{background:linear-gradient(135deg,#1e3a8a,#3b82f6);border:none;color:#eff6ff}
-  .btn.owambe{background:linear-gradient(135deg,#8b5cf6,#d946ef);border:none;color:#fff;grid-column:span 2;}
-  .btn.vip{background:linear-gradient(135deg,#fbbf24,#d97706);border:none;color:#451a03;grid-column:span 2;}
-  .btn.share{background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;width:100%;font-size:16px;margin-top:10px;}
-  .btn.invite{background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;width:100%;font-size:14px;margin-top:8px;}
-  .btn.skill{background:linear-gradient(135deg,#2563eb,#3b82f6);border:none;color:#fff;}
-  .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
-    letter-spacing:.8px;margin:18px 0 8px}
-  .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
-    border-radius:14px;padding:14px;margin-bottom:10px}
-  .appt.ready{border-color:var(--amber);box-shadow:0 0 0 1px rgba(245,158,11,.3) inset}
-  .appt.missed{opacity:.5;border-color:var(--red)}
-  .appt .t{font-weight:700;font-size:15px}
-  .appt .d{font-size:13px;color:var(--muted);margin-top:3px}
-  .appt .meta{font-size:12px;margin-top:8px;color:var(--amber);font-weight:600}
-  .appt .go{margin-top:10px}
-  .log{font-size:12px;color:var(--muted);line-height:1.6}
-  .log div{padding:4px 0;border-bottom:1px dashed #1e2722}
-  .feed{background:var(--card);border:1px solid var(--line);border-radius:12px;
-    padding:10px 12px;font-size:12px;color:var(--amber);margin-bottom:12px;
-    display:flex;align-items:center;gap:8px;overflow:hidden}
-  .feed-text{white-space:nowrap;animation:slide 15s linear infinite;}
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800;900&display=swap');
+
+  :root {
+    --bg: #05070a;
+    --card: rgba(20, 26, 24, 0.6);
+    --card-hover: rgba(30, 40, 36, 0.8);
+    --line: rgba(255, 255, 255, 0.08);
+    --text: #ffffff;
+    --muted: #8fa39a;
+    --green: #22c55e;
+    --green-glow: rgba(34, 197, 94, 0.4);
+    --amber: #f59e0b;
+    --amber-glow: rgba(245, 158, 11, 0.4);
+    --red: #ef4444;
+    --purple: #a855f7;
+    --gold: #fbbf24;
+    --blue: #3b82f6;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; font-family: 'Outfit', sans-serif; }
+  
+  body {
+    margin: 0; padding: 0; background-color: var(--bg); color: var(--text);
+    min-height: 100dvh;
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(34, 197, 94, 0.15) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.05) 0%, transparent 60%);
+    background-attachment: fixed;
+  }
+
+  #app {
+    max-width: 480px; margin: 0 auto; padding: 16px 16px 40px;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  }
+
+  h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.5px; }
+
+  /* --- TOP BAR --- */
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 8px; }
+  .brand { font-weight: 900; font-size: 22px; text-shadow: 0 0 20px rgba(255,255,255,0.2); }
+  .brand span { color: var(--green); text-shadow: 0 0 20px var(--green-glow); }
+  .topbar-right { display: flex; align-items: center; gap: 6px; }
+  .icon-btn {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 8px 10px; font-size: 16px; cursor: pointer; color: var(--text);
+    backdrop-filter: blur(10px); position: relative; transition: 0.2s;
+  }
+  .icon-btn:active { transform: scale(0.92); border-color: var(--green); }
+  .badge {
+    position: absolute; top: -4px; right: -4px; background: var(--red); color: #fff;
+    font-size: 10px; font-weight: 900; border-radius: 999px; padding: 2px 6px; display: none;
+    box-shadow: 0 0 10px var(--red);
+  }
+  .day {
+    font-size: 13px; font-weight: 700; color: var(--muted); background: var(--card);
+    padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); backdrop-filter: blur(10px);
+  }
+
+  /* --- FEED --- */
+  .feed {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--amber); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px; overflow: hidden; backdrop-filter: blur(10px);
+  }
+  .feed-text { white-space: nowrap; animation: slide 15s linear infinite; }
   @keyframes slide { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;
-    align-items:flex-end;justify-content:center;z-index:50;padding:0}
-  .modal{background:var(--card);border:1px solid var(--line);
-    border-radius:18px 18px 0 0;width:100%;max-width:480px;padding:18px 16px 24px;
-    max-height:85vh;overflow:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
-  .modal h3{font-size:16px;margin-bottom:10px}
-  .opt{display:block;width:100%;text-align:left;background:var(--card2);
-    border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px;
-    color:var(--text);font-size:14px;cursor:pointer}
-  .opt:active{border-color:var(--green)}
-  .opt .sub{display:block;font-size:12px;color:var(--muted);margin-top:3px}
-  .opt.locked{opacity:.45;pointer-events:none}
-  .rank{display:flex;align-items:center;gap:10px;padding:10px 12px;
-    background:var(--card2);border:1px solid var(--line);border-radius:12px;margin-bottom:6px}
-  .rank .n{width:24px;font-weight:700;color:var(--amber);text-align:center}
-  .rank .info{flex:1}
-  .rank .h{font-weight:600}
-  .rank .m{font-size:12px;color:var(--muted);margin-top:2px}
-  .rank.me{border-color:var(--green)}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
-    background:#0f1a14;border:1px solid #2a4033;color:var(--text);padding:10px 14px;
-    border-radius:12px;font-size:13px;opacity:0;transition:.25s;z-index:100;
-    max-width:90vw;text-align:center;pointer-events:none}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .onb{padding-top:20px}
-  .onb .hero{font-size:26px;font-weight:800;line-height:1.15;margin-bottom:6px}
-  .onb .hero span{color:var(--green)}
-  .onb .sub{color:var(--muted);font-size:14px;margin-bottom:20px}
-  .field{margin-bottom:14px}
-  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;
-    text-transform:uppercase;letter-spacing:.6px}
-  .field input{width:100%;background:var(--card);border:1px solid var(--line);
-    border-radius:12px;padding:14px;color:var(--text);font-size:16px;outline:none}
-  .field input:focus{border-color:var(--green)}
-  .pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .pick .opt{margin:0;text-align:center;padding:14px 10px}
-  .pick .opt.sel{border-color:var(--green);background:#0f2016}
-  .reset{font-size:11px;color:#5b6b63;text-align:center;margin-top:24px;
-    background:none;border:none;cursor:pointer;text-decoration:underline}
-  .sync{font-size:10px;color:var(--muted);text-align:center;margin-top:8px;min-height:14px}
-  .legal{font-size:11px;color:#6b7c73;text-align:center;margin-top:12px;line-height:1.5}
-  .legal a{color:var(--green);text-decoration:none}
-  .code-box{background:#0b0f0e;border:1px solid #26302b;border-radius:10px;padding:12px;
-    font-family:monospace;font-size:14px;word-break:break-all;margin-bottom:12px;text-align:center;letter-spacing:2px}
-  .profile-header{text-align:center;margin-bottom:16px}
-  .profile-name{font-size:24px;font-weight:800}
-  .profile-dream{color:var(--amber);font-size:14px;font-weight:600;margin-top:4px}
-  .asset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
-  .asset-card{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
-  .asset-card .emoji{font-size:24px}
-  .asset-card .name{font-size:12px;font-weight:600;margin-top:4px}
-  .mission{display:flex;justify-content:space-between;align-items:center;
-    background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
-  .mission.done{border-color:var(--green);background:#0f2016}
-  .mission .m-title{font-weight:600;font-size:14px}
-  .mission .m-desc{font-size:12px;color:var(--muted);margin-top:2px}
-  .mission .m-check{font-size:20px}
-  .skill-row{display:flex;justify-content:space-between;align-items:center;
-    background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
-  .skill-info{flex:1}
-  .skill-name{font-weight:700;font-size:14px;color:var(--blue)}
-  .skill-desc{font-size:12px;color:var(--muted);margin-top:2px}
-  .skill-lvl{font-size:16px;font-weight:800;color:var(--green);margin-right:12px}
+
+  /* --- LEVEL BAR --- */
+  .level-bar {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 12px 16px; margin-bottom: 16px; backdrop-filter: blur(10px);
+  }
+  .level-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 800; margin-bottom: 8px; }
+  .xp-bar { height: 8px; background: rgba(0,0,0,0.5); border-radius: 999px; overflow: hidden; }
+  .xp-bar > i { display: block; height: 100%; background: linear-gradient(90deg, #2563eb, #60a5fa); width: 0%; transition: width 0.3s; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+
+  /* --- STATS --- */
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 12px 16px; backdrop-filter: blur(10px); position: relative; overflow: hidden;
+  }
+  .stat::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent); pointer-events: none;
+  }
+  .stat .k { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat .v { font-size: 22px; font-weight: 900; margin-top: 4px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+  .bar { height: 6px; background: rgba(0,0,0,0.5); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+  .bar > i { display: block; height: 100%; background: linear-gradient(90deg, #16a34a, #22c55e); width: 0%; transition: width 0.3s; box-shadow: 0 0 10px var(--green-glow); }
+
+  /* --- CHIPS --- */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip {
+    background: var(--card); border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px; font-size: 12px; font-weight: 600; color: var(--muted); backdrop-filter: blur(10px);
+  }
+  .chip b { color: var(--text); margin-left: 4px; }
+
+  /* --- LOCATION --- */
+  .loc {
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    padding: 16px; margin-bottom: 16px; backdrop-filter: blur(10px);
+    display: flex; flex-direction: column; align-items: flex-start;
+    background-image: linear-gradient(to right, rgba(255,255,255,0.02), transparent);
+  }
+  .loc .name { font-size: 20px; font-weight: 900; }
+  .loc .desc { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+
+  /* --- ACTIONS --- */
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  button { font-family: 'Outfit', sans-serif; }
+  .btn {
+    background: var(--card); border: 1px solid var(--line); color: var(--text);
+    padding: 16px 12px; border-radius: 16px; font-size: 15px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.1s; backdrop-filter: blur(10px); position: relative; overflow: hidden;
+  }
+  .btn:active { transform: scale(0.95); }
+  .btn::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent); pointer-events: none;
+  }
+  .btn.primary { background: linear-gradient(135deg, #16a34a, #22c55e); border: none; color: #04140a; box-shadow: 0 4px 20px var(--green-glow); }
+  .btn.warn { background: linear-gradient(135deg, #b45309, #f59e0b); border: none; color: #1a0f00; box-shadow: 0 4px 20px var(--amber-glow); }
+  .btn.asset { background: linear-gradient(135deg, #1e3a8a, #3b82f6); border: none; color: #eff6ff; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3); }
+  .btn.owambe { background: linear-gradient(135deg, #8b5cf6, #d946ef); border: none; color: #fff; grid-column: span 2; box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4); }
+  .btn.vip { background: linear-gradient(135deg, #fbbf24, #d97706); border: none; color: #451a03; grid-column: span 2; box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4); }
+  .btn.share { background: linear-gradient(135deg, #25D366, #128C7E); border: none; color: #fff; width: 100%; font-size: 16px; margin-top: 10px; box-shadow: 0 4px 20px rgba(37, 211, 102, 0.3); }
+  .btn.invite { background: linear-gradient(135deg, #f59e0b, #d97706); border: none; color: #fff; width: 100%; font-size: 14px; margin-top: 8px; box-shadow: 0 4px 20px var(--amber-glow); }
+  .btn.skill { background: linear-gradient(135deg, #2563eb, #3b82f6); border: none; color: #fff; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3); }
+
+  /* --- SECTION TITLES --- */
+  .section-title {
+    font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase;
+    letter-spacing: 1px; margin: 24px 0 12px;
+  }
+
+  /* --- APPOINTMENTS & LOG --- */
+  .appt {
+    background: linear-gradient(135deg, rgba(20, 26, 24, 0.8), rgba(26, 42, 32, 0.8));
+    border: 1px solid rgba(42, 64, 51, 0.8); border-radius: 16px; padding: 16px; margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+  }
+  .appt.ready { border-color: var(--amber); box-shadow: 0 0 20px var(--amber-glow); }
+  .appt.missed { opacity: 0.5; border-color: var(--red); }
+  .appt .t { font-weight: 800; font-size: 16px; }
+  .appt .d { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .appt .meta { font-size: 13px; font-weight: 700; margin-top: 10px; color: var(--amber); }
+  .appt .go { margin-top: 12px; }
+
+  .log { font-size: 13px; font-weight: 500; color: var(--muted); line-height: 1.6; }
+  .log div { padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.05); }
+
+  /* --- MODALS --- */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);
+    display: flex; align-items: flex-end; justify-content: center; z-index: 50; padding: 0;
+  }
+  .modal {
+    background: rgba(15, 20, 18, 0.95); border: 1px solid var(--line);
+    border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; padding: 24px 20px;
+    max-height: 85vh; overflow: auto; padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    backdrop-filter: blur(20px); box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  }
+  .modal h3 { font-size: 20px; margin-bottom: 16px; }
+  
+  .opt {
+    display: block; width: 100%; text-align: left; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 10px;
+    color: var(--text); font-size: 15px; font-weight: 600; cursor: pointer; transition: 0.1s;
+  }
+  .opt:active { transform: scale(0.98); border-color: var(--green); background: rgba(34, 197, 94, 0.1); }
+  .opt .sub { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+  .opt.locked { opacity: 0.4; pointer-events: none; }
+
+  /* --- LEADERBOARD --- */
+  .rank {
+    display: flex; align-items: center; gap: 12px; padding: 14px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 8px;
+  }
+  .rank.me { border-color: var(--green); box-shadow: 0 0 15px var(--green-glow); background: rgba(34, 197, 94, 0.05); }
+  .rank .n { width: 30px; font-weight: 900; color: var(--amber); text-align: center; font-size: 18px; }
+  .rank .info { flex: 1; }
+  .rank .h { font-weight: 800; font-size: 15px; }
+  .rank .m { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 2px; }
+
+  /* --- ONBOARDING --- */
+  .onb { padding-top: 30px; }
+  .onb .hero { font-size: 32px; font-weight: 900; line-height: 1.1; margin-bottom: 10px; text-shadow: 0 0 30px rgba(255,255,255,0.1); }
+  .onb .hero span { color: var(--green); text-shadow: 0 0 30px var(--green-glow); }
+  .onb .sub { color: var(--muted); font-size: 15px; font-weight: 500; margin-bottom: 30px; line-height: 1.4; }
+  .field { margin-bottom: 20px; }
+  .field label { display: block; font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .field input {
+    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--line);
+    border-radius: 14px; padding: 16px; color: var(--text); font-size: 16px; font-weight: 600; outline: none; transition: 0.2s;
+  }
+  .field input:focus { border-color: var(--green); box-shadow: 0 0 15px var(--green-glow); }
+  .pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pick .opt { margin: 0; text-align: center; padding: 16px 10px; }
+  .pick .opt.sel { border-color: var(--green); background: rgba(34, 197, 94, 0.15); box-shadow: 0 0 15px var(--green-glow); }
+
+  /* --- MISC --- */
+  .toast {
+    position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px);
+    background: rgba(15, 26, 20, 0.95); border: 1px solid var(--green); color: var(--text);
+    padding: 12px 20px; border-radius: 999px; font-size: 14px; font-weight: 700; opacity: 0; transition: 0.3s; z-index: 100;
+    max-width: 90vw; text-align: center; pointer-events: none; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .sync { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; margin-top: 12px; min-height: 16px; letter-spacing: 0.5px; }
+  .reset { font-size: 12px; font-weight: 600; color: #5b6b63; text-align: center; margin-top: 30px; background: none; border: none; cursor: pointer; text-decoration: underline; }
+  
+  .profile-header { text-align: center; margin-bottom: 20px; }
+  .profile-name { font-size: 26px; font-weight: 900; }
+  .profile-dream { color: var(--amber); font-size: 15px; font-weight: 700; margin-top: 6px; text-transform: uppercase; letter-spacing: 1px; }
+  .asset-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .asset-card { background: rgba(255,255,255,0.05); border: 1px solid var(--line); border-radius: 14px; padding: 16px; text-align: center; }
+  .asset-card .emoji { font-size: 28px; }
+  .asset-card .name { font-size: 13px; font-weight: 700; margin-top: 6px; }
+
+  .mission {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 10px;
+  }
+  .mission.done { border-color: var(--green); background: rgba(34, 197, 94, 0.1); }
+  .mission .m-title { font-weight: 700; font-size: 15px; }
+  .mission .m-desc { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+  .mission .m-check { font-size: 24px; }
+
+  .skill-row {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 10px;
+  }
+  .skill-info { flex: 1; }
+  .skill-name { font-weight: 800; font-size: 15px; color: var(--blue); }
+  .skill-desc { font-size: 13px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+  .skill-lvl { font-size: 18px; font-weight: 900; color: var(--green); margin-right: 12px; }
+
 </style>
 </head>
 <body>
@@ -148,6 +256,7 @@
 <div id="modal-root"></div>
 <div id="toast" class="toast"></div>
 <script>
+// ERROR CATCHER
 window.onerror = function(msg, url, line, col, error) {
   document.body.innerHTML = `<div style="color:white; padding:20px; font-family:sans-serif;">
     <h3 style="color:#ef4444">⚠ Game Crashed</h3>
@@ -159,6 +268,7 @@ window.onerror = function(msg, url, line, col, error) {
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 "use strict";
 
@@ -330,7 +440,7 @@ function updateMission(type) {
     m.claimed = true;
     S.cash += 5000;
     S.energy = S.maxEnergy;
-    addXp(100); // Bonus XP for completing all missions
+    addXp(100);
     addLog("🏆 Daily Missions Completed! +₦5,000, Full Energy, +100 XP.");
     toast("🏆 Missions Complete! +₦5,000");
     postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
@@ -360,7 +470,7 @@ window.openSkills = function() {
   
   openModal(`
     <h3 style="text-align:center;color:var(--blue)">💡 Skills & Abilities</h3>
-    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px;text-align:center">Spend your Skill Points to improve your hustle.</p>
+    <p style="color:#c8d6ce;font-size:14px;margin-bottom:16px;text-align:center">Spend your Skill Points to improve your hustle.</p>
     
     <div class="skill-row">
       <div class="skill-info">
@@ -368,7 +478,7 @@ window.openSkills = function() {
         <div class="skill-desc">Reduces energy cost of all jobs by 5% per level.</div>
       </div>
       <div class="skill-lvl">${hustleLvl}</div>
-      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('hustle')"` : 'disabled'} style="padding:6px 12px;font-size:12px">Upgrade</button>
+      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('hustle')"` : 'disabled'} style="padding:8px 16px;font-size:13px">Upgrade</button>
     </div>
     
     <div class="skill-row">
@@ -377,7 +487,7 @@ window.openSkills = function() {
         <div class="skill-desc">Increases cash earned from all jobs by 10% per level.</div>
       </div>
       <div class="skill-lvl">${businessLvl}</div>
-      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('business')"` : 'disabled'} style="padding:6px 12px;font-size:12px">Upgrade</button>
+      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('business')"` : 'disabled'} style="padding:8px 16px;font-size:13px">Upgrade</button>
     </div>
     
     <div class="skill-row">
@@ -386,11 +496,11 @@ window.openSkills = function() {
         <div class="skill-desc">Increases Rep gained from Owambe by 10% per level.</div>
       </div>
       <div class="skill-lvl">${charismaLvl}</div>
-      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('charisma')"` : 'disabled'} style="padding:6px 12px;font-size:12px">Upgrade</button>
+      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('charisma')"` : 'disabled'} style="padding:8px 16px;font-size:13px">Upgrade</button>
     </div>
     
-    <p style="color:var(--amber);text-align:center;font-weight:bold;margin-top:12px">Skill Points Available: ${S.skillPoints || 0}</p>
-    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
+    <p style="color:var(--amber);text-align:center;font-weight:bold;margin-top:16px;font-size:16px">Skill Points Available: ${S.skillPoints || 0}</p>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>
   `);
 };
 
@@ -405,7 +515,7 @@ window.upgradeSkill = function(skill) {
   toast(`Upgraded ${skill} to Lvl ${S.skills[skill]}!`);
   addLog(`💡 Upgraded ${skill} skill to Lvl ${S.skills[skill]}.`);
   save();
-  openSkills(); // Refresh the modal
+  openSkills(); 
   renderGame();
 };
 
@@ -541,7 +651,6 @@ async function render(){
   }else S=local;
   if(!S)return renderOnboarding();
   
-  // Legacy Saves Fix
   if(!S.assets) S.assets = [];
   if(!S.vipUntil) S.vipUntil = 0;
   if(!S.lastOwambe) S.lastOwambe = 0;
@@ -561,10 +670,10 @@ async function render(){
     save();
     setTimeout(() => {
       openModal(`<h3>☀️ Daily Login Bonus!</h3>
-        <p style="color:#c8d6ce;font-size:14px;margin:0 0 12px">Welcome back to Eko Hustle. You've been granted your daily allotment.</p>
+        <p style="color:#c8d6ce;font-size:15px;margin:0 0 16px">Welcome back to Eko Hustle. You've been granted your daily allotment.</p>
         <div class="opt">💵 +₦1,000 Cash</div>
         <div class="opt">⚡ +100 Energy</div>
-        <button class="btn primary" style="margin-top:12px" onclick="closeModal();renderGame()">Collect & Hustle</button>`);
+        <button class="btn primary" style="margin-top:16px" onclick="closeModal();renderGame()">Collect & Hustle</button>`);
     }, 500);
   }
 }
@@ -581,11 +690,11 @@ function renderOnboarding(){
         <div class="pick" id="origins">${ORIGINS.map(o=>`<button class="opt" data-origin="${o.id}">${o.label}</button>`).join("")}</div></div>
       <div class="field"><label>Your dream</label>
         <div class="pick" id="dreams">${DREAMS.map(d=>`<button class="opt" data-dream="${d.id}">${d.label}</button>`).join("")}</div></div>
-      <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-bottom:14px">
-        <input type="checkbox" id="agree" style="margin-top:2px"/>
-        <span>I agree to the <a href="#" onclick="showPrivacy();return false" style="color:var(--green)">privacy notice</a>. No email or phone collected. Display name only.</span>
+      <label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.4">
+        <input type="checkbox" id="agree" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green)"/>
+        <span>I agree to the <a href="#" onclick="showPrivacy();return false" style="color:var(--green);font-weight:700">privacy notice</a>. No email or phone collected. Display name only.</span>
       </label>
-      <button class="btn primary" id="startBtn" style="width:100%">Start your hustle</button>
+      <button class="btn primary" id="startBtn" style="width:100%;font-size:18px">Start your hustle</button>
       ${authError?`<div class="sync" style="color:#fca5a5">Auth error: ${esc(authError)}</div>`:""}
       ${!sb?`<div class="sync" style="color:var(--amber)">⚠ Cloud not configured. Playing locally.</div>`:""}
     </div>`;
@@ -641,11 +750,11 @@ function renderGame(){
     
     <div class="level-bar">
       <div class="level-top">
-        <span style="color:var(--blue)">Level ${S.level}</span>
+        <span style="color:#60a5fa">Level ${S.level}</span>
         <span>${S.xp} / ${nextLevelXp} XP</span>
       </div>
       <div class="xp-bar"><i style="width:${xpPct}%"></i></div>
-      ${S.skillPoints > 0 ? `<button class="btn skill" style="width:100%;margin-top:10px;padding:6px" onclick="openSkills()">💡 Spend ${S.skillPoints} Skill Point(s)</button>` : ''}
+      ${S.skillPoints > 0 ? `<button class="btn skill" style="width:100%;margin-top:10px;padding:8px;font-size:13px" onclick="openSkills()">💡 Spend ${S.skillPoints} Skill Point(s)</button>` : ''}
     </div>
 
     <div class="stats">
@@ -717,7 +826,7 @@ window.openMissions = function() {
   
   openModal(`
     <h3>📋 Daily Hustler Quests</h3>
-    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Complete all 3 missions to earn ₦5,000, Full Energy, and +100 XP. Resets at midnight.</p>
+    <p style="color:#c8d6ce;font-size:14px;margin-bottom:16px">Complete all 3 missions to earn ₦5,000, Full Energy, and +100 XP. Resets at midnight.</p>
     
     <div class="mission ${workDone ? 'done' : ''}">
       <div><div class="m-title">Work 3 Times</div><div class="m-desc">${m.work}/3 completed</div></div>
@@ -734,9 +843,9 @@ window.openMissions = function() {
       <div class="m-check">${socialDone ? '✅' : '⏳'}</div>
     </div>
     
-    ${m.claimed ? '<p style="color:var(--green);text-align:center;font-weight:bold;margin-top:12px">All missions claimed for today!</p>' : ''}
+    ${m.claimed ? '<p style="color:var(--green);text-align:center;font-weight:bold;margin-top:16px">All missions claimed for today!</p>' : ''}
     
-    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>
   `);
 };
 
@@ -744,30 +853,54 @@ window.openMissions = function() {
 window.openVipStore = function() {
   openModal(`
     <h3 style="text-align:center;color:var(--gold)">👑 Eko VIP Pass</h3>
-    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px;text-align:center">Get an unfair advantage. Show Lagos who is the real Big Man.</p>
+    <p style="color:#c8d6ce;font-size:14px;margin-bottom:16px;text-align:center">Get an unfair advantage. Show Lagos who is the real Big Man.</p>
     
-    <div class="opt" style="border-color:var(--gold); background:linear-gradient(135deg,#1a1a0b,#2a2010)">
-      <div style="font-weight:800;font-size:16px;color:var(--gold)">24-Hour VIP Pass</div>
+    <div class="opt" style="border-color:var(--gold); background:linear-gradient(135deg,rgba(251,191,36,0.1),rgba(217,119,6,0.1))">
+      <div style="font-weight:900;font-size:18px;color:var(--gold)">24-Hour VIP Pass</div>
       <div class="sub">• 2x Cash from all jobs<br>• Instant Full Energy<br>• Gold Badge on Profile</div>
-      <div style="font-weight:800;margin-top:8px;font-size:18px">₦1,000</div>
+      <div style="font-weight:900;margin-top:10px;font-size:20px">₦1,000</div>
     </div>
     
-    <button class="btn primary" style="width:100%;background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;margin-top:12px" onclick="buyVip()">Pay with Paystack (Mock)</button>
-    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Maybe Later</button>
+    <button class="btn primary" style="width:100%;background:linear-gradient(135deg,#fbbf24,#d97706);color:#000;margin-top:16px;padding:18px;font-size:16px" onclick="buyVip()">Pay with Paystack</button>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Maybe Later</button>
   `);
 };
 
 window.buyVip = function() {
-  toast("Processing payment...");
-  setTimeout(() => {
-    S.vipUntil = Date.now() + (24 * HOUR);
-    S.energy = S.maxEnergy;
-    addLog("👑 Upgraded to VIP! 2x cash for 24 hours.");
-    save();
-    closeModal();
-    renderGame();
-    toast("👑 VIP Activated! You are now a Big Man.");
-  }, 1500);
+  const PAYSTACK_PUBLIC_KEY = "pk_test_YOUR_KEY_HERE"; 
+  
+  if (PAYSTACK_PUBLIC_KEY.includes("YOUR_KEY_HERE")) {
+    return toast("Please add your Paystack Public Key to the code first!");
+  }
+
+  const handler = PaystackPop.setup({
+    key: PAYSTACK_PUBLIC_KEY,
+    email: `player_${session.user.id.substring(0,8)}@ekohustle.com`,
+    amount: 100000, // ₦1,000
+    currency: "NGN",
+    callback: function(response) {
+      closeModal();
+      openModal(`<h3>⏳ Verifying Payment...</h3><p style="color:#c8d6ce;font-size:14px">Please wait, we are confirming your transaction with Paystack.</p>`);
+      
+      sb.functions.invoke('verify-payment', {
+        body: { reference: response.reference, user_id: session.user.id }
+      }).then(({ data, error }) => {
+        if (error || !data.success) {
+          openModal(`<h3>❌ Payment Failed</h3><p style="color:#fca5a5;font-size:14px">We could not verify your payment. If you were debited, contact support with ref: ${response.reference}</p><button class="opt" onclick="closeModal()">Close</button>`);
+        } else {
+          S.vipUntil = Date.now() + (24 * HOUR);
+          S.energy = S.maxEnergy;
+          addLog("👑 Upgraded to VIP via Paystack!");
+          save();
+          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:14px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
+        }
+      });
+    },
+    onClose: function() {
+      toast("Transaction cancelled.");
+    }
+  });
+  handler.openIframe();
 };
 
 /* ---------------- PROFILE & SHARE ---------------- */
@@ -778,7 +911,7 @@ window.openProfile = function() {
   
   let assetHtml = "";
   if(!S.assets || S.assets.length === 0) {
-    assetHtml = "<p style='color:#8fa39a;font-size:13px;text-align:center'>No assets yet. Keep hustling!</p>";
+    assetHtml = "<p style='color:#8fa39a;font-size:14px;text-align:center;margin:10px 0'>No assets yet. Keep hustling!</p>";
   } else {
     assetHtml = `<div class="asset-grid">` + S.assets.map(id => {
       const a = ASSETS.find(x => x.id === id);
@@ -809,13 +942,13 @@ window.openProfile = function() {
     ${assetHtml}
     
     <div class="section-title">Invite & Earn</div>
-    <p style="color:#8fa39a;font-size:12px;margin-bottom:8px;text-align:center">You get ₦10,000 when a friend joins using your link. They get ₦2,000.</p>
-    <a href="${inviteWaLink}" target="_blank" class="btn invite">🎁 Invite Friends (+₦10k)</a>
+    <p style="color:#8fa39a;font-size:13px;margin-bottom:8px;text-align:center">You get ₦10,000 when a friend joins using your link. They get ₦2,000.</p>
+    <a href="${inviteWaLink}" target="_blank" class="btn invite" style="padding:16px">🎁 Invite Friends (+₦10k)</a>
     
     <div class="section-title">Flex</div>
-    <a href="${waLink}" target="_blank" class="btn share">💬 Brag on WhatsApp</a>
+    <a href="${waLink}" target="_blank" class="btn share" style="padding:16px">💬 Brag on WhatsApp</a>
     
-    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>
   `);
 };
 
@@ -828,7 +961,7 @@ window.openWork=function(){
     return `<button class="opt ${locked?"locked":""}" ${locked?"":`onclick="doWork('${j.id}')"`}>
       ${j.emoji} ${j.name}<span class="sub">₦${fmtMoney(j.pay[0])}–₦${fmtMoney(j.pay[1])} • ${j.energy} energy ${locked?`• needs ${reqTxt}`:""}</span></button>`;
   }).join("");
-  openModal(`<h3>Work in ${LOCS[S.location].name}</h3>${html||"<p style='color:#8fa39a'>No jobs here.</p>"}<button class="opt" onclick="closeModal()">Close</button>`);
+  openModal(`<h3>Work in ${LOCS[S.location].name}</h3>${html||"<p style='color:#8fa39a'>No jobs here.</p>"}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 
 window.doWork=function(jobId){
@@ -893,7 +1026,7 @@ window.openAssets=function(){
       <span class="sub" style="color:var(--muted);font-style:italic">${a.desc}</span>
     </button>`;
   }).join("");
-  openModal(`<h3>🏠 Lagos Dream</h3><p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Buy assets to boost your stats permanently.</p>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+  openModal(`<h3>🏠 Lagos Dream</h3><p style="color:#c8d6ce;font-size:14px;margin-bottom:16px">Buy assets to boost your stats permanently.</p>${html}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 
 window.buyAsset = function(id) {
@@ -907,7 +1040,7 @@ window.buyAsset = function(id) {
   S.cash -= a.cost;
   S.assets.push(a.id);
   applyFx(a.fx);
-  addXp(50); // Big XP for buying assets
+  addXp(50);
   addLog(`Bought ${a.name}! -₦${fmtMoney(a.cost)}. +50 XP.`);
   save();
   closeModal();
@@ -922,9 +1055,9 @@ window.buyAsset = function(id) {
     setTimeout(() => {
       openModal(`
         <h3 style="text-align:center">🎉 Major Milestone!</h3>
-        <p style="color:#c8d6ce;font-size:14px;text-align:center;margin-bottom:16px">You just bought your first asset! Let the world know you're moving up.</p>
-        <a href="${waLink}" target="_blank" class="btn share">💬 Share this Flex on WhatsApp</a>
-        <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Maybe Later</button>
+        <p style="color:#c8d6ce;font-size:15px;text-align:center;margin-bottom:20px">You just bought your first asset! Let the world know you're moving up.</p>
+        <a href="${waLink}" target="_blank" class="btn share" style="padding:16px">💬 Share this Flex on WhatsApp</a>
+        <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Maybe Later</button>
       `);
     }, 800);
   }
@@ -941,7 +1074,7 @@ window.openOwambe = function() {
     <button class="opt" onclick="attendOwambe(5000, 'Aso Ebi', 15, 5)">👗 Aso Ebi <span class="sub">₦5,000 • +15 Rep, +5 Net</span></button>
     <button class="opt" onclick="attendOwambe(15000, 'Agbada', 30, 10)">🧥 Agbada <span class="sub">₦15,000 • +30 Rep, +10 Net, +10 Happy</span></button>
   `;
-  openModal(`<h3>🎉 Weekend Owambe</h3><p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">A big Lagos party. Spend money to rub minds with the elites. Choose your outfit carefully.</p>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+  openModal(`<h3>🎉 Weekend Owambe</h3><p style="color:#c8d6ce;font-size:14px;margin-bottom:16px">A big Lagos party. Spend money to rub minds with the elites. Choose your outfit carefully.</p>${html}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 
 window.attendOwambe = function(cost, outfit, rep, net) {
@@ -997,7 +1130,7 @@ window.openTravel=function(){
     return `<button class="opt" onclick="doTravel('${id}')">${l.emoji} ${l.name}
       <span class="sub">₦${fmtMoney(TRAVEL_COST[l.tier])} • ${TRAVEL_ENERGY} energy</span></button>`;
   }).join("");
-  openModal(`<h3>Travel</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+  openModal(`<h3>Travel</h3>${html}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 
 window.doTravel=function(id){
@@ -1059,7 +1192,7 @@ window.openLeaderboard=async function(){
       <div class="h">${esc(r.handle)}${r.is_me?" (you)":""}</div>
       <div class="m">Day ${r.day} · ⭐ ${r.reputation} · ₦${fmtMoney(r.cash)}</div>
     </div></div>`).join("");
-  openModal(`<h3>🏆 Top Hustlers</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+  openModal(`<h3>🏆 Top Hustlers</h3>${html}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 
 /* ---------------- SETTINGS + PRIVACY ---------------- */
@@ -1067,11 +1200,11 @@ window.openSettings=function(){
   openModal(`<h3>⚙️ Settings</h3>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
-    <button class="opt" onclick="closeModal()">Close</button>`);
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 window.showPrivacy=function(){
   openModal(`<h3>Privacy</h3>
-    <div style="color:#c8d6ce;font-size:13px;line-height:1.6">
+    <div style="color:#c8d6ce;font-size:14px;line-height:1.6">
       <p><b>What we store:</b> an anonymous account (random ID), the display name you type, and your game save.</p>
       <p><b>What we never collect:</b> real name, email, phone, location, contacts, photos.</p>
       <p><b>Where:</b> Supabase (Postgres, EU/US). Encrypted in transit.</p>
@@ -1080,7 +1213,7 @@ window.showPrivacy=function(){
       <p><b>Retention:</b> inactive saves over 90 days are deleted.</p>
       <p style="color:#8fa39a;font-size:12px;margin-top:12px">NDPR-aligned. Questions: reply on our WhatsApp Channel.</p>
     </div>
-    <button class="opt" onclick="closeModal()">Close</button>`);
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:16px">Close</button>`);
 };
 window.deleteMyData=async function(){
   if(!session?.user||!sb)return;
@@ -1103,7 +1236,7 @@ function triggerEvent(){
   const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
   currentEvent=ev;
   const html=ev.choices.map((c,i)=>`<button class="opt" onclick="pickChoice(${i})">${esc(c.label)}</button>`).join("");
-  openModal(`<h3>${esc(ev.title)}</h3><p style="color:#c8d6ce;font-size:14px;margin:0 0 12px">${esc(ev.text)}</p>${html}`);
+  openModal(`<h3>${esc(ev.title)}</h3><p style="color:#c8d6ce;font-size:15px;margin:0 0 16px;line-height:1.5">${esc(ev.text)}</p>${html}`);
 }
 
 window.pickChoice=function(i){
