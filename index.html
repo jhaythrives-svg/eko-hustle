@@ -224,6 +224,46 @@
   .character-img{max-height:64px;width:64px;border-radius:50%;border:2px solid var(--line);object-fit:cover}
   .char-em{font-size:44px;animation:none}
   .dialogue-box{margin-top:0}
+  /* V5 ONE-SCREEN MOBILE SHELL */
+  body{-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation;overscroll-behavior:none}
+  body.in-game,body.in-game html{overflow:hidden;height:100dvh}
+  body.in-game #app{height:100dvh;max-height:100dvh;display:flex;flex-direction:column;gap:6px;padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));overflow:hidden}
+  body.in-game #app>*{flex-shrink:0;margin-bottom:0}
+  body.in-game .topbar{margin:0}
+  body.in-game .brand{font-size:17px}
+  body.in-game .icon-btn{width:34px;height:34px;font-size:15px}
+  body.in-game .day small{opacity:.7}
+  body.in-game .feed{padding:3px 8px;font-size:11px}
+  body.in-game .scene{flex:1 1 0;min-height:110px;height:auto;margin:0;flex-shrink:1}
+  body.in-game .av img,body.in-game .npc img{height:clamp(54px,15vh,104px)}
+  body.in-game .av b,body.in-game .npc b{font-size:clamp(44px,11vh,76px)}
+  body.in-game .visual-area{margin:0;gap:8px}
+  body.in-game .character-img{max-height:38px;width:38px}
+  body.in-game .char-em{font-size:30px}
+  body.in-game .dialogue-box{padding:5px 9px}
+  body.in-game .dialogue-text{font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .hud{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 9px}
+  .hud-top{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700}
+  .hud-top .xp-bar{flex:1;margin:0}.lv{color:var(--blue)}
+  .mini{background:#2a2010;border:1px solid var(--gold);color:var(--gold);border-radius:8px;font-size:11px;padding:1px 6px}
+  .hud-row{display:flex;align-items:center;gap:10px;margin:5px 0 3px}
+  .cash{font-size:19px;font-weight:800;color:var(--green);white-space:nowrap}
+  .en{flex:1;font-size:10px;color:var(--muted)}.en .bar{margin-bottom:2px}
+  .hud-chips{display:flex;justify-content:space-between;font-size:11px;color:#c8d6ce}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .cards .rival{padding:6px 8px;margin:0;min-width:0}
+  .cards .rv-top,.cards .rv-sub{font-size:10px}
+  .cards .rv-sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:3px}
+  .cards .rival>div:nth-child(2){font-size:11px!important;margin:2px 0 4px!important;line-height:1.2}
+  .dk1{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:6px}
+  .dk1 .btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 2px;font-size:20px;line-height:1.1;min-height:52px}
+  .dk1 .btn span{font-size:11px;font-weight:700}
+  .dk2{display:flex;gap:5px;margin-top:6px}
+  .dk2 button{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;color:var(--text);padding:4px 0;font-size:17px;display:flex;flex-direction:column;align-items:center;min-height:42px}
+  .dk2 span{font-size:9px;color:var(--muted)}
+  @media (max-height:640px){body.in-game .feed{display:none}}
+  @media (max-height:580px){.cards{display:none}}
+  @media (max-height:520px){.hud-chips{display:none}}
 </style>
 </head>
 <body>
@@ -776,7 +816,7 @@ async function render(){
   startSession();
 }
 
-function renderOnboarding(){
+function renderOnboarding(){document.body.classList.remove("in-game");
   let sel={origin:null,dream:null,agree:false};
   $app.innerHTML=`
     <div class="onb">
@@ -814,6 +854,8 @@ function renderOnboarding(){
   };
 }
 
+window.openAppts=function(){const now=Date.now(),a=S.appointments.filter(x=>x.status!=="done");openModal(`<h3>📅 Appointments</h3>`+(a.length?a.map(x=>apptCard(x,now)).join(""):`<p class="rw">None yet. Travel and network to unlock them.</p>`)+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openLog=function(){openModal(`<h3>📜 Activity Log</h3><div class="log">${S.log.slice(0,25).map(l=>`<div>${esc(l.text)}</div>`).join("")||"<div>Nothing yet.</div>"}</div><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
 function renderGame(){
   const loc=LOCS[S.location];
   const energyPct=Math.round((S.energy/S.maxEnergy)*100);
@@ -828,64 +870,25 @@ function renderGame(){
   const nextLevelXp = S.level * 100;
   const xpPct = Math.min(100, Math.round((S.xp / nextLevelXp) * 100));
   
+  document.body.classList.add("in-game");
+  const ready=S.appointments.filter(a=>a.status==="ready").length,sy=!sb?"⚠":syncStatus==="syncing"?"↻":syncStatus==="synced"?"✓":syncStatus==="offline"?"⚡":syncStatus==="error"?"⚠":"";
   $app.innerHTML=`
-    <div class="topbar">
-      <div class="brand">Eko <span>Hustle</span> ${isVip ? '👑' : ''}</div>
-      <div class="topbar-right">
-        <div class="day">Day ${S.day}</div>
-        <button class="icon-btn" onclick="openMissions()" title="Missions">📋
-          ${showMissionBadge ? '<span class="badge" style="display:block">!</span>' : ''}
-        </button>
-        <button class="icon-btn" onclick="openLeaderboard()" title="Leaderboard">🏆</button>
-        <button class="icon-btn" onclick="openProfile()" title="Profile">👤</button>
-        <button class="icon-btn" onclick="openSettings()" title="Settings">⚙️</button>
-      </div>
-    </div>
-    <div class="feed" id="live-feed">
-      <span style="flex-shrink:0">📡 LIVE:</span>
-      <div class="feed-text" id="feed-text">Loading feed...</div>
-    </div>
-    
+    <div class="topbar"><div class="brand">Eko <span>Hustle</span> ${isVip?'👑':''}</div><div class="topbar-right"><div class="day">Day ${S.day} <small>${sy}</small></div>
+      <button class="icon-btn" onclick="openMissions()">📋${showMissionBadge?'<span class="badge" style="display:block">!</span>':''}</button>
+      <button class="icon-btn" onclick="openLeaderboard()">🏆</button><button class="icon-btn" onclick="openProfile()">👤</button><button class="icon-btn" onclick="openSettings()">⚙️</button></div></div>
+    <div class="feed" id="live-feed"><span style="flex-shrink:0">📡</span><div class="feed-text" id="feed-text">Loading feed...</div></div>
     ${sceneHtml()}
     ${dlgHtml()}
-
-    <div class="level-bar">
-      <div class="level-top">
-        <span style="color:var(--blue)">Level ${S.level}</span>
-        <span>${S.xp} / ${nextLevelXp} XP</span>
-      </div>
-      <div class="xp-bar"><i style="width:${xpPct}%"></i></div>
-      ${S.skillPoints > 0 ? `<button class="btn skill" style="width:100%;margin-top:10px;padding:6px" onclick="openSkills()">💡 Spend ${S.skillPoints} Skill Point(s)</button>` : ''}
+    <div class="hud">
+      <div class="hud-top"><span class="lv">Lv ${S.level}</span><div class="xp-bar"><i style="width:${xpPct}%"></i></div><span>${S.xp}/${nextLevelXp}</span>${S.skillPoints>0?`<button class="mini" onclick="openSkills()">💡${S.skillPoints}</button>`:""}</div>
+      <div class="hud-row"><div class="cash">₦${fmtMoney(S.cash)}</div><div class="en"><div class="bar"><i style="width:${energyPct}%"></i></div>⚡ ${S.energy}/${S.maxEnergy}</div></div>
+      <div class="hud-chips"><span>❤️${S.health}</span><span>😊${S.happiness}</span><span>⭐${S.reputation}</span><span>🤝${S.network}</span><span>🔥${S.streak||0}</span></div>
     </div>
-
-    <div class="stats">
-      <div class="stat"><div class="k">Cash</div><div class="v">₦${fmtMoney(S.cash)}</div></div>
-      <div class="stat"><div class="k">Energy</div><div class="v">${S.energy}/${S.maxEnergy}</div>
-        <div class="bar"><i style="width:${energyPct}%"></i></div></div>
-    </div>
-    <div class="chips">
-      <span class="chip">❤️ Health <b>${S.health}</b></span>
-      <span class="chip">😊 Happy <b>${S.happiness}</b></span>
-      <span class="chip">⭐ Rep <b>${S.reputation}</b></span>
-      <span class="chip">🤝 Network <b>${S.network}</b></span>
-      <span class="chip">🔥 Streak <b>${S.streak||0}</b></span>
-    </div>
-    
-    ${chapCard()}${rivalCard()}
-    <div class="actions">
-      <button class="btn primary" onclick="openWork()">💼 Work ${isVip ? '(2x)' : ''}</button>
-      <button class="btn asset" onclick="openAssets()">🏠 Assets</button>
-      <button class="btn" onclick="openTravel()">🚌 Travel</button>
-      <button class="btn warn" onclick="doAjo()">🪙 Ajo${S.ajo.streak>0?` (${S.ajo.streak})`:""}</button>
-      <button class="btn owambe" onclick="openOwambe()">🎉 Attend Owambe</button>
-      <button class="btn warn ${spinReady?'pulse':''}" onclick="openSpin()">🎰 Lucky Spin${spinReady?' FREE':''}</button>
-      <button class="btn" onclick="openAch()">🏅 Badges ${Object.keys(S.ach||{}).length}/12</button>
-      ${!isVip ? `<button class="btn vip" onclick="openVipStore()">👑 Go VIP (2x Cash)</button>` : ''}
-    </div>
-    ${appts.length?`<div class="section-title">Appointments</div>`+appts.map(a=>apptCard(a,now)).join(""):""}
-    <div class="section-title">Log</div>
-    <div class="log">${S.log.slice(0,10).map(l=>`<div>${esc(l.text)}</div>`).join("")||"<div>Nothing yet. Go hustle.</div>"}</div>
-    <div class="sync">${!sb?"⚠ Local only":syncStatus==="syncing"?"↻ syncing…":syncStatus==="synced"?"✓ cloud saved":syncStatus==="offline"?"⚡ offline":syncStatus==="error"?"⚠ sync error":" "}</div>`;
+    <div class="cards">${chapCard()}${rivalCard()}</div>
+    <div class="dock">
+      <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset" onclick="openAssets()">🏠<span>Assets</span></button><button class="btn warn" onclick="doAjo()">🪙<span>Ajo${S.ajo.streak>0?' '+S.ajo.streak:''}</span></button></div>
+      <div class="dk2"><button onclick="openOwambe()">🎉<span>Owambe</span></button><button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button><button onclick="openAch()">🏅<span>${Object.keys(S.ach||{}).length}/12</span></button><button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button><button onclick="openLog()">📜<span>Log</span></button>${!isVip?`<button onclick="openVipStore()">👑<span>VIP</span></button>`:""}</div>
+    </div>`;
     
   fetchFeed();
 }
@@ -918,7 +921,7 @@ function apptCard(a,now){
   return `<div class="appt ${a.status}">
     <div class="t">${esc(a.title)}</div><div class="d">${esc(a.desc)}</div>
     <div class="meta">${meta}</div>
-    ${claimable?`<button class="btn primary go" onclick="claimAppt('${a.id}')">Claim reward</button>`:""}
+    ${claimable?`<button class="btn primary go" onclick="closeModal();claimAppt('${a.id}')">Claim reward</button>`:""}
   </div>`;
 }
 
