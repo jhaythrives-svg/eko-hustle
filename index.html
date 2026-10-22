@@ -9,7 +9,7 @@
 <title>Eko Hustle</title>
 <style>
   :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
-    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;--gold:#fbbf24;}
+    --text:#e8f0ec;--muted:#8fa39a;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;--gold:#fbbf24;--blue:#3b82f6;}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -28,13 +28,16 @@
     font-size:9px;font-weight:bold;border-radius:999px;padding:2px 5px;display:none}
   .day{font-size:12px;color:var(--muted);background:var(--card);
     padding:6px 10px;border-radius:999px;border:1px solid var(--line)}
+  .level-bar{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:12px}
+  .level-top{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:6px}
+  .xp-bar{height:6px;background:#0a1f12;border-radius:999px;overflow:hidden}
+  .xp-bar > i{display:block;height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);width:0%;transition:width .3s}
   .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
   .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
   .stat .v{font-size:18px;font-weight:700;margin-top:2px}
   .bar{height:8px;background:#0a1f12;border-radius:999px;overflow:hidden;margin-top:6px}
-  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);
-    width:0%;transition:width .3s}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);width:0%;transition:width .3s}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;
     padding:6px 10px;font-size:12px;color:var(--muted)}
@@ -57,6 +60,7 @@
   .btn.vip{background:linear-gradient(135deg,#fbbf24,#d97706);border:none;color:#451a03;grid-column:span 2;}
   .btn.share{background:linear-gradient(135deg,#25D366,#128C7E);border:none;color:#fff;width:100%;font-size:16px;margin-top:10px;}
   .btn.invite{background:linear-gradient(135deg,#f59e0b,#d97706);border:none;color:#fff;width:100%;font-size:14px;margin-top:8px;}
+  .btn.skill{background:linear-gradient(135deg,#2563eb,#3b82f6);border:none;color:#fff;}
   .section-title{font-size:12px;color:var(--muted);text-transform:uppercase;
     letter-spacing:.8px;margin:18px 0 8px}
   .appt{background:linear-gradient(135deg,#141a18,#1a2a20);border:1px solid #2a4033;
@@ -131,6 +135,12 @@
   .mission .m-title{font-weight:600;font-size:14px}
   .mission .m-desc{font-size:12px;color:var(--muted);margin-top:2px}
   .mission .m-check{font-size:20px}
+  .skill-row{display:flex;justify-content:space-between;align-items:center;
+    background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:8px}
+  .skill-info{flex:1}
+  .skill-name{font-weight:700;font-size:14px;color:var(--blue)}
+  .skill-desc{font-size:12px;color:var(--muted);margin-top:2px}
+  .skill-lvl{font-size:16px;font-weight:800;color:var(--green);margin-right:12px}
 </style>
 </head>
 <body>
@@ -138,7 +148,6 @@
 <div id="modal-root"></div>
 <div id="toast" class="toast"></div>
 <script>
-// ERROR CATCHER: If the game crashes, show the error on screen instead of a black screen.
 window.onerror = function(msg, url, line, col, error) {
   document.body.innerHTML = `<div style="color:white; padding:20px; font-family:sans-serif;">
     <h3 style="color:#ef4444">⚠ Game Crashed</h3>
@@ -186,28 +195,28 @@ const LOCS={
 const TRAVEL_COST={1:200,2:500}, TRAVEL_ENERGY=10;
 
 const JOBS={
-  yaba:[{id:"gig",name:"Delivery gig",emoji:"📦",pay:[1500,3000],energy:20,fx:{reputation:1,network:1}},
-    {id:"jdev",name:"Junior dev task",emoji:"💻",pay:[4000,7000],energy:30,fx:{reputation:3,network:2},req:{reputation:20}}],
-  ikeja:[{id:"pos",name:"POS agent shift",emoji:"💳",pay:[2000,3500],energy:20,fx:{reputation:1}},
-    {id:"market",name:"Market sales",emoji:"🧺",pay:[2500,4500],energy:25,fx:{network:2},req:{network:10}}],
-  surulere:[{id:"content",name:"Content shoot",emoji:"📸",pay:[2000,5000],energy:25,fx:{happiness:3,network:2}},
-    {id:"usher",name:"Event ushering",emoji:"🎟️",pay:[3000,6000],energy:30,fx:{network:3,reputation:2},req:{network:15}}],
-  vi:[{id:"office",name:"Office assistant",emoji:"🗂️",pay:[4000,6000],energy:30,fx:{reputation:2},req:{reputation:15}},
-    {id:"intern",name:"Corporate intern",emoji:"👔",pay:[6000,9000],energy:35,fx:{reputation:4,network:2},req:{reputation:40}}],
-  lekki:[{id:"driver",name:"Driver shift",emoji:"🚗",pay:[5000,8000],energy:35,fx:{network:2},req:{network:25}},
-    {id:"pa",name:"Personal assistant",emoji:"📋",pay:[8000,12000],energy:35,fx:{reputation:4,network:3},req:{reputation:60}}],
-  ajah:[{id:"landl",name:"Help landlord",emoji:"🔑",pay:[1500,2500],energy:15,fx:{network:1}},
-    {id:"tutor",name:"Home tutor",emoji:"📚",pay:[3000,5000],energy:25,fx:{reputation:2},req:{reputation:10}}],
-  ojota:[{id:"load",name:"Load bus luggage",emoji:"🧳",pay:[1000,2000],energy:15,fx:{health:-2}},
-    {id:"hawk",name:"Hawking",emoji:"🥤",pay:[1200,2600],energy:20,fx:{network:1}}]
+  yaba:[{id:"gig",name:"Delivery gig",emoji:"📦",pay:[1500,3000],energy:20,fx:{reputation:1,network:1},xp:10},
+    {id:"jdev",name:"Junior dev task",emoji:"💻",pay:[4000,7000],energy:30,fx:{reputation:3,network:2},req:{reputation:20},xp:25}],
+  ikeja:[{id:"pos",name:"POS agent shift",emoji:"💳",pay:[2000,3500],energy:20,fx:{reputation:1},xp:15},
+    {id:"market",name:"Market sales",emoji:"🧺",pay:[2500,4500],energy:25,fx:{network:2},req:{network:10},xp:20}],
+  surulere:[{id:"content",name:"Content shoot",emoji:"📸",pay:[2000,5000],energy:25,fx:{happiness:3,network:2},xp:20},
+    {id:"usher",name:"Event ushering",emoji:"🎟️",pay:[3000,6000],energy:30,fx:{network:3,reputation:2},req:{network:15},xp:25}],
+  vi:[{id:"office",name:"Office assistant",emoji:"🗂️",pay:[4000,6000],energy:30,fx:{reputation:2},req:{reputation:15},xp:25},
+    {id:"intern",name:"Corporate intern",emoji:"👔",pay:[6000,9000],energy:35,fx:{reputation:4,network:2},req:{reputation:40},xp:40}],
+  lekki:[{id:"driver",name:"Driver shift",emoji:"🚗",pay:[5000,8000],energy:35,fx:{network:2},req:{network:25},xp:35},
+    {id:"pa",name:"Personal assistant",emoji:"📋",pay:[8000,12000],energy:35,fx:{reputation:4,network:3},req:{reputation:60},xp:50}],
+  ajah:[{id:"landl",name:"Help landlord",emoji:"🔑",pay:[1500,2500],energy:15,fx:{network:1},xp:10},
+    {id:"tutor",name:"Home tutor",emoji:"📚",pay:[3000,5000],energy:25,fx:{reputation:2},req:{reputation:10},xp:20}],
+  ojota:[{id:"load",name:"Load bus luggage",emoji:"🧳",pay:[1000,2000],energy:15,fx:{health:-2},xp:10},
+    {id:"hawk",name:"Hawking",emoji:"🥤",pay:[1200,2600],energy:20,fx:{network:1},xp:15}]
 };
 
 const ASSETS = [
   {id:"keke", type:"car", name:"Keke Napep", emoji:"🛺", cost:40000, fx:{reputation:5}, desc:"Small transport. Big relief."},
   {id:"camry", type:"car", name:"Tokunbo Camry", emoji:"🚗", cost:150000, fx:{reputation:15, network:5}, desc:"You don blow. Chinedu is jealous."},
   {id:"suv", type:"car", name:"Brand New SUV", emoji:"🚙", cost:500000, fx:{reputation:30, network:10}, desc:"Big man ting."},
-  {id:"selfcon", type:"house", name:"Self-Contained", emoji:"🏠", cost:100000, fx:{maxEnergy:20}, desc:"No more landlord trouble. +20 Max Energy."},
-  {id:"duplex", type:"house", name:"Lekki Duplex", emoji:"🏡", cost:500000, fx:{maxEnergy:50}, desc:"Ajah landlord. +50 Max Energy."}
+  {id:"selfcon", type:"house", name:"Self-Contained", emoji:"🏠", cost:100000, fx:{maxEnergy:20}, rent: 2000, desc:"No landlord trouble. +20 Energy, +₦2k/day rent."},
+  {id:"duplex", type:"house", name:"Lekki Duplex", emoji:"🏡", cost:500000, fx:{maxEnergy:50}, rent: 10000, desc:"Ajah landlord. +50 Energy, +₦10k/day rent."}
 ];
 
 const EVENTS=[
@@ -321,12 +330,84 @@ function updateMission(type) {
     m.claimed = true;
     S.cash += 5000;
     S.energy = S.maxEnergy;
-    addLog("🏆 Daily Missions Completed! +₦5,000 and Full Energy.");
+    addXp(100); // Bonus XP for completing all missions
+    addLog("🏆 Daily Missions Completed! +₦5,000, Full Energy, +100 XP.");
     toast("🏆 Missions Complete! +₦5,000");
     postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
   }
   save();
 }
+
+/* ---------------- RPG: LEVELS & SKILLS ---------------- */
+function addXp(amount) {
+  S.xp = (S.xp || 0) + amount;
+  const nextLevelXp = S.level * 100;
+  if (S.xp >= nextLevelXp) {
+    S.xp -= nextLevelXp;
+    S.level++;
+    S.skillPoints = (S.skillPoints || 0) + 1;
+    toast(`⭐ LEVEL UP! You are now Level ${S.level}! +1 Skill Point.`);
+    addLog(`⭐ Leveled up to Level ${S.level}! Got 1 Skill Point.`);
+  }
+}
+
+window.openSkills = function() {
+  const hustleLvl = S.skills?.hustle || 0;
+  const businessLvl = S.skills?.business || 0;
+  const charismaLvl = S.skills?.charisma || 0;
+  
+  const canUpgrade = S.skillPoints > 0;
+  
+  openModal(`
+    <h3 style="text-align:center;color:var(--blue)">💡 Skills & Abilities</h3>
+    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px;text-align:center">Spend your Skill Points to improve your hustle.</p>
+    
+    <div class="skill-row">
+      <div class="skill-info">
+        <div class="skill-name">Hustle (Lvl ${hustleLvl})</div>
+        <div class="skill-desc">Reduces energy cost of all jobs by 5% per level.</div>
+      </div>
+      <div class="skill-lvl">${hustleLvl}</div>
+      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('hustle')"` : 'disabled'} style="padding:6px 12px;font-size:12px">Upgrade</button>
+    </div>
+    
+    <div class="skill-row">
+      <div class="skill-info">
+        <div class="skill-name">Business (Lvl ${businessLvl})</div>
+        <div class="skill-desc">Increases cash earned from all jobs by 10% per level.</div>
+      </div>
+      <div class="skill-lvl">${businessLvl}</div>
+      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('business')"` : 'disabled'} style="padding:6px 12px;font-size:12px">Upgrade</button>
+    </div>
+    
+    <div class="skill-row">
+      <div class="skill-info">
+        <div class="skill-name">Charisma (Lvl ${charismaLvl})</div>
+        <div class="skill-desc">Increases Rep gained from Owambe by 10% per level.</div>
+      </div>
+      <div class="skill-lvl">${charismaLvl}</div>
+      <button class="btn skill" ${canUpgrade ? `onclick="upgradeSkill('charisma')"` : 'disabled'} style="padding:6px 12px;font-size:12px">Upgrade</button>
+    </div>
+    
+    <p style="color:var(--amber);text-align:center;font-weight:bold;margin-top:12px">Skill Points Available: ${S.skillPoints || 0}</p>
+    <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
+  `);
+};
+
+window.upgradeSkill = function(skill) {
+  if (S.skillPoints <= 0) return toast("No skill points available.");
+  
+  if (!S.skills) S.skills = { hustle: 0, business: 0, charisma: 0 };
+  
+  S.skillPoints--;
+  S.skills[skill]++;
+  
+  toast(`Upgraded ${skill} to Lvl ${S.skills[skill]}!`);
+  addLog(`💡 Upgraded ${skill} skill to Lvl ${S.skills[skill]}.`);
+  save();
+  openSkills(); // Refresh the modal
+  renderGame();
+};
 
 /* ---------------- AUTH ---------------- */
 async function ensureAuth(){
@@ -379,6 +460,7 @@ async function newGame(name,originId,dreamId){
   const o=ORIGINS.find(x=>x.id===originId), d=DREAMS.find(x=>x.id===dreamId);
   S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
+    level:1, xp:0, skillPoints:0, skills:{hustle:0, business:0, charisma:0},
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
     assets:[], vipUntil:0, missions:null,
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
@@ -405,8 +487,22 @@ function checkReset(){
   if(now-S.lastReset>=DAY){
     const days=Math.floor((now-S.lastReset)/DAY);
     S.day+=days;S.lastReset=now;S.energy=S.maxEnergy;
-    const chargeableDays=Math.max(0,S.day-3-(Math.max(0,S.day-days-3)));
-    const upkeep=1500*Math.max(0,Math.min(days,chargeableDays));
+    
+    let rentEarned = 0;
+    if (S.assets) {
+      S.assets.forEach(id => {
+        const asset = ASSETS.find(a => a.id === id);
+        if (asset && asset.rent) rentEarned += asset.rent * days;
+      });
+    }
+    
+    const upkeep=1500*Math.max(0,Math.min(days,Math.max(0,S.day-3-(Math.max(0,S.day-days-3)))));
+    
+    if (rentEarned > 0) {
+      S.cash += rentEarned;
+      addLog(`🏠 Collected ₦${fmtMoney(rentEarned)} in rent from your properties.`);
+    }
+    
     if(upkeep>0){
       if(S.cash>=upkeep){S.cash-=upkeep;addLog(`Day ${S.day}. Upkeep ₦${fmtMoney(upkeep)} paid.`);}
       else{
@@ -444,10 +540,16 @@ async function render(){
     else S=local;
   }else S=local;
   if(!S)return renderOnboarding();
+  
+  // Legacy Saves Fix
   if(!S.assets) S.assets = [];
   if(!S.vipUntil) S.vipUntil = 0;
   if(!S.lastOwambe) S.lastOwambe = 0;
   if(!S.missions) S.missions = { date: new Date().toDateString(), work: 0, travel: 0, social: 0, claimed: false };
+  if(!S.level) S.level = 1;
+  if(!S.xp) S.xp = 0;
+  if(!S.skillPoints) S.skillPoints = 0;
+  if(!S.skills) S.skills = { hustle: 0, business: 0, charisma: 0 };
   
   checkReset();checkAppts();renderGame();
   
@@ -516,6 +618,9 @@ function renderGame(){
   const missionCount = (m.work >= 3 ? 1 : 0) + (m.travel >= 2 ? 1 : 0) + (m.social >= 1 ? 1 : 0);
   const showMissionBadge = missionCount > 0 && !m.claimed;
   
+  const nextLevelXp = S.level * 100;
+  const xpPct = Math.min(100, Math.round((S.xp / nextLevelXp) * 100));
+  
   $app.innerHTML=`
     <div class="topbar">
       <div class="brand">Eko <span>Hustle</span> ${isVip ? '👑' : ''}</div>
@@ -533,6 +638,16 @@ function renderGame(){
       <span style="flex-shrink:0">📡 LIVE:</span>
       <div class="feed-text" id="feed-text">Loading feed...</div>
     </div>
+    
+    <div class="level-bar">
+      <div class="level-top">
+        <span style="color:var(--blue)">Level ${S.level}</span>
+        <span>${S.xp} / ${nextLevelXp} XP</span>
+      </div>
+      <div class="xp-bar"><i style="width:${xpPct}%"></i></div>
+      ${S.skillPoints > 0 ? `<button class="btn skill" style="width:100%;margin-top:10px;padding:6px" onclick="openSkills()">💡 Spend ${S.skillPoints} Skill Point(s)</button>` : ''}
+    </div>
+
     <div class="stats">
       <div class="stat"><div class="k">Cash</div><div class="v">₦${fmtMoney(S.cash)}</div></div>
       <div class="stat"><div class="k">Energy</div><div class="v">${S.energy}/${S.maxEnergy}</div>
@@ -602,7 +717,7 @@ window.openMissions = function() {
   
   openModal(`
     <h3>📋 Daily Hustler Quests</h3>
-    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Complete all 3 missions to earn ₦5,000 and Full Energy. Resets at midnight.</p>
+    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Complete all 3 missions to earn ₦5,000, Full Energy, and +100 XP. Resets at midnight.</p>
     
     <div class="mission ${workDone ? 'done' : ''}">
       <div><div class="m-title">Work 3 Times</div><div class="m-desc">${m.work}/3 completed</div></div>
@@ -671,7 +786,7 @@ window.openProfile = function() {
     }).join("") + `</div>`;
   }
 
-  const shareText = encodeURIComponent(`I'm on Day ${S.day} with ₦${fmtMoney(S.cash)} and ${S.reputation} Rep in Eko Hustle! 🏃🏾‍♂️💨\n\nCan you beat my hustle? Play free here: https://jhaythrives-svg.github.io/eko-hustle/`);
+  const shareText = encodeURIComponent(`I'm Level ${S.level} on Day ${S.day} with ₦${fmtMoney(S.cash)} and ${S.reputation} Rep in Eko Hustle! 🏃🏾‍♂️💨\n\nCan you beat my hustle? Play free here: https://jhaythrives-svg.github.io/eko-hustle/`);
   const waLink = `https://wa.me/?text=${shareText}`;
 
   const inviteBaseUrl = window.location.origin + window.location.pathname;
@@ -683,7 +798,7 @@ window.openProfile = function() {
     <h3 style="text-align:center">👤 Player Profile</h3>
     <div class="profile-header">
       <div class="profile-name">${esc(S.name)} ${isVip ? '👑' : ''}</div>
-      <div class="profile-dream">Dream: ${dreamLabel}</div>
+      <div class="profile-dream">Level ${S.level} • Dream: ${dreamLabel}</div>
     </div>
     <div class="chips" style="justify-content:center">
       <span class="chip">Day <b>${S.day}</b></span>
@@ -719,15 +834,26 @@ window.openWork=function(){
 window.doWork=function(jobId){
   const job=(JOBS[S.location]||[]).find(j=>j.id===jobId);
   if(!job)return;
-  if(S.energy<job.energy)return toast("Not enough energy. Rest first.");
+  
+  const hustleDiscount = 1 - ((S.skills?.hustle || 0) * 0.05);
+  const actualEnergyCost = Math.ceil(job.energy * hustleDiscount);
+  
+  if(S.energy < actualEnergyCost) return toast(`Not enough energy (needs ${actualEnergyCost}). Rest first.`);
   
   let pay=rand(job.pay[0],job.pay[1]);
   const isVip = S.vipUntil > Date.now();
-  if(isVip) pay = pay * 2;
+  const businessMult = 1 + ((S.skills?.business || 0) * 0.10);
   
-  S.energy-=job.energy;S.cash+=pay;applyFx(job.fx);
+  if(isVip) pay = pay * 2;
+  pay = Math.floor(pay * businessMult);
+  
+  S.energy -= actualEnergyCost;
+  S.cash += pay;
+  applyFx(job.fx);
+  addXp(job.xp || 10);
+  
   S.flags.workCount=(S.flags.workCount||0)+1;
-  addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}${isVip ? " (VIP 2x)" : ""}.`);
+  addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}${isVip ? " (VIP)" : ""}. +${job.xp||10} XP.`);
   
   updateMission('work');
   
@@ -749,7 +875,7 @@ window.doWork=function(jobId){
   }
   save();closeModal();
   if(Math.random()<0.35){renderGame();triggerEvent();}
-  else{renderGame();toast(`+₦${fmtMoney(pay)}${isVip ? " (2x)" : ""}`);}
+  else{renderGame();toast(`+₦${fmtMoney(pay)} • +${job.xp||10} XP`);}
 };
 
 window.openAssets=function(){
@@ -781,11 +907,12 @@ window.buyAsset = function(id) {
   S.cash -= a.cost;
   S.assets.push(a.id);
   applyFx(a.fx);
-  addLog(`Bought ${a.name}! -₦${fmtMoney(a.cost)}.`);
+  addXp(50); // Big XP for buying assets
+  addLog(`Bought ${a.name}! -₦${fmtMoney(a.cost)}. +50 XP.`);
   save();
   closeModal();
   renderGame();
-  toast(`Bought ${a.name}!`);
+  toast(`Bought ${a.name}! +50 XP`);
   
   postToFeed(`${esc(S.name)} just bought a ${a.name}! 💰`);
   
@@ -819,19 +946,25 @@ window.openOwambe = function() {
 
 window.attendOwambe = function(cost, outfit, rep, net) {
   if(S.cash < cost) return toast("Not enough cash for this outfit!");
+  
+  const charismaMult = 1 + ((S.skills?.charisma || 0) * 0.10);
+  const finalRep = Math.floor(rep * charismaMult);
+  
   S.cash -= cost;
-  S.reputation += rep;
+  S.reputation += finalRep;
   S.network += net;
   S.happiness = clamp(S.happiness + 10);
   S.lastOwambe = Date.now();
-  addLog(`Attended Owambe in ${outfit}. -₦${fmtMoney(cost)}, +${rep} Rep, +${net} Net.`);
+  addXp(30);
+  
+  addLog(`Attended Owambe in ${outfit}. -₦${fmtMoney(cost)}, +${finalRep} Rep, +${net} Net. +30 XP.`);
   
   updateMission('social');
   
   save();
   closeModal();
   renderGame();
-  toast(`You made a statement at Owambe! +${rep} Rep`);
+  toast(`You made a statement at Owambe! +${finalRep} Rep`);
   
   postToFeed(`${esc(S.name)} just stepped out in ${outfit} at Owambe! 🎉`);
   
@@ -892,7 +1025,8 @@ window.doAjo=function(){
   
   if(S.ajo.streak%7===0){
     const p=5000;S.cash+=p;S.ajo.payouts+=1;
-    addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);
+    addXp(50);
+    addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}. +50 XP.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);
     postToFeed(`${esc(S.name)} just won a ₦5,000 Ajo payout! 🪙`);
   }
   else toast(`Ajo paid. Streak ${S.ajo.streak}/7`);
@@ -904,11 +1038,12 @@ window.claimAppt=function(id){
   if(a.status!=="ready")return toast("Not ready yet.");
   if(S.location!==a.loc)return toast(`Go to ${LOCS[a.loc].name}.`);
   applyFx(a.reward);a.status="done";
+  addXp(25);
   const parts=[];
   if(a.reward.cash)parts.push(`+₦${fmtMoney(a.reward.cash)}`);
   if(a.reward.reputation)parts.push(`+${a.reward.reputation} rep`);
   if(a.reward.network)parts.push(`+${a.reward.network} net`);
-  addLog(`✅ Claimed: ${a.title}. ${parts.join(", ")}`);
+  addLog(`✅ Claimed: ${a.title}. ${parts.join(", ")}. +25 XP.`);
   toast(parts.join(" · ")||"Claimed.");save();renderGame();
 };
 
