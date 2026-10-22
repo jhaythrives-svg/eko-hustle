@@ -815,6 +815,14 @@ function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor(
 /* ---------------- BOOT / RENDER ---------------- */
 async function render(){
   await ensureAuth();
+    // Fetch secure VIP status
+  let isVip = false;
+  try {
+    const { data: vipData } = await sb.from('vip_passes').select('expires_at').eq('user_id', session.user.id).order('expires_at', { ascending: false }).limit(1);
+    if (vipData && vipData.length > 0 && new Date(vipData[0].expires_at) > new Date()) {
+      isVip = true;
+    }
+  } catch(e) {}
   const local=load();
   const cloud=await cloudPull();
   if(cloud?.state){
@@ -824,6 +832,7 @@ async function render(){
     else S=local;
   }else S=local;
   if(!S)return renderOnboarding();
+    S.isVip = isVip;
   
   // Legacy Saves Fix
   if(!S.assets) S.assets = [];
@@ -888,7 +897,7 @@ function renderGame(){
   const energyPct=Math.round((S.energy/S.maxEnergy)*100);
   const appts=S.appointments.filter(a=>a.status!=="done");const spinReady=S.spinDay!==new Date().toDateString();
   const now=Date.now();
-  const isVip = S.vipUntil > now;
+  const isVip = S.isVip || false;
   
   const m = getMissions();
   const missionCount = (m.work >= 3 ? 1 : 0) + (m.travel >= 2 ? 1 : 0) + (m.social >= 1 ? 1 : 0);
@@ -1024,11 +1033,9 @@ window.buyVip = function() {
         if (error || !data.success) {
           openModal(`<h3>❌ Payment Failed</h3><p style="color:#fca5a5;font-size:13px">We could not verify your payment. If you were debited, contact support with ref: ${response.reference}</p><button class="opt" onclick="closeModal()">Close</button>`);
         } else {
-          S.vipUntil = Date.now() + (24 * HOUR);
-          S.energy = S.maxEnergy;
           addLog("👑 Upgraded to VIP via Paystack!");
           save();
-          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
+          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="location.reload()">Let's Hustle</button>`);
         }
       });
     },
@@ -1043,7 +1050,7 @@ window.buyVip = function() {
 window.openProfile = function() {
   const d = DREAMS.find(x => x.id === S.dream);
   const dreamLabel = d ? d.label : "Hustler";
-  const isVip = S.vipUntil > Date.now();
+  const isVip = S.isVip || false;
   
   let assetHtml = "";
   if(!S.assets || S.assets.length === 0) {
@@ -1110,7 +1117,7 @@ window.doWorkCore=function(jobId){
   if(S.energy < actualEnergyCost) return toast(`Not enough energy (needs ${actualEnergyCost}). Rest first.`);
   
   let pay=rand(job.pay[0],job.pay[1]);const cb=hustleCombo();pay=Math.floor(pay*cb*(window._perf||1));window._perf=1;
-  const isVip = S.vipUntil > Date.now();
+    const isVip = S.isVip || false;
   const businessMult = 1 + ((S.skills?.business || 0) * 0.10);
   
   if(isVip) pay = pay * 2;
