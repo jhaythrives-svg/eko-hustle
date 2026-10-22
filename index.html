@@ -282,6 +282,7 @@ window.onerror = function(msg, url, line, col, error) {
 };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
+<script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 "use strict";
 
@@ -1001,17 +1002,41 @@ window.openVipStore = function() {
 };
 
 window.buyVip = function() {
-  toast("Processing payment...");
-  setTimeout(() => {
-    S.vipUntil = Date.now() + (24 * HOUR);
-    S.energy = S.maxEnergy;
-    addLog("👑 Upgraded to VIP! 2x cash for 24 hours.");
-    save();
-    closeModal();
-    renderGame();
-    toast("👑 VIP Activated! You are now a Big Man.");
-    showCharacter('avatar', "I'm a VIP now. The hustle just got easier.", 4000);
-  }, 1500);
+  // REPLACE THIS WITH YOUR PAYSTACK PUBLIC KEY (pk_live_... for real payments, pk_test_... for testing)
+  const PAYSTACK_PUBLIC_KEY = "pk_live_7bc2de2440959574220ff797854cbba3d0057b49"; 
+  
+  if (PAYSTACK_PUBLIC_KEY.includes("YOUR_KEY_HERE")) {
+    return toast("Please add your Paystack Public Key to the code first!");
+  }
+
+  const handler = PaystackPop.setup({
+    key: PAYSTACK_PUBLIC_KEY,
+    email: `player_${session.user.id.substring(0,8)}@ekohustle.com`,
+    amount: 100000, // 100,000 kobo = ₦1,000
+    currency: "NGN",
+    callback: function(response) {
+      closeModal();
+      openModal(`<h3>⏳ Verifying Payment...</h3><p style="color:#c8d6ce;font-size:13px">Please wait, we are confirming your transaction with Paystack.</p>`);
+      
+      sb.functions.invoke('verify-payment', {
+        body: { reference: response.reference, user_id: session.user.id }
+      }).then(({ data, error }) => {
+        if (error || !data.success) {
+          openModal(`<h3>❌ Payment Failed</h3><p style="color:#fca5a5;font-size:13px">We could not verify your payment. If you were debited, contact support with ref: ${response.reference}</p><button class="opt" onclick="closeModal()">Close</button>`);
+        } else {
+          S.vipUntil = Date.now() + (24 * HOUR);
+          S.energy = S.maxEnergy;
+          addLog("👑 Upgraded to VIP via Paystack!");
+          save();
+          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
+        }
+      });
+    },
+    onClose: function() {
+      toast("Transaction cancelled.");
+    }
+  });
+  handler.openIframe();
 };
 
 /* ---------------- PROFILE & SHARE ---------------- */
