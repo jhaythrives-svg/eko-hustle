@@ -159,6 +159,29 @@
   .spin{font-size:26px;font-weight:800;text-align:center;padding:28px 8px;background:var(--card2);border:2px dashed var(--line);border-radius:14px;margin:12px 0}
   .spin.win{border-color:var(--gold);color:var(--gold);animation:pl .5s 3 alternate}
   .pulse{animation:pl .8s infinite alternate}
+
+  /* VISUAL NOVEL ELEMENTS */
+  .visual-area {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    height: 200px; margin-top: 10px; margin-bottom: 10px; position: relative;
+  }
+  .character-img {
+    max-height: 180px; max-width: 100%; object-fit: contain;
+    animation: fadeIn 0.4s ease-out; z-index: 1;
+  }
+  .dialogue-box {
+    background: rgba(0, 0, 0, 0.85); border: 1px solid var(--line); border-left: 4px solid var(--green);
+    border-radius: 8px; padding: 12px; width: 100%; min-height: 60px;
+    z-index: 2; margin-top: -10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  }
+  .dialogue-name {
+    color: var(--green); font-size: 11px; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 1px; margin-bottom: 4px; display: block;
+  }
+  .dialogue-text {
+    font-size: 14px; font-weight: 600; line-height: 1.4; color: #fff;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 </style>
 </head>
 <body>
@@ -199,6 +222,41 @@ if (IS_SUPABASE_CONFIGURED) {
 const KEY="ekohustle_v1", HOUR=3600000, DAY=86400000;
 let S=null, currentEvent=null, cloudTimer=null, syncStatus="idle", session=null, authError=null;
 const $app=document.getElementById("app"), $modal=document.getElementById("modal-root"), $toast=document.getElementById("toast");
+
+/* ---------------- CHARACTER IMAGES CONFIG ---------------- */
+// IF YOUR IMAGE NAMES ARE DIFFERENT, CHANGE THEM HERE!
+const CHAR_IMAGES = {
+  tunde: 'tunde.png',
+  chinedu: 'chinedu.png',
+  chief: 'chief.png',
+  avatar: 'avatar.png'
+};
+
+let dialogueTimeout = null;
+window.showCharacter = function(charKey, text, hideAfter = 0) {
+  const imgDiv = document.getElementById('char-img');
+  const nameDiv = document.getElementById('char-name');
+  const textDiv = document.getElementById('char-text');
+  
+  if (!imgDiv) return;
+  
+  if (charKey && CHAR_IMAGES[charKey]) {
+    imgDiv.src = CHAR_IMAGES[charKey];
+    imgDiv.style.display = 'block';
+    nameDiv.textContent = charKey.toUpperCase();
+    nameDiv.style.color = (charKey === 'tunde') ? 'var(--green)' : (charKey === 'chinedu') ? 'var(--red)' : (charKey === 'chief') ? 'var(--gold)' : 'var(--blue)';
+    textDiv.textContent = text;
+    
+    clearTimeout(dialogueTimeout);
+    if (hideAfter > 0) {
+      dialogueTimeout = setTimeout(() => {
+        imgDiv.style.display = 'none';
+        nameDiv.textContent = '';
+        textDiv.textContent = 'What will you do next?';
+      }, hideAfter);
+    }
+  }
+};
 
 /* ---------------- DATA ---------------- */
 const LOCS={
@@ -352,6 +410,7 @@ function updateMission(type) {
     addLog("🏆 Daily Missions Completed! +₦5,000, Full Energy, +100 XP.");
     toast("🏆 Missions Complete! +₦5,000");
     postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
+    showCharacter('avatar', "You crushed all your missions today! Lagos is yours.", 5000);
   }
   save();
 }
@@ -366,6 +425,7 @@ function addXp(amount) {
     S.skillPoints = (S.skillPoints || 0) + 1;burst();sfx(3);buzz([40,30,80]);
     toast(`⭐ LEVEL UP! You are now Level ${S.level}! +1 Skill Point.`);
     addLog(`⭐ Leveled up to Level ${S.level}! Got 1 Skill Point.`);
+    showCharacter('avatar', `Level Up! You are now Level ${S.level}. You feel stronger.`, 4000);
   }
 }
 
@@ -496,6 +556,7 @@ async function newGame(name,originId,dreamId){
 
   addLog(`You land in Lagos with ₦${fmtMoney(S.cash)}. ${o.label}. Dream: ${d.label}.`);
   save();renderGame();
+  setTimeout(() => showCharacter('avatar', "Omo, I just landed in Lagos with ₦5,000. Time to hustle!", 5000), 1000);
 }
 
 /* ---------------- DAILY RESET ---------------- */
@@ -539,7 +600,11 @@ function checkAppts(){
   if(!S)return false;
   const now=Date.now();let changed=false;
   S.appointments.forEach(a=>{
-    if(a.status==="pending"&&now>=a.unlockAt){a.status="ready";changed=true;toast("🔥 Appointment ready: "+a.title);}
+    if(a.status==="pending"&&now>=a.unlockAt){
+      a.status="ready";changed=true;toast("🔥 Appointment ready: "+a.title);
+      if(a.id.startsWith("tunde")) showCharacter('tunde', "Guy! I've been waiting. Come to Yaba, let's talk business.", 5000);
+      if(a.id.startsWith("chief")) showCharacter('chief', "Ah! My friend. I liked your style at the Owambe. Come, let's make money.", 6000);
+    }
     if(a.status==="ready"&&now>a.expiresAt){a.status="missed";applyFx(a.penalty);addLog(`Missed: ${a.title}.`);changed=true;}
   });
   if(changed)save();
@@ -558,7 +623,10 @@ function hustleCombo(){const n=Date.now();S.combo=(n-(S.lastWork||0)<120000)?Mat
 const RIVALS=[{n:"Chinedu",e:"🚗",b:30000,d:6000},{n:"Chief Obi",e:"🧥",b:200000,d:30000},{n:"Alhaji Mega",e:"🏢",b:1000000,d:120000},{n:"Dangote Jr",e:"👑",b:5000000,d:600000}];
 function worth(){return S.cash+(S.assets||[]).reduce((s,id)=>s+((ASSETS.find(a=>a.id===id)||{}).cost||0),0)+S.reputation*200;}
 function rival(){const t=Math.min(S.rivalTier||0,RIVALS.length-1),r=RIVALS[t];return{r,t,w:r.b+r.d*((Date.now()-(S.rivalStart||S.createdAt))/DAY)};}
-function rivalCheck(){const v=rival();if((S.rivalTier||0)>=RIVALS.length||worth()<v.w)return;const b=10000*(v.t+1);S.cash+=b;S.rivalTier=v.t+1;S.rivalStart=Date.now();addLog(`🔥 You overtook ${v.r.n}! +₦${fmtMoney(b)}`);burst();sfx(3);buzz([60,40,120]);const nx=RIVALS[S.rivalTier];setTimeout(()=>openModal(`<h3 style="text-align:center">🔥 You overtook ${esc(v.r.n)}!</h3><p class="rw">+₦${fmtMoney(b)} bonus.<br>${nx?`New rival: ${nx.e} <b>${nx.n}</b>. He is richer. Go get him.`:"You are the biggest hustler in Lagos. 👑"}</p><button class="btn primary" style="width:100%" onclick="closeModal();renderGame()">Keep hustling</button>`),600);}
+function rivalCheck(){const v=rival();if((S.rivalTier||0)>=RIVALS.length||worth()<v.w)return;const b=10000*(v.t+1);S.cash+=b;S.rivalTier=v.t+1;S.rivalStart=Date.now();addLog(`🔥 You overtook ${v.r.n}! +₦${fmtMoney(b)}`);burst();sfx(3);buzz([60,40,120]);const nx=RIVALS[S.rivalTier];
+  showCharacter('chinedu', `What?! You overtook me? This isn't over. I'll be back.`, 6000);
+  setTimeout(()=>openModal(`<h3 style="text-align:center">🔥 You overtook ${esc(v.r.n)}!</h3><p class="rw">+₦${fmtMoney(b)} bonus.<br>${nx?`New rival: ${nx.e} <b>${nx.n}</b>. He is richer. Go get him.`:"You are the biggest hustler in Lagos. 👑"}</p><button class="btn primary" style="width:100%" onclick="closeModal();renderGame()">Keep hustling</button>`),600);
+}
 function rivalCard(){const v=rival(),me=worth(),p=Math.min(100,Math.round(me/v.w*100));return `<div class="rival"><div class="rv-top"><span>${v.r.e} Rival: <b>${v.r.n}</b></span><span>${me>=v.w?"You lead!":p+"%"}</span></div><div class="bar"><i style="width:${p}%;background:linear-gradient(90deg,#ef4444,#f59e0b)"></i></div><div class="rv-sub">You ₦${fmtMoney(me)} · ${v.r.n} ₦${fmtMoney(v.w)} (he grows daily)</div></div>`;}
 
 /* Badges */
@@ -627,6 +695,9 @@ async function render(){
   if(!S.xp) S.xp = 0;
   if(!S.skillPoints) S.skillPoints = 0;
   if(!S.skills) S.skills = { hustle: 0, business: 0, charisma: 0 };
+  if(!S.ach) S.ach = {};
+  if(!S.streak) S.streak = 1;
+  if(!S.shield) S.shield = 0;
   
   window._awayMs=Date.now()-(S.lastSaved||Date.now());checkReset();checkAppts();renderGame();
   
@@ -703,6 +774,15 @@ function renderGame(){
       <div class="feed-text" id="feed-text">Loading feed...</div>
     </div>
     
+    <!-- VISUAL NOVEL AREA -->
+    <div class="visual-area">
+      <img id="char-img" class="character-img" src="${CHAR_IMAGES.avatar}" style="display: none;" alt="Character">
+      <div class="dialogue-box">
+        <span class="dialogue-name" id="char-name"></span>
+        <div class="dialogue-text" id="char-text">Welcome to Lagos. What will you do today?</div>
+      </div>
+    </div>
+
     <div class="level-bar">
       <div class="level-top">
         <span style="color:var(--blue)">Level ${S.level}</span>
@@ -835,6 +915,7 @@ window.buyVip = function() {
     closeModal();
     renderGame();
     toast("👑 VIP Activated! You are now a Big Man.");
+    showCharacter('avatar', "I'm a VIP now. The hustle just got easier.", 4000);
   }, 1500);
 };
 
@@ -932,6 +1013,7 @@ window.doWork=function(jobId){
       unlockAt:Date.now()+90000,expiresAt:Date.now()+90000+DAY,
       reward:{cash:8000,reputation:5,network:3},penalty:{happiness:-10},status:"pending"});
     addLog("📅 New appointment: Tunde in Yaba.");
+    showCharacter('tunde', "Guy! You get mind. Come to Yaba tomorrow, I get a big gig for you. Don't be late.", 6000);
   }
   if(S.flags.workCount===3&&!S.flags.mysteryScheduled){
     S.flags.mysteryScheduled=true;
@@ -985,6 +1067,7 @@ window.buyAsset = function(id) {
   postToFeed(`${esc(S.name)} just bought a ${a.name}! 💰`);
   
   if (isFirstAsset) {
+    showCharacter('chinedu', `So you bought a ${a.name}? Cute. Let me know when you can afford a real car.`, 6000);
     const shareText = encodeURIComponent(`I just bought my first asset (${a.name} ${a.emoji}) in Eko Hustle! The hustle is real. 💰\n\nJoin me and let's build an empire: https://jhaythrives-svg.github.io/eko-hustle/`);
     const waLink = `https://wa.me/?text=${shareText}`;
     setTimeout(() => {
@@ -994,7 +1077,7 @@ window.buyAsset = function(id) {
         <a href="${waLink}" target="_blank" class="btn share">💬 Share this Flex on WhatsApp</a>
         <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Maybe Later</button>
       `);
-    }, 800);
+    }, 3500);
   }
 };
 
@@ -1049,6 +1132,9 @@ window.attendOwambe = function(cost, outfit, rep, net) {
       status: "pending"
     });
     addLog("📞 A Chief wants to see you in 10 minutes.");
+    showCharacter('chief', "Ah! This one has style. I like you. Come to my office, let's do business.", 6000);
+  } else {
+    showCharacter('avatar', "I stepped into the Owambe. The outfits are crazy.", 3000);
   }
 };
 
@@ -1079,6 +1165,7 @@ window.doTravel=function(id){
   updateMission('travel');
   
   save();closeModal();renderGame();
+  showCharacter('avatar', `I just arrived at ${l.name}. Let's see what's here.`, 3000);
   if(Math.random()<0.3)triggerEvent();
 };
 
@@ -1113,6 +1200,8 @@ window.claimAppt=function(id){
   if(a.reward.network)parts.push(`+${a.reward.network} net`);
   addLog(`✅ Claimed: ${a.title}. ${parts.join(", ")}. +25 XP.`);
   toast(parts.join(" · ")||"Claimed.");save();renderGame();
+  if(a.id.startsWith("tunde")) showCharacter('tunde', "You showed up! I like that. Here is your cut. Let's do more business.", 5000);
+  if(a.id.startsWith("chief")) showCharacter('chief', "Excellent! You are a sharp guy. Here is your reward.", 5000);
 };
 
 /* ---------------- LEADERBOARD ---------------- */
@@ -1172,6 +1261,7 @@ function triggerEvent(){
   const ev=EVENTS[Math.floor(Math.random()*EVENTS.length)];
   currentEvent=ev;
   const html=ev.choices.map((c,i)=>`<button class="opt" onclick="pickChoice(${i})">${esc(c.label)}</button>`).join("");
+  showCharacter('avatar', ev.text, 0);
   openModal(`<h3>${esc(ev.title)}</h3><p style="color:#c8d6ce;font-size:14px;margin:0 0 12px">${esc(ev.text)}</p>${html}`);
 }
 
@@ -1189,6 +1279,7 @@ window.pickChoice=function(i){
     addLog("🎲 Gamble placed. Result in 60 seconds.");
   }
   addLog(c.res);currentEvent=null;closeModal();save();renderGame();toast(c.res);
+  showCharacter('avatar', c.res, 4000);
 };
 
 /* ---------------- MODAL ---------------- */
