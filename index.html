@@ -182,6 +182,12 @@
     font-size: 14px; font-weight: 600; line-height: 1.4; color: #fff;
   }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .char-em{font-size:84px;line-height:1;z-index:1;animation:bob 3s ease-in-out infinite}
+  @keyframes bob{50%{transform:translateY(-5px)}}
+  .tbar{position:relative;height:34px;background:var(--card2);border:1px solid var(--line);border-radius:999px;margin:14px 0;overflow:hidden}
+  .tz{position:absolute;left:33%;width:34%;top:0;bottom:0;background:rgba(34,197,94,.28)}
+  .tz:after{content:"";position:absolute;left:29.4%;width:41%;top:0;bottom:0;background:rgba(251,191,36,.6)}
+  .tm{position:absolute;top:0;bottom:0;width:6px;background:#fff;border-radius:3px;transform:translateX(-50%)}
 </style>
 </head>
 <body>
@@ -232,31 +238,11 @@ const CHAR_IMAGES = {
   avatar: 'avatar.png'
 };
 
-let dialogueTimeout = null;
-window.showCharacter = function(charKey, text, hideAfter = 0) {
-  const imgDiv = document.getElementById('char-img');
-  const nameDiv = document.getElementById('char-name');
-  const textDiv = document.getElementById('char-text');
-  
-  if (!imgDiv) return;
-  
-  if (charKey && CHAR_IMAGES[charKey]) {
-    imgDiv.src = CHAR_IMAGES[charKey];
-    imgDiv.style.display = 'block';
-    nameDiv.textContent = charKey.toUpperCase();
-    nameDiv.style.color = (charKey === 'tunde') ? 'var(--green)' : (charKey === 'chinedu') ? 'var(--red)' : (charKey === 'chief') ? 'var(--gold)' : 'var(--blue)';
-    textDiv.textContent = text;
-    
-    clearTimeout(dialogueTimeout);
-    if (hideAfter > 0) {
-      dialogueTimeout = setTimeout(() => {
-        imgDiv.style.display = 'none';
-        nameDiv.textContent = '';
-        textDiv.textContent = 'What will you do next?';
-      }, hideAfter);
-    }
-  }
-};
+const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓🏾"},avatar:{c:"var(--blue)",e:"🏃🏾‍♂️"}};
+let DLG={k:null,t:"Welcome to Lagos. What will you do today?"},dlgTimer=null,typeTimer=null;
+function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${CHAR_IMAGES[DLG.k]}"`:""} style="display:${m?"block":"none"}" onerror="this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?m.e:""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
+function paintDlg(type){const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
+window.showCharacter=function(k,text,hideAfter=0){if(!CHAR_META[k])return;DLG={k,t:text};clearTimeout(dlgTimer);if(hideAfter>0)dlgTimer=setTimeout(()=>{DLG={k:null,t:"What will you do next?"};paintDlg(false);},hideAfter);paintDlg(true);};
 
 /* ---------------- DATA ---------------- */
 const LOCS={
@@ -611,6 +597,35 @@ function checkAppts(){
   return changed;
 }
 
+/* ---------------- V3: MINIGAME, STORY, BACKDROPS ---------------- */
+let _mg=null;
+window.doWork=function(id){
+  const job=(JOBS[S.location]||[]).find(j=>j.id===id);if(!job)return;
+  const cost=Math.ceil(job.energy*(1-((S.skills&&S.skills.hustle)||0)*0.05));
+  if(S.energy<cost)return toast(`Not enough energy (needs ${cost}). Rest first.`);
+  openModal(`<h3 style="text-align:center">${job.emoji} ${job.name}</h3><p class="rw">Tap STOP in the <b style="color:var(--gold)">gold zone</b> for x1.5 pay!</p><div class="tbar"><div class="tz"></div><div class="tm" id="tm"></div></div><div class="rw" id="tres">&nbsp;</div><button class="btn primary" style="width:100%" id="stopbtn" onclick="stopMg('${id}')">✋ STOP</button><button class="opt" onclick="mgSkip('${id}')" style="text-align:center;margin-top:8px">Skip (normal pay)</button>`);
+  const t0=performance.now(),sp=0.0016+Math.min(S.level,8)*0.00008;cancelAnimationFrame(_mg);
+  const loop=t=>{const m=document.getElementById("tm");if(!m)return;const p=(Math.sin((t-t0)*sp*Math.PI*1.2-Math.PI/2)+1)/2;m.style.left=(p*100)+"%";m.dataset.p=p;_mg=requestAnimationFrame(loop);};
+  _mg=requestAnimationFrame(loop);
+};
+window.stopMg=function(id){const m=document.getElementById("tm"),b=document.getElementById("stopbtn");if(!m||b.disabled)return;cancelAnimationFrame(_mg);b.disabled=true;const d=Math.abs(parseFloat(m.dataset.p)-0.5);let x=0.8,l="Miss… x0.8",c="#ef4444";if(d<0.07){x=1.5;l="🎯 PERFECT! x1.5";c="#fbbf24";burst();sfx(3);buzz([30,20,60]);}else if(d<0.17){x=1.2;l="👍 Good! x1.2";c="#22c55e";sfx(2);}document.getElementById("tres").innerHTML=`<b style="color:${c};font-size:18px">${l}</b>`;window._perf=x;setTimeout(()=>doWorkCore(id),700);};
+window.mgSkip=function(id){cancelAnimationFrame(_mg);window._perf=1;doWorkCore(id);};
+
+const LOCBG={ojota:"linear-gradient(135deg,#1a1a0b,#4a3a12)",yaba:"linear-gradient(135deg,#0d1b2a,#1d4a7c)",ikeja:"linear-gradient(135deg,#2a1a0d,#6b3a12)",surulere:"linear-gradient(135deg,#2a0d2a,#6b1d6b)",vi:"linear-gradient(135deg,#10202a,#2a5a6b)",lekki:"linear-gradient(135deg,#0d2a1a,#1d6b3a)",ajah:"linear-gradient(135deg,#1d1d1d,#4a4a4a)"};
+const pr=(a,b)=>Math.min(1,a/b);
+const CHAPTERS=[
+ {t:"Stack your first ₦20,000",k:"tunde",say:"Lagos no dey carry last. Stack ₦20,000 first, then we talk.",p:s=>pr(s.cash,20000),r:3000},
+ {t:"Reach Level 3",k:"tunde",say:"You're moving. Level up and people will start to notice.",p:s=>pr(s.level,3),r:4000},
+ {t:"Buy your first asset",k:"chinedu",say:"Still on foot? Buy something, anything. Even a keke.",p:s=>s.assets.length?1:0,r:6000},
+ {t:"Pay Ajo 3 days in a row",k:"tunde",say:"Discipline pays. Do your Ajo daily.",p:s=>pr(s.ajo.streak,3),r:5000},
+ {t:"Reach 40 Rep",k:"chief",say:"People must know your name. Build rep, young man.",p:s=>pr(s.reputation,40),r:8000},
+ {t:"Own a house",k:"chief",say:"A man without a roof is a man without respect.",p:s=>s.assets.some(i=>i==="selfcon"||i==="duplex")?1:0,r:15000},
+ {t:"Reach Level 8",k:"tunde",say:"Eko is for the consistent. Keep grinding.",p:s=>pr(s.level,8),r:20000},
+ {t:"Overtake Chinedu",k:"chinedu",say:"You think you can catch me? Try.",p:s=>(s.rivalTier||0)>=1?1:0,r:25000},
+ {t:"Reach ₦1,000,000 net worth",k:"chief",say:"One million. Then you sit at my table.",p:s=>pr(worth(),1000000),r:100000}];
+function chapCheck(){const i=S.chap||0,c=CHAPTERS[i];if(!c||c.p(S)<1)return;S.chap=i+1;S.cash+=c.r;addXp(60);const n=CHAPTERS[i+1];addLog(`📖 Chapter ${i+1} done: ${c.t}. +₦${fmtMoney(c.r)}`);toast(`📖 Chapter ${i+1} complete! +₦${fmtMoney(c.r)}`);burst();sfx(3);buzz([40,30,90]);showCharacter(n?n.k:"chief",n?`Chapter ${i+1} done, +₦${fmtMoney(c.r)}. Next: ${n.t}. ${n.say}`:"You did it. You are a Legend of Eko. 👑",8000);}
+function chapCard(){const i=S.chap||0,c=CHAPTERS[i];if(!c)return `<div class="rival" style="border-color:var(--gold)"><div class="rv-top"><span>👑 <b>Legend of Eko</b></span><span>All chapters done</span></div></div>`;const p=Math.round(c.p(S)*100);return `<div class="rival" style="border-color:#2a4033"><div class="rv-top"><span>📖 Chapter ${i+1}/${CHAPTERS.length}</span><span style="color:var(--green)">+₦${fmtMoney(c.r)}</span></div><div style="font-size:14px;font-weight:700;margin:4px 0 6px">${c.t}</div><div class="bar"><i style="width:${p}%"></i></div></div>`;}
+
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
 function sfx(n){if(S&&S.mute)return;try{_ac=_ac||new(window.AudioContext||window.webkitAudioContext)();const t=_ac.currentTime;[[520],[520,780],[523,659,784,1046]][n-1].forEach((f,i)=>{const o=_ac.createOscillator(),g=_ac.createGain();o.frequency.value=f;o.type="triangle";g.gain.setValueAtTime(.12,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.2);o.connect(g);g.connect(_ac.destination);o.start(t+i*.09);o.stop(t+i*.09+.22);});}catch(e){}}
@@ -643,7 +658,7 @@ const ACH=[
  {id:"s7",n:"7-Day Streak",e:"🔥",t:s=>(s.streak||0)>=7,r:10000},
  {id:"r100",n:"Known in Lagos",e:"🤝",t:s=>s.reputation>=100,r:8000},
  {id:"v1",n:"Beat Chinedu",e:"🏆",t:s=>(s.rivalTier||0)>=1,r:5000}];
-function checkAch(){if(!S||!S.flags||!S.assets)return;S.ach=S.ach||{};ACH.forEach(a=>{if(!S.ach[a.id]&&a.t(S)){S.ach[a.id]=1;S.cash+=a.r;addLog(`🏅 ${a.n}! +₦${fmtMoney(a.r)}`);toast(`🏅 ${a.n} +₦${fmtMoney(a.r)}`);burst();sfx(2);}});rivalCheck();}
+function checkAch(){if(!S||!S.flags||!S.assets)return;S.ach=S.ach||{};ACH.forEach(a=>{if(!S.ach[a.id]&&a.t(S)){S.ach[a.id]=1;S.cash+=a.r;addLog(`🏅 ${a.n}! +₦${fmtMoney(a.r)}`);toast(`🏅 ${a.n} +₦${fmtMoney(a.r)}`);burst();sfx(2);}});rivalCheck();chapCheck();}
 window.openAch=function(){openModal(`<h3>🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</h3>`+ACH.map(a=>{const d=S.ach&&S.ach[a.id];return `<div class="mission ${d?"done":""}"><div><div class="m-title">${a.e} ${a.n}</div><div class="m-desc">Reward ₦${fmtMoney(a.r)}</div></div><div class="m-check">${d?"✅":"🔒"}</div></div>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* Daily lucky spin */
@@ -774,14 +789,7 @@ function renderGame(){
       <div class="feed-text" id="feed-text">Loading feed...</div>
     </div>
     
-    <!-- VISUAL NOVEL AREA -->
-    <div class="visual-area">
-      <img id="char-img" class="character-img" src="${CHAR_IMAGES.avatar}" style="display: none;" alt="Character">
-      <div class="dialogue-box">
-        <span class="dialogue-name" id="char-name"></span>
-        <div class="dialogue-text" id="char-text">Welcome to Lagos. What will you do today?</div>
-      </div>
-    </div>
+    ${dlgHtml()}
 
     <div class="level-bar">
       <div class="level-top">
@@ -804,8 +812,8 @@ function renderGame(){
       <span class="chip">🤝 Network <b>${S.network}</b></span>
       <span class="chip">🔥 Streak <b>${S.streak||0}</b></span>
     </div>
-    <div class="loc"><div class="name">${loc.emoji} ${loc.name}</div><div class="desc">${loc.desc}</div></div>
-    ${rivalCard()}
+    <div class="loc" style="background:${LOCBG[S.location]};position:relative;overflow:hidden"><div style="position:absolute;right:10px;top:-2px;font-size:64px;opacity:.22">${loc.emoji}</div><div class="name">${loc.emoji} ${loc.name}</div><div class="desc">${loc.desc}</div></div>
+    ${chapCard()}${rivalCard()}
     <div class="actions">
       <button class="btn primary" onclick="openWork()">💼 Work ${isVip ? '(2x)' : ''}</button>
       <button class="btn asset" onclick="openAssets()">🏠 Assets</button>
@@ -980,7 +988,7 @@ window.openWork=function(){
   openModal(`<h3>Work in ${LOCS[S.location].name}</h3>${html||"<p style='color:#8fa39a'>No jobs here.</p>"}<button class="opt" onclick="closeModal()">Close</button>`);
 };
 
-window.doWork=function(jobId){
+window.doWorkCore=function(jobId){
   const job=(JOBS[S.location]||[]).find(j=>j.id===jobId);
   if(!job)return;
   
@@ -989,7 +997,7 @@ window.doWork=function(jobId){
   
   if(S.energy < actualEnergyCost) return toast(`Not enough energy (needs ${actualEnergyCost}). Rest first.`);
   
-  let pay=rand(job.pay[0],job.pay[1]);const cb=hustleCombo();pay=Math.floor(pay*cb);
+  let pay=rand(job.pay[0],job.pay[1]);const cb=hustleCombo();pay=Math.floor(pay*cb*(window._perf||1));window._perf=1;
   const isVip = S.vipUntil > Date.now();
   const businessMult = 1 + ((S.skills?.business || 0) * 0.10);
   
