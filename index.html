@@ -484,7 +484,7 @@ function addXp(amount) {
   const nextLevelXp = S.level * 100;
   if (S.xp >= nextLevelXp) {
     S.xp -= nextLevelXp;
-    S.level++;
+    S.level++;track('level_'+S.level);
     S.skillPoints = (S.skillPoints || 0) + 1;burst();sfx(3);buzz([40,30,80]);
     toast(`⭐ LEVEL UP! You are now Level ${S.level}! +1 Skill Point.`);
     addLog(`⭐ Leveled up to Level ${S.level}! Got 1 Skill Point.`);
@@ -722,7 +722,7 @@ const CHAPTERS=[
  {t:"Overtake Chinedu",k:"chinedu",say:"You think you can catch me? Try.",p:s=>(s.rivalTier||0)>=1?1:0,r:25000},
  {t:"Reach ₦1,000,000 net worth",k:"chief",say:"One million. Then you sit at my table.",p:s=>pr(worth(),1000000),r:100000},
  {t:"Run 3 businesses",k:"tunde",say:"Jobs are for survival. Businesses are for freedom.",p:s=>pr(Object.keys(s.biz||{}).filter(k=>s.biz[k]>0).length,3),r:50000}];
-function chapCheck(){const i=S.chap||0,c=CHAPTERS[i];if(!c||c.p(S)<1)return;S.chap=i+1;S.cash+=c.r;addXp(60);const n=CHAPTERS[i+1];addLog(`📖 Chapter ${i+1} done: ${c.t}. +₦${fmtMoney(c.r)}`);toast(`📖 Chapter ${i+1} complete! +₦${fmtMoney(c.r)}`);burst();sfx(3);buzz([40,30,90]);showCharacter(n?n.k:"chief",n?`Chapter ${i+1} done, +₦${fmtMoney(c.r)}. Next: ${n.t}. ${n.say}`:"You did it. You are a Legend of Eko. 👑",8000);}
+function chapCheck(){const i=S.chap||0,c=CHAPTERS[i];if(!c||c.p(S)<1)return;S.chap=i+1;track('chapter_'+(i+1));S.cash+=c.r;addXp(60);const n=CHAPTERS[i+1];addLog(`📖 Chapter ${i+1} done: ${c.t}. +₦${fmtMoney(c.r)}`);toast(`📖 Chapter ${i+1} complete! +₦${fmtMoney(c.r)}`);burst();sfx(3);buzz([40,30,90]);showCharacter(n?n.k:"chief",n?`Chapter ${i+1} done, +₦${fmtMoney(c.r)}. Next: ${n.t}. ${n.say}`:"You did it. You are a Legend of Eko. 👑",8000);}
 function chapCard(){const i=S.chap||0,c=CHAPTERS[i];if(!c)return `<div class="rival" style="border-color:var(--gold)"><div class="rv-top"><span>👑 <b>Legend of Eko</b></span><span>All chapters done</span></div></div>`;const p=Math.round(c.p(S)*100);return `<div class="rival" style="border-color:#2a4033"><div class="rv-top"><span>📖 Chapter ${i+1}/${CHAPTERS.length}</span><span style="color:var(--green)">+₦${fmtMoney(c.r)}</span></div><div style="font-size:14px;font-weight:700;margin:4px 0 6px">${c.t}</div><div class="bar"><i style="width:${p}%"></i></div></div>`;}
 
 /* ---------------- V6: EMPIRE, MARKET, RISK ---------------- */
@@ -731,7 +731,7 @@ function bizRate(){return BIZ.reduce((s,b)=>s+b.i*((S.biz||{})[b.id]||0),0);}
 function bizPending(){return Math.floor(bizRate()*Math.min(8,(Date.now()-(S.bizT||Date.now()))/HOUR));}
 window.openBiz=function(){S.biz=S.biz||{};const p=bizPending();openModal(`<h3>🏭 Your Empire</h3><div class="opt" style="border-color:var(--green)">₦${fmtMoney(bizRate())}/hr · ready <b>₦${fmtMoney(p)}</b><span class="sub">Earns even when you're offline (8h cap). Upgrades compound.</span></div><button class="btn primary" style="width:100%;margin-bottom:8px" onclick="bizCollect()" ${p?"":"disabled"}>💰 Collect ₦${fmtMoney(p)}</button>`+BIZ.map(b=>{const l=S.biz[b.id]||0,c=Math.floor(b.c*Math.pow(1.7,l));return `<button class="opt ${S.cash>=c?"":"locked"}" onclick="bizBuy('${b.id}')">${b.e} ${b.n} · Lv ${l}<span class="sub">${l?"Upgrade":"Open"} ₦${fmtMoney(c)} · +₦${fmtMoney(b.i)}/hr · pays back in ${(c/b.i).toFixed(0)}h</span></button>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 window.bizCollect=function(){const p=bizPending();if(!p)return;S.cash+=p;S.bizT=Date.now();addLog(`🏭 Collected ₦${fmtMoney(p)} from your empire.`);floatText("+₦"+fmtMoney(p));burst();sfx(2);save();closeModal();renderGame();};
-window.bizBuy=function(id){S.biz=S.biz||{};const b=BIZ.find(x=>x.id===id),l=S.biz[id]||0,c=Math.floor(b.c*Math.pow(1.7,l));if(S.cash<c)return toast("Not enough cash");S.cash+=bizPending();S.bizT=Date.now();S.cash-=c;S.biz[id]=l+1;addXp(40);addLog(`🏭 ${b.n} is now Lv ${l+1}. -₦${fmtMoney(c)}`);postToFeed(`${esc(S.name)} upgraded ${b.n} to Lv ${l+1}! 🏭`);sfx(2);save();openBiz();renderGame();};
+window.bizBuy=function(id){S.biz=S.biz||{};const b=BIZ.find(x=>x.id===id),l=S.biz[id]||0,c=Math.floor(b.c*Math.pow(1.7,l));if(S.cash<c)return toast("Not enough cash");S.cash+=bizPending();S.bizT=Date.now();S.cash-=c;S.biz[id]=l+1;track('biz_buy',{id:id,lv:l+1});addXp(40);addLog(`🏭 ${b.n} is now Lv ${l+1}. -₦${fmtMoney(c)}`);postToFeed(`${esc(S.name)} upgraded ${b.n} to Lv ${l+1}! 🏭`);sfx(2);save();openBiz();renderGame();};
 
 const MK=[{id:"usd",n:"Dollar",e:"💵",b:1500,v:.035},{id:"coin",n:"Okada Coin",e:"🪙",b:2000,v:.12},{id:"land",n:"Ajah Land",e:"🏞️",b:50000,v:.015}];
 function mv(i,n){const R=rng(n*977+i*131+7);R();R();return(R()-.5)*2*MK[i].v;}
@@ -792,7 +792,8 @@ window.doSpin=function(){const today=new Date().toDateString();if(S.spinDay===to
 
 /* Login streak + offline earnings + energy regen */
 const STREAK=[1000,1500,2500,3500,5000,7500,20000];
-function startSession(){
+function track(n,p){try{if(sb&&session&&session.user)sb.rpc('track_event',{p_name:n,p_props:p||{}});}catch(e){}}
+function startSession(){track('session');
   const now=Date.now(),today=new Date().toDateString(),away=window._awayMs||0;
   let rate=100+S.level*50;(S.assets||[]).forEach(id=>{const a=ASSETS.find(x=>x.id===id);if(a)rate+=a.cost*0.002;});
   const idle=away>=600000?Math.floor(rate*Math.min(away,8*HOUR)/HOUR):0;
@@ -1027,7 +1028,7 @@ window.buyVip = function() {
         if (error || !data.success) {
           openModal(`<h3>❌ Payment Failed</h3><p style="color:#fca5a5;font-size:13px">We could not verify your payment. If you were debited, contact support with ref: ${response.reference}</p><button class="opt" onclick="closeModal()">Close</button>`);
         } else {
-          S.energy = S.maxEnergy;await loadVip();
+          S.energy = S.maxEnergy;await loadVip();track('vip_purchase');
           addLog("👑 Upgraded to VIP via Paystack!");
           save();
           openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
@@ -1123,7 +1124,7 @@ window.doWorkCore=function(jobId){
   applyFx(job.fx);
   addXp(job.xp || 10);
   
-  S.flags.workCount=(S.flags.workCount||0)+1;
+  S.flags.workCount=(S.flags.workCount||0)+1;if(S.flags.workCount===1)track('first_job');
   addLog(`Worked: ${job.name}. +₦${fmtMoney(pay)}${isVip ? " (VIP)" : ""}. +${job.xp||10} XP.`);
   
   updateMission('work');
@@ -1177,7 +1178,7 @@ window.buyAsset = function(id) {
   const isFirstAsset = S.assets.length === 0;
   
   S.cash -= a.cost;
-  S.assets.push(a.id);
+  S.assets.push(a.id);if(isFirstAsset)track('first_asset');
   applyFx(a.fx);
   addXp(50); // Big XP for buying assets
   addLog(`Bought ${a.name}! -₦${fmtMoney(a.cost)}. +50 XP.`);
@@ -1336,7 +1337,7 @@ window.openLeaderboard=async function(){
   const html=data.map((r,i)=>`<div class="rank${r.is_me?" me":""}">
     <div class="n">${i+1}</div><div class="info">
       <div class="h">${esc(r.handle)}${r.is_me?" (you)":""}</div>
-      <div class="m">Day ${r.day} · ⭐ ${r.reputation} · ₦${fmtMoney(r.cash)}</div>
+      <div class="m">Day ${r.day} · ⭐ ${r.reputation} · 💰 Score ₦${fmtMoney(r.cash)}</div>
     </div></div>`).join("");
   openModal(`<h3>🏆 Top Hustlers</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
 };
