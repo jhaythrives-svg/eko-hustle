@@ -764,6 +764,7 @@ const CHAPTERS=[
  {t:"Pay yourself first: ₦10,000 in your Vault",k:"ada",say:"Before spending, save. Open the Freedom Plan and fill your Emergency Vault.",p:s=>pr(s.vault||0,10000),r:6000},
  {t:"Learn a skill that raises your pay",k:"tunde",say:"Skills are the best investment. Take a course in your Freedom Plan.",p:s=>Object.keys(s.edu||{}).length?1:0,r:8000},
  {t:"Vault covers 7 days of expenses",k:"ada",say:"One week of safety. Now a bad day will not break you.",p:s=>pr(s.vault||0,7*dailyCost()),r:10000},
+ {t:"Invest ₦25,000 in stocks",k:"chief",say:"Own pieces of great companies. Your money works while you work.",p:s=>pr(window.STK_VAL||0,25000),r:20000},
  {t:"Own your first income asset",k:"chief",say:"A rent-paying property or a business: assets pay while you sleep.",p:s=>(s.assets.some(i=>(ASSETS.find(a=>a.id===i)||{}).rent)||Object.values(s.biz||{}).some(v=>v>0))?1:0,r:15000},
  {t:"Reach 25% Freedom",k:"tunde",say:"A quarter of your lifestyle is paid by passive income.",p:s=>pr(freedomPct(),25),r:25000},
  {t:"Debt-free with a 30-day Vault",k:"ada",say:"No debt and a month of safety. That is real discipline.",p:s=>(s.debt||0)>0?0:pr(s.vault||0,30*dailyCost()),r:40000},
@@ -794,7 +795,7 @@ window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const
   if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+2000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
   else{const p=Math.floor(rand(6000,15000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
-window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button><button class="opt" onclick="openStocks()">📈 Stock Market</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
@@ -863,7 +864,7 @@ function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor(
 const FXN=["USD/NGN","GBP/NGN","EUR/NGN","OKADA/NGN"];
 const FXS={p:0,stake:5000,lev:10,risk:1,d:null,timer:null};
 async function fxCall(fn,args){if(!sb||!session||!session.user){toast("Trading needs an online connection");return null;}const{data,error}=await sb.rpc(fn,args||{});if(error){toast(String(error.message).slice(0,90));return null;}FXS.d=data;fxHandle(data);return data;}
-function fxQuiet(){try{if(sb&&session&&session.user)sb.rpc("fx_state").then(r=>{if(r.data){FXS.d=r.data;fxHandle(r.data);}});}catch(e){}}
+function fxQuiet(){try{if(sb&&session&&session.user){sb.rpc("fx_state").then(r=>{if(r.data){FXS.d=r.data;fxHandle(r.data);}});sb.rpc("stk_state").then(r=>{if(r.data)stkSync(r.data);});}}catch(e){}}
 function fxHandle(d){(d.closed||[]).forEach(c=>{const pl=Number(c.pnl);addLog(`📊 ${FXN[c.pair]} ${c.side==="buy"?"LONG":"SHORT"} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);toast(`${FXN[c.pair]} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);addXp(Math.min(60,Math.max(5,Math.round(Math.abs(pl)/1000))));if(pl>0){burst();sfx(3);if(pl>=50000)postToFeed(`${esc(S.name)} banked ₦${fmtMoney(pl)} on ${FXN[c.pair]} 📈`);}else if(c.reason==="liquidated"){buzz([80,40,80]);showCharacter('chinedu',"Margin call. Leverage does not forgive.",6000);}});if((d.closed||[]).length)save();}
 window.fxSet=function(k,v){FXS[k]=v;fxPaint();};
 window.fxOpen=async function(side){const d=await fxCall("fx_open",{p_pair:FXS.p,p_side:side,p_stake:FXS.stake,p_lev:FXS.lev,p_protect:!!FXS.risk});if(d){sfx(1);buzz(20);track('fx_open');fxPaint();}};
@@ -900,7 +901,7 @@ const COURSES=[{id:"lit",n:"Financial Literacy",e:"📘",c:3000,b:.05},{id:"book
 const dailyCost=()=>1500+LIFE[(S&&S.life)||0].c;
 const freedomNeed=()=>300000+LIFE[(S&&S.life)||0].c*30;
 function rentDay(){return(S.assets||[]).reduce((t,id)=>t+((ASSETS.find(a=>a.id===id)||{}).rent||0),0);}
-function passiveDay(){return bizRate()*8+rentDay();}
+function passiveDay(){return bizRate()*8+rentDay()+(window.STK_DIV!=null?window.STK_DIV:(S.stkDiv||0));}
 function freedomPct(){return passiveDay()/freedomNeed()*100;}
 function eduMult(){return 1+COURSES.reduce((t,c)=>t+((S.edu||{})[c.id]?c.b:0),0);}
 function ffDaily(d){S.vault=Math.floor((S.vault||0)*Math.pow(1.003,d));if(S.debt>0){S.debt=Math.ceil(S.debt*Math.pow(1.1,d));S.happiness=clamp(S.happiness-4*d);addLog(`⚠️ Debt interest: you now owe ₦${fmtMoney(S.debt)}.`);}S.happiness=clamp(S.happiness+LIFE[S.life||0].h*d);if(S.vaultT&&Date.now()-S.vaultT>2*DAY&&S.habit>0){addLog(`💔 Your ${S.habit}-day saving habit broke.`);S.habit=0;}S.shockDue=S.day>=3&&Math.random()<.55;}
@@ -926,6 +927,26 @@ window.openFreedom=function(){const need=freedomNeed(),pas=passiveDay(),pct=Math
   <div class="section-title">🎓 Skills that raise your pay (now +${Math.round((eduMult()-1)*100)}%)</div>${COURSES.map(c=>{const d=(S.edu||{})[c.id];return `<button class="opt ${d?"locked":""}" onclick="buyCourse('${c.id}')">${c.e} ${c.n} ${d?"✅":""}<span class="sub">${d?"Completed":`₦${fmtMoney(c.c)} · 20 energy · +${Math.round(c.b*100)}% on every job`}</span></button>`}).join("")}
   <div class="section-title">🏠 Lifestyle (higher lifestyle raises your Freedom Number)</div>${LIFE.map((l,i)=>`<button class="opt" style="${(S.life||0)===i?"border-color:var(--green)":""}" onclick="setLife(${i})">${l.n}${(S.life||0)===i?" ✅":""}<span class="sub">₦${fmtMoney(1500+l.c)}/day cost · Freedom Number ₦${fmtMoney(300000+l.c*30)} · happiness +${l.h}/day</span></button>`).join("")}
   <div class="section-title">Rival</div>${rivalCard()}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
+
+/* ---------------- V10: STOCK MARKET (server-side) ---------------- */
+const STK=[{p:4,s:"TSLA",n:"Tesla",e:"🚗"},{p:5,s:"NVDA",n:"Nvidia",e:"🧠"},{p:6,s:"AAPL",n:"Apple",e:"🍎"},{p:7,s:"MTNN",n:"MTN Nigeria",e:"📶"},{p:8,s:"DANGCEM",n:"Dangote Cement",e:"🏗️"}];
+const SK={d:null,amt:10000,timer:null};
+function stkSync(d){SK.d=d;window.STK_DIV=Number(d.div_day)||0;window.STK_VAL=Number(d.value)||0;S.stkDiv=window.STK_DIV;}
+async function stkCall(fn,args){if(!sb||!session||!session.user){toast("Stocks need an online connection");return null;}const{data,error}=await sb.rpc(fn,args||{});if(error){toast(String(error.message).slice(0,90));return null;}stkSync(data);return data;}
+window.stkSet=function(a){SK.amt=a;stkPaint();};
+window.stkBuy=async function(p){const d=await stkCall("stk_buy",{p_pair:p,p_amount:SK.amt});if(d){sfx(2);buzz(20);track('stock_buy',{p:p});save();stkPaint();}};
+window.stkSell=async function(p,pct){const h=((SK.d&&SK.d.holdings)||[]).find(x=>x.pair===p);const d=await stkCall("stk_sell",{p_pair:p,p_pct:pct});if(d){sfx(1);if(h&&Number(h.value)>Number(h.cost)*1.1){burst();sfx(3);}track('stock_sell',{p:p});save();stkPaint();}};
+window.stkMove=async function(delta){if(!delta)return;if(delta>0){if(S.cash<delta)return toast("Not enough cash");await cloudPush();}const r=await fxCall("fx_wallet_move",{p_delta:delta});if(r){S.cash-=delta;save();renderGame();await stkCall("stk_state");stkPaint();}};
+function stkPaint(){const el=document.getElementById("stkbody");if(!el)return;const d=SK.d;if(!d){el.innerHTML='<div class="fxsub">Connecting to the market…</div>';return;}
+  const hs=d.holdings||[],tot=hs.reduce((t,h)=>t+Number(h.value),0),top=hs.reduce((m,h)=>Math.max(m,Number(h.value)),0);
+  const tip=!hs.length?"💡 Start small and buy regularly. Time in the market beats timing the market.":(hs.length===1&&tot>0?"⚠️ Everything is in one company. Spread your money (diversify) to reduce risk.":(top/tot>.7?"⚠️ Over 70% of your portfolio is in one stock. Consider spreading it.":"✅ Well spread. Dividends and growth work for you every day."));
+  el.innerHTML=`<div class="fxsub">Wallet <b style="color:#e8f0ec">₦${fmtMoney(d.balance)}</b> · Invested <b style="color:#e8f0ec">₦${fmtMoney(tot)}</b> · Dividends ₦${fmtMoney(d.div_day)}/day (counts toward Freedom)</div><div class="fxnews">${tip}</div>
+  <div class="fxrow"><button class="fxc" onclick="stkMove(5000)">+₦5k</button><button class="fxc" onclick="stkMove(25000)">+₦25k</button><button class="fxc" onclick="stkMove(100000)">+₦100k</button><button class="fxc" onclick="stkMove(-(SK.d.balance||0))">Withdraw all</button></div>
+  <div class="fxrow">BUY AMOUNT ${[5000,25000,100000].map(v=>`<button class="fxc ${SK.amt===v?"on":""}" onclick="stkSet(${v})">₦${v/1000}k</button>`).join("")}</div>`+
+  STK.map(m=>{const q=d.quotes.find(x=>x.pair===m.p),c=q.candles,ch=c.length?(c[c.length-1][3]/c[0][0]-1)*100:0,h=hs.find(x=>x.pair===m.p),pl=h?Number(h.value)-Number(h.cost):0;
+    return `<div class="opt"><b>${m.e} ${m.s}</b> <span style="color:#8fa3ad">${m.n}</span><br><span class="fxp ${ch>=0?"up":"dn"}" style="font-size:20px">₦${fmtMoney(q.price)}</span> <span class="${ch>=0?"up":"dn"}" style="font-size:12px">${ch>=0?"▲":"▼"}${Math.abs(ch).toFixed(2)}%</span><span class="sub">${q.yield>0?`Pays ~${(q.yield*100).toFixed(2)}%/day in dividends`:"Growth stock: no dividends"} · ${h?`You own ₦${fmtMoney(h.value)} (${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))})`:"Not owned"}</span>
+    <div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:2;padding:8px" onclick="stkBuy(${m.p})">Buy ₦${fmtMoney(SK.amt)}</button><button class="btn" style="flex:1;padding:8px" onclick="stkSell(${m.p},50)" ${h?"":"disabled"}>Sell 50%</button><button class="btn warn" style="flex:1;padding:8px" onclick="stkSell(${m.p},100)" ${h?"":"disabled"}>Sell all</button></div></div>`;}).join("")+`<div class="fxsub">Prices are simulated and set on the server. Stocks drift up over time but swing day to day. 0.5% fee on each trade. This is a game, not financial advice.</div>`;}
+window.openStocks=function(){track('stocks_view');openModal(`<div class="fx"><h3>📈 Stock Market</h3><div id="stkbody"></div><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);stkPaint();clearInterval(SK.timer);const poll=()=>{if(!document.getElementById("stkbody")){clearInterval(SK.timer);return;}stkCall("stk_state").then(stkPaint);};poll();SK.timer=setInterval(poll,5000);};
 
 /* ---------------- BOOT / RENDER ---------------- */
 window.SRV_VIP=0;
