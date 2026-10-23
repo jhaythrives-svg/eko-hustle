@@ -301,6 +301,8 @@
   .fxsell{background:#ff4d5e;color:#190306;box-shadow:0 0 18px rgba(255,77,94,.3)}
   .fxpos{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#0d1317;border:1px solid var(--line);border-radius:8px;padding:8px;margin-bottom:5px;font-size:12px}
   .fxpos button{background:#1b252b;border:1px solid var(--line);color:#e8f0ec;border-radius:6px;padding:4px 9px;font-size:11px}
+  .bgv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+  .scene.hasv .sk,.scene.hasv .haze,.scene.hasv .lamps{display:none}
 </style>
 </head>
 <body>
@@ -349,12 +351,13 @@ const CHAR_IMAGES = {
   tunde: 'tunde.png',
   chinedu: 'chinedu.png',
   chief: 'chief.png',
-  avatar: 'avatar.png'
+  avatar: 'avatar.png',
+  ada: 'ada.png'
 };
 
-const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓🏾"},avatar:{c:"var(--blue)",e:"🏃🏾‍♂️"}};
+const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓🏾"},avatar:{c:"var(--blue)",e:"🏃🏾‍♂️"},ada:{c:"#f472b6",e:"👩🏾‍💼"}};
 let DLG={k:null,t:"Welcome to Lagos. What will you do today?"},dlgTimer=null,typeTimer=null;
-function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${CHAR_IMAGES[DLG.k]}"`:""} style="display:${m?"block":"none"}" onerror="this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?m.e:""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
+function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${charSrc(DLG.k)}"`:""} style="display:${m?"block":"none"}" onerror="if(!this.dataset.f&&this.src.indexOf('avatar_m')>-1){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?charEm(DLG.k):""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
 function paintDlg(type){const n=document.getElementById("npc");if(n)n.innerHTML=npcInner();const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
 window.showCharacter=function(k,text,hideAfter=0){if(!CHAR_META[k])return;DLG={k,t:text};clearTimeout(dlgTimer);if(hideAfter>0)dlgTimer=setTimeout(()=>{DLG={k:null,t:"What will you do next?"};paintDlg(false);},hideAfter);paintDlg(true);};
 
@@ -390,7 +393,7 @@ const JOBS={
 const ASSETS = [
   {id:"keke", type:"car", name:"Keke Napep", emoji:"🛺", cost:40000, fx:{reputation:5}, desc:"Small transport. Big relief."},
   {id:"camry", type:"car", name:"Tokunbo Camry", emoji:"🚗", cost:150000, fx:{reputation:15, network:5}, desc:"You don blow. Chinedu is jealous."},
-  {id:"suv", type:"car", name:"Brand New SUV", emoji:"🚙", cost:500000, fx:{reputation:30, network:10}, desc:"Big man ting."},
+  {id:"suv", type:"car", name:"Brand New SUV", emoji:"🚙", cost:500000, fx:{reputation:30, network:10}, desc:"Boss-level ting."},
   {id:"selfcon", type:"house", name:"Self-Contained", emoji:"🏠", cost:100000, fx:{maxEnergy:20}, rent: 2000, desc:"No landlord trouble. +20 Energy, +₦2k/day rent."},
   {id:"duplex", type:"house", name:"Lekki Duplex", emoji:"🏡", cost:500000, fx:{maxEnergy:50}, rent: 10000, desc:"Ajah landlord. +50 Energy, +₦10k/day rent."}
 ];
@@ -445,7 +448,7 @@ const ORIGINS=[
   {id:"abroad",label:"Returned from abroad",fx:{cash:10000,reputation:-5}}
 ];
 const DREAMS=[
-  {id:"bigman",label:"Become a big man",fx:{reputation:2}},
+  {id:"bigman",label:"Become a big boss",fx:{reputation:2}},
   {id:"japa",label:"Japa",fx:{happiness:10}},
   {id:"landlord",label:"Own a house",fx:{cash:3000}},
   {id:"tech",label:"Tech founder",fx:{network:3}}
@@ -634,9 +637,9 @@ async function cloudPull(){
 }
 
 /* ---------------- NEW GAME ---------------- */
-async function newGame(name,originId,dreamId){
+async function newGame(name,originId,dreamId,look){
   const o=ORIGINS.find(x=>x.id===originId), d=DREAMS.find(x=>x.id===dreamId);
-  S={name:cleanName(name)||"Hustler",origin:originId,dream:dreamId,day:1,cash:5000,
+  S={name:cleanName(name)||"Hustler",look:look||"m",origin:originId,dream:dreamId,day:1,cash:5000,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
     level:1, xp:0, skillPoints:0, skills:{hustle:0, business:0, charisma:0},
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
@@ -715,7 +718,9 @@ function checkAppts(){
 function rng(seed){let s=seed;return()=>((s=(s*9301+49297)%233280)/233280);}
 function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
 const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
-function charImg(k){const m=CHAR_META[k]||CHAR_META.avatar;return `<img src="${CHAR_IMAGES[k]}" alt="" onerror="this.style.display='none';this.nextSibling.style.display='block'"><b style="display:none">${m.e}</b>`;}
+function charSrc(k){return k==="avatar"?`avatar_${(S&&S.look)||"m"}.png`:CHAR_IMAGES[k];}
+function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃🏾‍♀️":"🏃🏾‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
+function charImg(k){const lk=(S&&S.look)||"m";return `<img src="${charSrc(k)}" alt="" onerror="if(!this.dataset.f&&'${k}'==='avatar'&&'${lk}'==='m'){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';this.nextSibling.style.display='block'"><b style="display:none">${charEm(k)}</b>`;}
 function npcKey(){if(DLG.k&&DLG.k!=="avatar")return DLG.k;const a=(S.appointments||[]).find(x=>x.status==="ready"&&x.loc===S.location);return a?(a.id.startsWith("chief")?"chief":a.id.startsWith("tunde")?"tunde":null):null;}
 function npcInner(){const k=npcKey();return k?`<div class="bubble">${DLG.k===k?"…":"!"}</div>${charImg(k)}`:"";}
 const CAR=`<svg width="50" height="18" viewBox="0 0 50 18"><path d="M2 14 L7 7 Q9 4 15 4 H31 Q37 4 40 8 L47 11 V15 H2Z" fill="#05080b"/><path d="M12 6 H30 L36 9 H10Z" fill="#1d2a36"/><circle cx="12" cy="15" r="3" fill="#000"/><circle cx="38" cy="15" r="3" fill="#000"/><rect x="46" y="10" width="4" height="2" fill="#ffd9a0"/><rect x="0" y="10" width="3" height="2" fill="#ff3b3b"/></svg>`;
@@ -730,7 +735,7 @@ function sceneHtml(){
   const veh=[0,1,2].map(i=>{const d=10+i*5+li,dl=-(i*3.7+li),b=3+i*8,left=(i+li)%2===0,svg=(i+li)%3===1?BUS:CAR;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s"><div style="${left?"":"transform:scaleX(-1)"}">${svg}</div></div>`;}).join("");
   const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/>${lit?`<circle cx="${x+14}" cy="19" r="10" fill="#ffd9a0" opacity=".28"/>`:""}<circle cx="${x+14}" cy="17" r="2" fill="${lit?"#ffe9c0":"#2a3138"}"/>`).join("");
   const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`;
-  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${sky}"><div class="locname">${L.name}${rainy?" · Rain":night?" · Night":dusk?" · Dusk":""}</div><div class="orb ${night?"moon":""}" style="left:${cx}%;top:${night?18:Math.abs(cx-45)/3+10}px"></div>${stars}<div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}</div><div class="haze"></div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}</div><div class="lamps">${lamps}${lamps}</div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
+  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${sky}"><div class="locname">${L.name}${rainy?" · Rain":night?" · Night":dusk?" · Dusk":""}</div><div class="orb ${night?"moon":""}" style="left:${cx}%;top:${night?18:Math.abs(cx-45)/3+10}px"></div>${stars}<video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}</div><div class="haze"></div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}</div><div class="lamps">${lamps}${lamps}</div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
 }
 function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive");void s.offsetWidth;s.classList.add(t);if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
 function workGo(id){const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
@@ -754,10 +759,10 @@ const LOCBG={ojota:"linear-gradient(135deg,#1a1a0b,#4a3a12)",yaba:"linear-gradie
 const pr=(a,b)=>Math.min(1,a/b);
 const CHAPTERS=[
  {t:"Stack your first ₦20,000",k:"tunde",say:"Lagos no dey carry last. Stack ₦20,000 first, then we talk.",p:s=>pr(s.cash,20000),r:3000},
- {t:"Reach Level 3",k:"tunde",say:"You're moving. Level up and people will start to notice.",p:s=>pr(s.level,3),r:4000},
+ {t:"Reach Level 3",k:"ada",say:"You're moving. Level up and people will start to notice.",p:s=>pr(s.level,3),r:4000},
  {t:"Buy your first asset",k:"chinedu",say:"Still on foot? Buy something, anything. Even a keke.",p:s=>s.assets.length?1:0,r:6000},
- {t:"Pay Ajo 3 days in a row",k:"tunde",say:"Discipline pays. Do your Ajo daily.",p:s=>pr(s.ajo.streak,3),r:5000},
- {t:"Reach 40 Rep",k:"chief",say:"People must know your name. Build rep, young man.",p:s=>pr(s.reputation,40),r:8000},
+ {t:"Pay Ajo 3 days in a row",k:"ada",say:"Discipline pays. Do your Ajo daily.",p:s=>pr(s.ajo.streak,3),r:5000},
+ {t:"Reach 40 Rep",k:"chief",say:"People must know your name. Build rep, my friend.",p:s=>pr(s.reputation,40),r:8000},
  {t:"Own a house",k:"chief",say:"A man without a roof is a man without respect.",p:s=>s.assets.some(i=>i==="selfcon"||i==="duplex")?1:0,r:15000},
  {t:"Reach Level 8",k:"tunde",say:"Eko is for the consistent. Keep grinding.",p:s=>pr(s.level,8),r:20000},
  {t:"Overtake Chinedu",k:"chinedu",say:"You think you can catch me? Try.",p:s=>(s.rivalTier||0)>=1?1:0,r:25000},
@@ -800,14 +805,14 @@ function burst(){const col=["#e9b949","#34d399","#f5f5f4","#93c5fd"];for(let i=0
 function hustleCombo(){const n=Date.now();S.combo=(n-(S.lastWork||0)<120000)?Math.min(5,(S.combo||0)+1):0;S.lastWork=n;return 1+S.combo*0.1;}
 
 /* Rival ladder */
-const RIVALS=[{n:"Chinedu",e:"🚗",b:30000,d:6000},{n:"Chief Obi",e:"🧥",b:200000,d:30000},{n:"Alhaji Mega",e:"🏢",b:1000000,d:120000},{n:"Dangote Jr",e:"👑",b:5000000,d:600000}];
+const RIVALS=[{n:"Chinedu",e:"🚗",b:30000,d:6000},{n:"Chief Obi",e:"🧥",b:200000,d:30000},{n:"Madam Folake",e:"👩🏾‍💼",b:1000000,d:120000},{n:"Dangote Jr",e:"👑",b:5000000,d:600000}];
 function worth(){return S.cash+(S.assets||[]).reduce((s,id)=>s+((ASSETS.find(a=>a.id===id)||{}).cost||0),0)+S.reputation*200;}
 function rival(){const t=Math.min(S.rivalTier||0,RIVALS.length-1),r=RIVALS[t];return{r,t,w:r.b+r.d*((Date.now()-(S.rivalStart||S.createdAt))/DAY)};}
 function rivalCheck(){const v=rival();if((S.rivalTier||0)>=RIVALS.length||worth()<v.w)return;const b=10000*(v.t+1);S.cash+=b;S.rivalTier=v.t+1;S.rivalStart=Date.now();addLog(`🔥 You overtook ${v.r.n}! +₦${fmtMoney(b)}`);burst();sfx(3);buzz([60,40,120]);const nx=RIVALS[S.rivalTier];
   showCharacter('chinedu', `What?! You overtook me? This isn't over. I'll be back.`, 6000);
-  setTimeout(()=>openModal(`<h3 style="text-align:center">🔥 You overtook ${esc(v.r.n)}!</h3><p class="rw">+₦${fmtMoney(b)} bonus.<br>${nx?`New rival: ${nx.e} <b>${nx.n}</b>. He is richer. Go get him.`:"You are the biggest hustler in Lagos. 👑"}</p><button class="btn primary" style="width:100%" onclick="closeModal();renderGame()">Keep hustling</button>`),600);
+  setTimeout(()=>openModal(`<h3 style="text-align:center">🔥 You overtook ${esc(v.r.n)}!</h3><p class="rw">+₦${fmtMoney(b)} bonus.<br>${nx?`New rival: ${nx.e} <b>${nx.n}</b>. They're richer. Go get them.`:"You are the biggest hustler in Lagos. 👑"}</p><button class="btn primary" style="width:100%" onclick="closeModal();renderGame()">Keep hustling</button>`),600);
 }
-function rivalCard(){const v=rival(),me=worth(),p=Math.min(100,Math.round(me/v.w*100));return `<div class="rival"><div class="rv-top"><span>${v.r.e} Rival: <b>${v.r.n}</b></span><span>${me>=v.w?"You lead!":p+"%"}</span></div><div class="bar"><i style="width:${p}%;background:linear-gradient(90deg,#ef4444,#f59e0b)"></i></div><div class="rv-sub">You ₦${fmtMoney(me)} · ${v.r.n} ₦${fmtMoney(v.w)} (he grows daily)</div></div>`;}
+function rivalCard(){const v=rival(),me=worth(),p=Math.min(100,Math.round(me/v.w*100));return `<div class="rival"><div class="rv-top"><span>${v.r.e} Rival: <b>${v.r.n}</b></span><span>${me>=v.w?"You lead!":p+"%"}</span></div><div class="bar"><i style="width:${p}%;background:linear-gradient(90deg,#ef4444,#f59e0b)"></i></div><div class="rv-sub">You ₦${fmtMoney(me)} · ${v.r.n} ₦${fmtMoney(v.w)} (grows daily)</div></div>`;}
 
 /* Badges */
 const ACH=[
@@ -834,7 +839,7 @@ window.doSpin=function(){const today=new Date().toDateString();if(S.spinDay===to
 /* Login streak + offline earnings + energy regen */
 const STREAK=[1000,1500,2500,3500,5000,7500,20000];
 function track(n,p){try{if(sb&&session&&session.user)sb.rpc('track_event',{p_name:n,p_props:p||{}});}catch(e){}}
-function startSession(){track('session');
+function startSession(){track('session');fxQuiet();
   const now=Date.now(),today=new Date().toDateString(),away=window._awayMs||0;
   let rate=100+S.level*50;(S.assets||[]).forEach(id=>{const a=ASSETS.find(x=>x.id===id);if(a)rate+=a.cost*0.002;});
   const idle=away>=600000?Math.floor(rate*Math.min(away,8*HOUR)/HOUR):0;
@@ -854,42 +859,40 @@ function startSession(){track('session');
 }
 function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor((n-r)/30000);if(k>0){S.lastRegen=r+k*30000;if(S.energy<S.maxEnergy){S.energy=Math.min(S.maxEnergy,S.energy+k);if(!$modal.firstChild)renderGame();}}}
 
-/* ---------------- V7: FOREX TERMINAL ---------------- */
-const FXP=[{n:"USD/NGN",b:1500,v:.0016},{n:"GBP/NGN",b:1900,v:.0019},{n:"EUR/NGN",b:1620,v:.0017},{n:"OKADA/NGN",b:2000,v:.0055}];
-const FXS={p:0,stake:5000,lev:10,risk:1},fxCache={};
-function fxRet(i,k){const R=rng(k*7919+i*104729+13);R();R();const Rh=rng(Math.floor(k/60)*31+i*977+5);Rh();return(R()-.5)*2*FXP[i].v+(Rh()-.5)*2*FXP[i].v*.18;}
-function fxSer(i){const m=Math.floor(Date.now()/60000),c=fxCache[i];if(c&&c.m===m)return c.s;let p=FXP[i].b;const s=[];for(let k=m-500;k<=m;k++){p*=1+fxRet(i,k);p*=1-.003*Math.log(p/FXP[i].b);s.push(p);}fxCache[i]={m,s};return s;}
-function fxLive(i){const s=fxSer(i),pr=(Date.now()%60000)/60000,a=s[s.length-2],b=s[s.length-1],R=rng(Math.floor(Date.now()/2000)*13+i*7);R();return{p:(a+(b-a)*pr)*(1+(R()-.5)*FXP[i].v*.5),prev:a};}
-function fxCandles(i,n=44){const s=fxSer(i),L=fxLive(i).p,m=Math.floor(Date.now()/60000),out=[];for(let q=s.length-n;q<s.length;q++){const o=s[q-1],c=q===s.length-1?L:s[q],R=rng((m-(s.length-1-q))*17+i);R();out.push({o,c,h:Math.max(o,c)*(1+R()*FXP[i].v*.6),l:Math.min(o,c)*(1-R()*FXP[i].v*.6)});}return out;}
-function fxNews(i){const h=Math.floor(Date.now()/3600000),Rh=rng(h*31+i*977+5);Rh();const x=Rh()-.5;if(Math.abs(x)<.18)return"📰 No major headlines this hour. Range-bound.";const up=(rng(h*5+i)()>.2)?x>0:x<=0;return `📰 ${up?"Bullish":"Bearish"} chatter on ${FXP[i].n}: desks lean ${up?"LONG":"SHORT"} (headlines can be wrong)`;}
-function fxPl(po){const px=fxLive(po.i).p,cur=po.side==="buy"?px*.9997:px*1.0003,d=po.side==="buy"?(cur-po.e)/po.e:(po.e-cur)/po.e;return Math.round(po.stake*po.lev*d);}
+/* ---------------- V8: SERVER-SIDE FOREX ---------------- */
+const FXN=["USD/NGN","GBP/NGN","EUR/NGN","OKADA/NGN"];
+const FXS={p:0,stake:5000,lev:10,risk:1,d:null,timer:null};
+async function fxCall(fn,args){if(!sb||!session||!session.user){toast("Trading needs an online connection");return null;}const{data,error}=await sb.rpc(fn,args||{});if(error){toast(String(error.message).slice(0,90));return null;}FXS.d=data;fxHandle(data);return data;}
+function fxQuiet(){try{if(sb&&session&&session.user)sb.rpc("fx_state").then(r=>{if(r.data){FXS.d=r.data;fxHandle(r.data);}});}catch(e){}}
+function fxHandle(d){(d.closed||[]).forEach(c=>{const pl=Number(c.pnl);addLog(`📊 ${FXN[c.pair]} ${c.side==="buy"?"LONG":"SHORT"} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);toast(`${FXN[c.pair]} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);addXp(Math.min(60,Math.max(5,Math.round(Math.abs(pl)/1000))));if(pl>0){burst();sfx(3);if(pl>=50000)postToFeed(`${esc(S.name)} banked ₦${fmtMoney(pl)} on ${FXN[c.pair]} 📈`);}else if(c.reason==="liquidated"){buzz([80,40,80]);showCharacter('chinedu',"Margin call. Leverage does not forgive.",6000);}});if((d.closed||[]).length)save();}
 window.fxSet=function(k,v){FXS[k]=v;fxPaint();};
-window.fxOpen=function(side){S.fx=S.fx||[];if(S.fx.length>=5)return toast("Max 5 open trades");if(S.cash<FXS.stake)return toast("Not enough cash for this stake");const px=fxLive(FXS.p).p;S.cash-=FXS.stake;S.fx.push({id:Date.now(),i:FXS.p,side,stake:FXS.stake,lev:FXS.lev,e:side==="buy"?px*1.0003:px*.9997,sl:FXS.risk?.4:0,tp:FXS.risk?.8:0});sfx(1);buzz(20);track('fx_open');save();renderGame();fxPaint();};
-window.fxClose=function(id,why){const k=(S.fx||[]).findIndex(x=>x.id===id);if(k<0)return;const po=S.fx[k],pl=fxPl(po),back=Math.max(0,po.stake+pl);S.fx.splice(k,1);S.cash+=back;addXp(Math.min(60,Math.max(5,Math.round(Math.abs(pl)/1000))));addLog(`📊 ${FXP[po.i].n} ${po.side==="buy"?"LONG":"SHORT"} ${why}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);if(pl>0){burst();sfx(3);if(pl>=50000)postToFeed(`${esc(S.name)} banked ₦${fmtMoney(pl)} on ${FXP[po.i].n} 📈`);}else if(why==="liquidated"){buzz([80,40,80]);showCharacter('chinedu',"Margin call. Leverage does not forgive.",6000);}toast(`${FXP[po.i].n} ${why}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);track('fx_close');save();renderGame();fxPaint();};
-function fxTick(){if(!S||!S.fx||!S.fx.length){fxPaint();return;}S.fx.slice().forEach(po=>{const pl=fxPl(po);if(pl<=-po.stake*.9)fxClose(po.id,"liquidated");else if(po.sl&&pl<=-po.stake*po.sl)fxClose(po.id,"stop-loss");else if(po.tp&&pl>=po.stake*po.tp)fxClose(po.id,"take-profit");});fxPaint();}
-function fxDraw(){const cv=document.getElementById("fxc");if(!cv)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle="#090e11";g.fillRect(0,0,w,h);
-  const cs=fxCandles(FXS.p),hi=Math.max(...cs.map(c=>c.h)),lo=Math.min(...cs.map(c=>c.l)),pad=(hi-lo)*.1||1,H=hi+pad,Lw=lo-pad,Y=v=>h-14-(v-Lw)/(H-Lw)*(h-26),bw=(w-54)/cs.length;
+window.fxOpen=async function(side){const d=await fxCall("fx_open",{p_pair:FXS.p,p_side:side,p_stake:FXS.stake,p_lev:FXS.lev,p_protect:!!FXS.risk});if(d){sfx(1);buzz(20);track('fx_open');fxPaint();}};
+window.fxClose=async function(id){const d=await fxCall("fx_close",{p_id:id});if(d)fxPaint();};
+window.fxMove=async function(delta){if(!delta)return;if(delta>0){if(S.cash<delta)return toast("Not enough cash");await cloudPush();}const d=await fxCall("fx_wallet_move",{p_delta:delta});if(d){S.cash-=delta;save();renderGame();fxPaint();}};
+function fxDraw(){const cv=document.getElementById("fxc");if(!cv||!FXS.d)return;const cs=FXS.d.pairs[FXS.p].candles.map(a=>({o:a[0],h:a[1],l:a[2],c:a[3]}));if(!cs.length)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle="#090e11";g.fillRect(0,0,w,h);
+  const hi=Math.max(...cs.map(c=>c.h)),lo=Math.min(...cs.map(c=>c.l)),pad=(hi-lo)*.1||1,H=hi+pad,Lw=lo-pad,Y=v=>h-14-(v-Lw)/(H-Lw)*(h-26),bw=(w-54)/cs.length;
   g.font="10px ui-monospace,monospace";g.lineWidth=1;for(let q=0;q<5;q++){const v=Lw+(H-Lw)*q/4,y=Y(v);g.strokeStyle="rgba(255,255,255,.06)";g.beginPath();g.moveTo(0,y);g.lineTo(w-50,y);g.stroke();g.fillStyle="#5d6e78";g.fillText(v.toFixed(2),w-48,y+3);}
-  cs.forEach((c,q)=>{const x=q*bw+bw/2,up=c.c>=c.o,col=up?"#26e07f":"#ff4d5e";g.strokeStyle=g.fillStyle=col;g.beginPath();g.moveTo(x,Y(c.h));g.lineTo(x,Y(c.l));g.stroke();const y1=Y(Math.max(c.o,c.c)),y2=Y(Math.min(c.o,c.c));g.fillRect(x-bw*.32,y1,bw*.64,Math.max(1.5,y2-y1));});
+  cs.forEach((c,q)=>{const x=q*bw+bw/2,col=c.c>=c.o?"#26e07f":"#ff4d5e";g.strokeStyle=g.fillStyle=col;g.beginPath();g.moveTo(x,Y(c.h));g.lineTo(x,Y(c.l));g.stroke();const y1=Y(Math.max(c.o,c.c)),y2=Y(Math.min(c.o,c.c));g.fillRect(x-bw*.32,y1,bw*.64,Math.max(1.5,y2-y1));});
   const lc=cs[cs.length-1],yl=Y(lc.c),col=lc.c>=lc.o?"#26e07f":"#ff4d5e";g.setLineDash([4,3]);g.strokeStyle="rgba(255,255,255,.45)";g.beginPath();g.moveTo(0,yl);g.lineTo(w-50,yl);g.stroke();g.setLineDash([]);g.fillStyle=col;g.fillRect(w-52,yl-8,52,16);g.fillStyle="#03100a";g.fillText(lc.c.toFixed(2),w-49,yl+3);
-  (S.fx||[]).filter(po=>po.i===FXS.p).forEach(po=>{const y=Y(po.e);g.strokeStyle="#e9b949";g.setLineDash([2,3]);g.beginPath();g.moveTo(0,y);g.lineTo(w-50,y);g.stroke();g.setLineDash([]);g.fillStyle="#e9b949";g.fillText((po.side==="buy"?"▲ LONG":"▼ SHORT")+" entry",4,y-3);});}
-function fxPaint(){const hd=document.getElementById("fxhead");if(!hd)return;const q=fxLive(FXS.p),ch=(q.p/q.prev-1)*100;
-  hd.innerHTML=`<div class="fxp ${ch>=0?"up":"dn"}">${q.p.toFixed(2)}</div><div class="fxsub">${ch>=0?"▲":"▼"} ${Math.abs(ch).toFixed(2)}% · Bid ${(q.p*.9997).toFixed(2)} · Ask ${(q.p*1.0003).toFixed(2)} · Cash ₦${fmtMoney(S.cash)}</div>`;
-  document.getElementById("fxnews").textContent=fxNews(FXS.p);
-  document.querySelectorAll("[data-fx]").forEach(b=>{const[k,v]=b.dataset.fx.split(":");b.classList.toggle("on",String(FXS[k])===v);});
-  fxDraw();const ls=document.getElementById("fxpos"),key=(S.fx||[]).map(x=>x.id).join();
-  if(ls.dataset.k!==key){ls.dataset.k=key;ls.innerHTML=(S.fx||[]).map(po=>`<div class="fxpos"><span><b>${FXP[po.i].n}</b> ${po.side==="buy"?'<span class="up">▲ LONG</span>':'<span class="dn">▼ SHORT</span>'} x${po.lev} · ₦${fmtMoney(po.stake)}</span><b id="pl${po.id}"></b><button onclick="fxClose(${po.id},'closed')">Close</button></div>`).join("")||`<div class="rw" style="color:#5d6e78">No open trades</div>`;}
-  (S.fx||[]).forEach(po=>{const e=document.getElementById("pl"+po.id);if(e){const pl=fxPl(po);e.className=pl>=0?"up":"dn";e.textContent=(pl>=0?"+":"-")+"₦"+fmtMoney(Math.abs(pl));}});}
+  (FXS.d.positions||[]).filter(po=>po.pair===FXS.p).forEach(po=>{const y=Y(po.entry);g.strokeStyle="#e9b949";g.setLineDash([2,3]);g.beginPath();g.moveTo(0,y);g.lineTo(w-50,y);g.stroke();g.setLineDash([]);g.fillStyle="#e9b949";g.fillText((po.side==="buy"?"▲ LONG":"▼ SHORT")+" entry",4,y-3);});}
+function fxPaint(){const hd=document.getElementById("fxhead");if(!hd)return;document.querySelectorAll("[data-fx]").forEach(b=>{const[k,v]=b.dataset.fx.split(":");b.classList.toggle("on",String(FXS[k])===v);});const d=FXS.d;if(!d){hd.innerHTML='<div class="fxsub">Connecting to the market…</div>';return;}
+  const cs=d.pairs[FXS.p].candles,lc=cs[cs.length-1]||[0,0,0,0],p=lc[3],ch=cs.length?(p/cs[0][0]-1)*100:0;
+  hd.innerHTML=`<div class="fxp ${ch>=0?"up":"dn"}">${p.toFixed(2)}</div><div class="fxsub">${ch>=0?"▲":"▼"} ${Math.abs(ch).toFixed(2)}% (44m) · Bid ${(p*.9997).toFixed(2)} · Ask ${(p*1.0003).toFixed(2)}</div>`;
+  document.getElementById("fxnews").textContent="📰 "+d.pairs[FXS.p].news;document.getElementById("fxw").textContent="₦"+fmtMoney(d.balance)+" · Game cash ₦"+fmtMoney(S.cash);
+  fxDraw();const ls=document.getElementById("fxpos"),key=(d.positions||[]).map(x=>x.id).join();
+  if(ls.dataset.k!==key){ls.dataset.k=key;ls.innerHTML=(d.positions||[]).map(po=>`<div class="fxpos"><span><b>${FXN[po.pair]}</b> ${po.side==="buy"?'<span class="up">▲ LONG</span>':'<span class="dn">▼ SHORT</span>'} x${po.lev} · ₦${fmtMoney(po.stake)}</span><b id="pl${po.id}"></b><button onclick="fxClose('${po.id}')">Close</button></div>`).join("")||`<div class="rw" style="color:#5d6e78">No open trades</div>`;}
+  (d.positions||[]).forEach(po=>{const e=document.getElementById("pl"+po.id);if(e){const pl=Number(po.pnl);e.className=pl>=0?"up":"dn";e.textContent=(pl>=0?"+":"-")+"₦"+fmtMoney(Math.abs(pl));}});}
 window.openMarket=function(){track('fx_view');
   const chip=(k,v,l)=>`<button class="fxc" data-fx="${k}:${v}" onclick="fxSet('${k}',${v})">${l}</button>`;
-  openModal(`<div class="fx"><div class="fx-tabs">${FXP.map((p,i)=>`<button class="fxt" data-fx="p:${i}" onclick="fxSet('p',${i})">${p.n}</button>`).join("")}</div><div id="fxhead"></div><div class="fxnews" id="fxnews"></div><canvas id="fxc" style="width:100%;height:180px;border-radius:8px;display:block"></canvas>
-  <div class="fxrow">STAKE ${[2000,5000,25000,100000].map(v=>chip("stake",v,"₦"+(v>=1000?v/1000+"k":v))).join("")}</div>
-  <div class="fxrow">LEVERAGE ${[5,10,25].map(v=>chip("lev",v,"x"+v)).join("")}</div>
+  openModal(`<div class="fx"><div class="fx-tabs">${FXN.map((n,i)=>`<button class="fxt" data-fx="p:${i}" onclick="fxSet('p',${i})">${n}</button>`).join("")}</div><div id="fxhead"></div><div class="fxnews" id="fxnews"></div><canvas id="fxc" style="width:100%;height:170px;border-radius:8px;display:block"></canvas>
+  <div class="fxrow">WALLET <b id="fxw" style="color:#e8f0ec"></b></div>
+  <div class="fxrow"><button class="fxc" onclick="fxMove(5000)">+₦5k</button><button class="fxc" onclick="fxMove(25000)">+₦25k</button><button class="fxc" onclick="fxMove(100000)">+₦100k</button><button class="fxc" onclick="fxMove(-((FXS.d&&FXS.d.balance)||0))">Withdraw all</button></div>
+  <div class="fxrow">STAKE ${[2000,5000,25000,100000].map(v=>chip("stake",v,"₦"+(v>=1000?v/1000+"k":v))).join("")} LEV ${[5,10,25].map(v=>chip("lev",v,"x"+v)).join("")}</div>
   <div class="fxrow">PROTECT ${chip("risk",1,"SL 40% / TP 80%")}${chip("risk",0,"None")}</div>
   <div class="fxbtns"><button class="fxbuy" onclick="fxOpen('buy')">▲ BUY</button><button class="fxsell" onclick="fxOpen('sell')">▼ SELL</button></div>
-  <div id="fxpos"></div><div class="fxsub" style="margin-top:8px">Simulated market for entertainment. Higher leverage amplifies wins and losses; a loss of 90% of your stake liquidates the trade.</div>
-  <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);fxPaint();};
-setInterval(()=>{try{fxTick();}catch(e){}},1000);
+  <div id="fxpos"></div><div class="fxsub" style="margin-top:8px">Simulated market, priced and settled on the server. Trades auto-close after 3 hours. A 90% loss liquidates the trade.</div>
+  <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);
+  fxPaint();clearInterval(FXS.timer);const poll=()=>{if(!document.getElementById("fxc")){clearInterval(FXS.timer);return;}fxCall("fx_state").then(fxPaint);};poll();FXS.timer=setInterval(poll,3000);};
 
 /* ---------------- BOOT / RENDER ---------------- */
 window.SRV_VIP=0;
@@ -917,6 +920,7 @@ async function render(){
   if(!S.skillPoints) S.skillPoints = 0;
   if(!S.skills) S.skills = { hustle: 0, business: 0, charisma: 0 };
   if(!S.ach) S.ach = {};
+  if(!S.look) S.look = "m";
   if(!S.streak) S.streak = 1;
   if(!S.shield) S.shield = 0;
   
@@ -926,7 +930,7 @@ async function render(){
 }
 
 function renderOnboarding(){document.body.classList.remove("in-game");
-  let sel={origin:null,dream:null,agree:false};
+  let sel={origin:null,dream:null,look:null,agree:false};
   $app.innerHTML=`
     <div class="onb">
       <div class="hero">Eko <span>Hustle</span></div>
@@ -937,6 +941,7 @@ function renderOnboarding(){document.body.classList.remove("in-game");
         <div class="pick" id="origins">${ORIGINS.map(o=>`<button class="opt" data-origin="${o.id}">${o.label}</button>`).join("")}</div></div>
       <div class="field"><label>Your dream</label>
         <div class="pick" id="dreams">${DREAMS.map(d=>`<button class="opt" data-dream="${d.id}">${d.label}</button>`).join("")}</div></div>
+      <div class="field"><label>Your look</label><div class="pick"><button class="opt" data-look="f">👩🏾 Female</button><button class="opt" data-look="m">👨🏾 Male</button></div></div>
       <label style="display:flex;gap:8px;align-items:flex-start;font-size:12px;color:var(--muted);margin-bottom:14px">
         <input type="checkbox" id="agree" style="margin-top:2px"/>
         <span>I agree to the <a href="#" onclick="showPrivacy();return false" style="color:var(--green)">privacy notice</a>. No email or phone collected. Display name only.</span>
@@ -953,13 +958,15 @@ function renderOnboarding(){document.body.classList.remove("in-game");
     sel.dream=b.dataset.dream;
     document.querySelectorAll("[data-dream]").forEach(x=>x.classList.toggle("sel",x===b));
   });
+  document.querySelectorAll("[data-look]").forEach(b=>b.onclick=()=>{sel.look=b.dataset.look;document.querySelectorAll("[data-look]").forEach(x=>x.classList.toggle("sel",x===b));});
   document.getElementById("startBtn").onclick=()=>{
     const name=cleanName(document.getElementById("pname").value);
     if(!name)return toast("Enter a name");
     if(!sel.origin)return toast("Choose where you come from");
     if(!sel.dream)return toast("Choose your dream");
+    if(!sel.look)return toast("Choose your look");
     if(!document.getElementById("agree").checked)return toast("Agree to privacy notice to continue");
-    newGame(name,sel.origin,sel.dream);
+    newGame(name,sel.origin,sel.dream,sel.look);
   };
 }
 
@@ -1402,7 +1409,7 @@ window.claimAppt=function(id){
   addLog(`✅ Claimed: ${a.title}. ${parts.join(", ")}. +25 XP.`);
   toast(parts.join(" · ")||"Claimed.");save();renderGame();
   if(a.id.startsWith("tunde")) showCharacter('tunde', "You showed up! I like that. Here is your cut. Let's do more business.", 5000);
-  if(a.id.startsWith("chief")) showCharacter('chief', "Excellent! You are a sharp guy. Here is your reward.", 5000);
+  if(a.id.startsWith("chief")) showCharacter('chief', "Excellent! You are sharp. Here is your reward.", 5000);
 };
 
 /* ---------------- LEADERBOARD ---------------- */
@@ -1424,6 +1431,7 @@ window.openLeaderboard=async function(){
 window.openSettings=function(){
   openModal(`<h3>⚙️ Settings</h3>
     <button class="opt" onclick="S.mute=!S.mute;save();openSettings()">${S.mute?"🔇 Sound: Off":"🔊 Sound: On"}</button>
+    <button class="opt" onclick="S.look=S.look==='f'?'m':'f';save();renderGame();openSettings()">🎭 Switch look (${S.look==='f'?'Female':'Male'})</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
     <button class="opt" onclick="closeModal()">Close</button>`);
