@@ -884,7 +884,7 @@ window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const
   if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+2000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
   else{const p=Math.floor(rand(6000,15000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
-window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button><button class="opt ${unl('stocks')?'':'lck'}" onclick="openStocks()">${unl('stocks')?'📈':'🔒'} Stock Market</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
@@ -918,12 +918,12 @@ const ACH=[
  {id:"s7",n:"7-Day Streak",e:"🔥",t:s=>(s.streak||0)>=7,r:10000},
  {id:"r100",n:"Known in Lagos",e:"🤝",t:s=>s.reputation>=100,r:8000},
  {id:"v1",n:"Beat Chinedu",e:"🏆",t:s=>(s.rivalTier||0)>=1,r:5000}];
-function checkAch(){if(!S||!S.flags||!S.assets)return;S.ach=S.ach||{};ACH.forEach(a=>{if(!S.ach[a.id]&&a.t(S)){S.ach[a.id]=1;S.cash+=a.r;addLog(`🏅 ${a.n}! +₦${fmtMoney(a.r)}`);toast(`🏅 ${a.n} +₦${fmtMoney(a.r)}`);burst();sfx(2);}});rivalCheck();chapCheck();freedomCheck();unlockCheck();}
+function checkAch(){if(!S||!S.flags||!S.assets)return;S.ach=S.ach||{};ACH.forEach(a=>{if(!S.ach[a.id]&&a.t(S)){S.ach[a.id]=1;S.cash+=a.r;addLog(`🏅 ${a.n}! +₦${fmtMoney(a.r)}`);toast(`🏅 ${a.n} +₦${fmtMoney(a.r)}`);burst();sfx(2);}});rivalCheck();chapCheck();freedomCheck();unlockCheck();dailyBonus();}
 window.openAch=function(){openModal(`<h3>🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</h3>`+ACH.map(a=>{const d=S.ach&&S.ach[a.id];return `<div class="mission ${d?"done":""}"><div><div class="m-title">${a.e} ${a.n}</div><div class="m-desc">Reward ₦${fmtMoney(a.r)}</div></div><div class="m-check">${d?"✅":"🔒"}</div></div>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* Daily lucky spin */
 const SPIN=[{l:"₦500",w:30,f:{cash:500}},{l:"₦2,000",w:24,f:{cash:2000}},{l:"⚡ Full Energy",w:18,f:{energy:999}},{l:"⭐ +5 Rep",w:12,f:{reputation:5}},{l:"₦8,000",w:9,f:{cash:8000}},{l:"💡 Skill Point",w:5,f:{sp:1}},{l:"💎 ₦50,000 JACKPOT",w:2,f:{cash:50000}}];
-window.openSpin=function(){if(S.spinDay===new Date().toDateString())return toast("Spin used. New spin tomorrow!");openModal(`<h3 style="text-align:center">🎰 Lucky Agbo Spin</h3><div class="spin" id="spinbox">?</div><button class="btn warn" style="width:100%" id="spinbtn" onclick="doSpin()">SPIN (free daily)</button><button class="opt" onclick="closeModal();renderGame()" style="text-align:center;margin-top:8px">Close</button>`);};
+window.openSpin=function(){if(S.spinDay===new Date().toDateString())return toast("Spin used. New spin tomorrow!");openModal(`<h3 style="text-align:center">🎰 Lucky Agbo Spin</h3><div class="spin" id="spinbox">?</div><button class="btn warn" style="width:100%" id="spinbtn" onclick="doSpin()">SPIN (free daily)</button><button class="opt" onclick="openDaily()" style="text-align:center;margin-top:8px">Close</button>`);};
 window.doSpin=function(){const today=new Date().toDateString();if(S.spinDay===today)return;S.spinDay=today;const b=document.getElementById("spinbtn"),box=document.getElementById("spinbox");b.disabled=true;let r=Math.random()*SPIN.reduce((a,x)=>a+x.w,0),win=SPIN[0];for(const x of SPIN){if((r-=x.w)<0){win=x;break;}}let n=0;const iv=setInterval(()=>{box.textContent=SPIN[n++%SPIN.length].l;if(n>14){clearInterval(iv);box.textContent=win.l;box.classList.add("win");applyFx(win.f);if(win.f.sp)S.skillPoints=(S.skillPoints||0)+1;addLog("🎰 Spin: "+win.l);addXp(15);burst();sfx(3);buzz([50,30,100]);save();b.style.display="none";}},110);};
 
 /* Login streak + offline earnings + energy regen */
@@ -1175,7 +1175,7 @@ function renderGame(){
   const ready=S.appointments.filter(a=>a.status==="ready").length,sy=!sb?"⚠":syncStatus==="syncing"?"↻":syncStatus==="synced"?"✓":syncStatus==="offline"?"⚡":syncStatus==="error"?"⚠":"";
   $app.innerHTML=`
     <div class="topbar"><div class="brand">Eko <span>Hustle</span> ${isVip?'👑':''}</div><div class="topbar-right"><div class="day">Day ${S.day} <small>${sy}</small></div>
-      <button class="icon-btn" onclick="openMissions()">📋${showMissionBadge?'<span class="badge" style="display:block">!</span>':''}</button>
+      
       <button class="icon-btn" onclick="openLeaderboard()">🏆</button><button class="icon-btn" onclick="openProfile()">👤</button><button class="icon-btn" onclick="openSettings()">⚙️</button></div></div>
     <div class="feed" id="live-feed"><span style="flex-shrink:0">📡</span><div class="feed-text" id="feed-text">Loading feed...</div></div>
     ${sceneHtml()}
@@ -1187,8 +1187,8 @@ function renderGame(){
     </div>
     <div class="cards">${chapCard()}${freedomCard()}</div>
     <div class="dock">
-      <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset ${unl('assets')?'':'lck'}" onclick="openAssets()">${unl('assets')?'🏠':'🔒'}<span>Assets</span></button><button class="btn warn" onclick="doAjo()">🪙<span>Ajo${S.ajo.streak>0?' '+S.ajo.streak:''}</span></button></div>
-      <div class="dk2"><button class="${unl('owambe')?'':'lck'}" onclick="openOwambe()">${unl('owambe')?'🎉':'🔒'}<span>Owambe</span></button><button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button><button class="${!unl('biz')?'lck':bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">${unl('biz')?'🏭':'🔒'}<span>Empire</span></button><button class="${unl('forex')?'':'lck'}" onclick="openMarket()">${unl('forex')?'💹':'🔒'}<span>Forex</span></button><button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
+      <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset ${unl('assets')?'':'lck'}" onclick="openAssets()">${unl('assets')?'🏠':'🔒'}<span>Assets</span></button><button class="btn warn ${dailyTodo()?'pulse':''}" onclick="openDaily()">📅<span>Daily${dailyTodo()?' '+dailyTodo():''}</span></button></div>
+      <div class="dk2"><button class="${!unl('biz')?'lck':bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">${unl('biz')?'🏭':'🔒'}<span>Empire</span></button><button class="${unl('forex')?'':'lck'}" onclick="openMarket()">${unl('forex')?'💹':'🔒'}<span>Forex</span></button><button class="${unl('stocks')?'':'lck'}" onclick="openStocks()">${unl('stocks')?'📈':'🔒'}<span>Stocks</span></button><button onclick="openFreedom()">🕊️<span>Freedom</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
     </div>`;
     
   fetchFeed();ambUpdate();
@@ -1707,6 +1707,27 @@ const lockMsg=k=>{const u=UNL[k];return "🔒 Locked. "+(u.t?u.t():"Finish the c
 const UNAME={assets:"Assets",owambe:"Owambe",biz:"Empire",stocks:"Stock Market",forex:"Forex"};
 function unlockCheck(){if(!S||!S.assets)return;if(!S.unl){S.unl={};Object.keys(UNL).forEach(k=>{if(unl(k))S.unl[k]=1;});return;}Object.keys(UNL).forEach(k=>{if(unl(k)&&!S.unl[k]){S.unl[k]=1;addLog("🔓 Unlocked: "+UNAME[k]);toast("🔓 Unlocked: "+UNAME[k]+"!");burst();sfx(2);track('unlock_'+k);}});}
 [["openAssets","assets"],["openOwambe","owambe"],["openBiz","biz"],["openStocks","stocks"],["openMarket","forex"]].forEach(([n,k])=>{const f=window[n];window[n]=function(){if(!unl(k))return toast(lockMsg(k));return f.apply(this,arguments);};});
+
+/* ---------------- V16: DAILY HUB ---------------- */
+const tdy=()=>new Date().toDateString();
+function owReady(){return unl('owambe')&&(Date.now()-(S.lastOwambe||0))/HOUR>=24;}
+function dailyTodo(){const t=tdy();let n=0;if(S.spinDay!==t)n++;if(S.ajo.lastPaid!==t)n++;if(S.vaultDay!==t)n++;if(owReady())n++;if(S.appointments.some(a=>a.status==="ready"))n++;return n;}
+function dailyBonus(){const t=tdy();if(!S||!S.ajo||S.dbDay===t||S.vaultDay!==t||S.ajo.lastPaid!==t||S.spinDay!==t)return;S.dbDay=t;S.cash+=1500;addXp(30);addLog("🎯 Daily habits complete! +₦1,500");toast("🎯 Daily habits complete! +₦1,500");burst();sfx(3);track('daily_complete');}
+window.dyAjo=function(){doAjo();openDaily();};
+window.dySave=function(){vaultMove(2000);openDaily();};
+window.openDaily=function(){const t=tdy(),m=getMissions(),rd=S.appointments.filter(a=>a.status==="ready").length,pend=S.appointments.filter(a=>a.status==="pending").length;
+  const vd=S.vaultDay===t,ad=S.ajo.lastPaid===t,sd=S.spinDay===t,done=[vd,ad,sd].filter(Boolean).length;
+  const bt=(l,f,c)=>`<button class="btn ${c===undefined?"primary":c}" style="padding:8px 12px;font-size:12px;white-space:nowrap" onclick="${f}">${l}</button>`;
+  const card=(ic,ti,sub,dn,btn)=>`<div class="opt" style="${dn?"border-color:var(--green);opacity:.75":""}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>${ic} ${ti}</b> ${dn?"✅":""}<span class="sub">${sub}</span></div>${dn?"":btn}</div></div>`;
+  const hrs=Math.max(0,Math.ceil(24-(Date.now()-(S.lastOwambe||0))/HOUR));
+  openModal(`<h3>📅 Today</h3><div class="opt" style="border-color:var(--gold)"><b>🎯 Daily habits: ${done}/3</b><span class="sub">${S.dbDay===t?"Bonus claimed today ✅":"Do all 3 for a ₦1,500 bonus: save, Ajo, and spin."}</span><div class="bar"><i style="width:${Math.round(done/3*100)}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div></div>`+
+  card("🛡️","Pay yourself first",`Save ₦2,000 in your Vault. Saving streak: ${S.habit||0} days.`,vd,bt("Save ₦2k","dySave()"))+
+  card("🪙","Ajo savings",`₦500 today. Streak ${S.ajo.streak}/7, ₦5,000 payout on day 7.`,ad,bt("Pay ₦500","dyAjo()","warn"))+
+  card("🎰","Lucky spin","One free reward every day.",sd,bt("Spin","openSpin()","warn"))+
+  (unl("owambe")?card("🎉","Owambe",owReady()?"Meet big people and grow your network.":`Resting. Back in about ${hrs}h.`,!owReady(),bt("Attend","openOwambe()","")):`<div class="opt lck"><b>🎉 Owambe</b><span class="sub">${lockMsg("owambe")}</span></div>`)+
+  card("📋","Daily quests",`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1 (Ajo or Owambe). Reward ₦5,000 and full energy.`,!!m.claimed,"")+
+  (rd||pend?card("📅","Appointments",`${rd} ready · ${pend} waiting`,false,bt("View","openAppts()","")):"")+
+  `<div class="rw" style="color:var(--muted)">🔥 Login streak: day ${S.streak||1}. Tomorrow: ₦${fmtMoney(STREAK[(S.streak||1)%7])}</div><button class="opt" onclick="closeModal();renderGame()" style="text-align:center">Close</button>`);};
 
 render();
 
