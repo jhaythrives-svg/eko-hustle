@@ -382,13 +382,14 @@ window.onerror = function(msg, url, line, col, error) {
   return false;
 };
 </script>
+<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 "use strict";
 
-const SUPABASE_URL = "https://cdwcqzpnsfypijoriwul.supabase.co";
-const SUPABASE_KEY = "sb_publishable_fsxt5kT8MZEkvvPzqy3Ovg_W3Bvew6A";
+const SUPABASE_URL = (window.EH && EH.url) || "PASTE_YOUR_PROJECT_URL_HERE";
+const SUPABASE_KEY = (window.EH && EH.key) || "PASTE_YOUR_ANON_KEY_HERE";
 
 const IS_SUPABASE_CONFIGURED = 
   SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
@@ -398,7 +399,7 @@ let sb = null;
 if (IS_SUPABASE_CONFIGURED) {
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
   } catch (e) { console.warn("Supabase init failed:", e); }
 }
@@ -669,7 +670,7 @@ async function ensureAuth(){
 /* ---------------- SAVE / SYNC ---------------- */
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function save(){
-  if(S){try{checkAch();}catch(e){}S.lastSaved=Date.now();}
+  if(S){try{checkAch();}catch(e){}S.lastSaved=Date.now();if(session&&session.user)S.uid=session.user.id;}
   saveLocal();
   scheduleCloudSync();
 }
@@ -1061,6 +1062,20 @@ function sprKey(k){return k==="avatar"?"avatar_"+((S&&S.look)||"m"):k;}
 function sprCss(key,st){const m=SPM&&(SPM[key+":"+st]||SPM[key+":idle"]);return m?`aspect-ratio:${m.ar};background:url(sprites/${m.f}) 0 0/${m.n*100}% 100% no-repeat;animation:spr ${((m.n-1)/m.fps).toFixed(2)}s steps(${m.n-1}) infinite`:"";}
 function sprState(sel,k,st){const e=document.querySelector(sel+" .spr");if(e&&SPM&&SPM[sprKey(k)+":"+st])e.style.cssText=sprCss(sprKey(k),st);}
 
+/* ---------------- V14: ACCOUNT RECOVERY ---------------- */
+const isAnon=()=>!!(session&&session.user&&session.user.is_anonymous);
+const accEmail=()=>(session&&session.user&&session.user.email)||"";
+const rcOk=e=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
+window.openRecover=function(){const em=accEmail();
+  openModal(`<h3>☁️ Your progress</h3>`+(em?`<div class="opt" style="border-color:var(--green)">✅ Saved to <b>${esc(em)}</b><span class="sub">On a new phone, or after clearing your browser, choose "I already have a saved game" and use this email.</span></div>`:`<div class="opt" style="border-color:var(--gold)">⚠️ Not saved to an email yet<span class="sub">Without an email, your progress (and any VIP pass you paid for) is lost if you clear your browser or change phones.</span></div><div class="field"><label>Your email</label><input id="rcEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"/></div><button class="btn primary" style="width:100%" onclick="rcSave()">Save my progress</button>`)+`<div class="section-title">Already have a save?</div><div class="field"><input id="rcEmail2" type="email" inputmode="email" autocomplete="email" placeholder="email you saved with"/></div><button class="btn" style="width:100%" onclick="rcSignIn()">Email me a sign-in link</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
+function rcSent(em,msg){openModal(`<h3>📧 Check your email</h3><p class="rw">${msg} <b>${esc(em)}</b>. Check your spam folder if you don't see it within a minute.</p><button class="btn primary" style="width:100%" onclick="closeModal()">OK</button>`);}
+window.rcSave=async function(){const em=((document.getElementById("rcEmail")||{}).value||"").trim().toLowerCase();if(!rcOk(em))return toast("Enter a valid email");if(!sb||!session)return toast("You need an internet connection");
+  const{error}=await sb.auth.updateUser({email:em},{emailRedirectTo:location.origin+location.pathname});if(error)return toast(String(error.message).slice(0,90));track('recover_save');rcSent(em,"We sent a confirmation link to");};
+window.rcSignIn=async function(){const em=((document.getElementById("rcEmail2")||{}).value||"").trim().toLowerCase();if(!rcOk(em))return toast("Enter a valid email");if(!sb)return toast("You need an internet connection");
+  localStorage.setItem("eh_recover","1");const{error}=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
+  if(error){localStorage.removeItem("eh_recover");return toast(/signups|not found|not allowed/i.test(error.message)?"No saved progress found for that email":String(error.message).slice(0,90));}track('recover_signin');rcSent(em,"We sent a sign-in link to");};
+function rcNudge(){if(!S||$modal.firstChild||!isAnon()||S.level<3||S.nudged)return;S.nudged=1;save();openModal(`<h3>☁️ Protect your progress</h3><p class="rw">You are Level ${S.level}. If you clear your browser or change phones, everything is lost. Save it to your email in 20 seconds.</p><button class="btn primary" style="width:100%" onclick="openRecover()">Save my progress</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Later</button>`);}
+
 /* ---------------- BOOT / RENDER ---------------- */
 window.SRV_VIP=0;
 const vipOn=()=>(window.SRV_VIP||0)>Date.now();
@@ -1072,7 +1087,8 @@ async function render(){
   if(cloud?.state){
     const cloudTime=new Date(cloud.updated_at).getTime();
     const localTime=local?(local.lastSaved||local.createdAt||0):0;
-    if(cloudTime>localTime){S=cloud.state;saveLocal();}
+    const foreign=local&&local.uid&&session&&session.user&&local.uid!==session.user.id,forced=localStorage.getItem("eh_recover")==="1"&&session&&session.user&&!session.user.is_anonymous;
+    if(cloudTime>localTime||foreign||forced){S=cloud.state;saveLocal();localStorage.removeItem("eh_recover");}
     else S=local;
   }else S=local;
   if(!S)return renderOnboarding();
@@ -1093,7 +1109,7 @@ async function render(){
   
   window._awayMs=Date.now()-(S.lastSaved||Date.now());checkReset();checkAppts();renderGame();
   
-  startSession();setTimeout(lifeShock,3500);
+  startSession();setTimeout(lifeShock,3500);setTimeout(rcNudge,9000);
 }
 
 function renderOnboarding(){document.body.classList.remove("in-game");
@@ -1114,6 +1130,7 @@ function renderOnboarding(){document.body.classList.remove("in-game");
         <span>I agree to the <a href="#" onclick="showPrivacy();return false" style="color:var(--green)">privacy notice</a>. No email or phone collected. Display name only.</span>
       </label>
       <button class="btn primary" id="startBtn" style="width:100%">Start your hustle</button>
+      <button class="reset" style="display:block;margin:14px auto 0" onclick="openRecover()">I already have a saved game</button>
       ${authError?`<div class="sync" style="color:#fca5a5">Auth error: ${esc(authError)}</div>`:""}
       ${!sb?`<div class="sync" style="color:var(--amber)">⚠ Cloud not configured. Playing locally.</div>`:""}
     </div>`;
@@ -1259,7 +1276,7 @@ window.openVipStore = function() {
 
 window.buyVip = function() {
   // REPLACE THIS WITH YOUR PAYSTACK PUBLIC KEY (pk_live_... for real payments, pk_test_... for testing)
-  const PAYSTACK_PUBLIC_KEY = "pk_live_7bc2de2440959574220ff797854cbba3d0057b49"; 
+  const PAYSTACK_PUBLIC_KEY = (window.EH && EH.paystack) || "pk_test_YOUR_KEY_HERE"; 
   
   if (PAYSTACK_PUBLIC_KEY.includes("YOUR_KEY_HERE")) {
     return toast("Please add your Paystack Public Key to the code first!");
@@ -1283,7 +1300,7 @@ window.buyVip = function() {
           S.energy = S.maxEnergy;await loadVip();track('vip_purchase');
           addLog("👑 Upgraded to VIP via Paystack!");
           save();
-          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
+          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p>${isAnon()?'<p class="rw" style="color:var(--gold)">Protect your pass: save your progress with your email in Settings.</p>':""}<button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
         }
       });
     },
@@ -1601,6 +1618,7 @@ window.openSettings=function(){
     <button class="opt" onclick="S.amb=S.amb===false;save();ambUpdate();openSettings()">${S.amb===false?"🌆 City ambience: Off":"🌆 City ambience: On"}</button>
     <button class="opt" onclick="S.vo=S.vo===false;save();openSettings()">${S.vo===false?"🗣️ Voices: Off":"🗣️ Voices: On"}</button>
     <button class="opt" onclick="S.look=S.look==='f'?'m':'f';save();renderGame();openSettings()">🎭 Switch look (${S.look==='f'?'Female':'Male'})</button>
+    <button class="opt" onclick="openRecover()">${accEmail()?"☁️ Progress saved to your email ✅":"☁️ Save my progress ⚠️"}</button>
     <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
