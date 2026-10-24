@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0b0f0e"/>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃🏾‍♂️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏃‍♂️</text></svg>">
 <title>Eko Hustle</title>
 <style>
   :root{--bg:#0b0f0e;--card:#141a18;--card2:#1b231f;--line:#26302b;
@@ -160,7 +160,6 @@
   .spin.win{border-color:var(--gold);color:var(--gold);animation:pl .5s 3 alternate}
   .pulse{animation:pl .8s infinite alternate}
 
-  /* VISUAL NOVEL ELEMENTS */
   .visual-area {
     display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
     height: 200px; margin-top: 10px; margin-bottom: 10px; position: relative;
@@ -188,7 +187,6 @@
   .tz{position:absolute;left:33%;width:34%;top:0;bottom:0;background:rgba(34,197,94,.28)}
   .tz:after{content:"";position:absolute;left:29.4%;width:41%;top:0;bottom:0;background:rgba(251,191,36,.6)}
   .tm{position:absolute;top:0;bottom:0;width:6px;background:#fff;border-radius:3px;transform:translateX(-50%)}
-  /* V4 ANIMATED SCENE */
   .scene{position:relative;height:190px;border-radius:14px;overflow:hidden;border:1px solid var(--line);margin-bottom:6px;transition:background 1s}
   .scene.rainy{filter:brightness(.78) saturate(.85)}
   .celest{position:absolute;font-size:30px;z-index:1;animation:bob 4s ease-in-out infinite}
@@ -224,7 +222,6 @@
   .character-img{max-height:64px;width:64px;border-radius:50%;border:2px solid var(--line);object-fit:cover}
   .char-em{font-size:44px;animation:none}
   .dialogue-box{margin-top:0}
-  /* V5 ONE-SCREEN MOBILE SHELL */
   body{-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation;overscroll-behavior:none}
   body.in-game,body.in-game html{overflow:hidden;height:100dvh}
   body.in-game #app{height:100dvh;max-height:100dvh;display:flex;flex-direction:column;gap:6px;padding:max(8px,env(safe-area-inset-top)) 10px max(8px,env(safe-area-inset-bottom));overflow:hidden}
@@ -264,7 +261,6 @@
   @media (max-height:640px){body.in-game .feed{display:none}}
   @media (max-height:580px){.cards{display:none}}
   @media (max-height:520px){.hud-chips{display:none}}
-  /* V7 MATURE LOOK + FOREX TERMINAL */
   :root{--bg:#070a0c;--card:#0f1519;--card2:#151d22;--line:#1e2a30;--green:#2fbf86;--gold:#e9b949;--red:#ef5b69;--amber:#e9a23b}
   .scene{border-radius:12px;border-color:#18232a}
   .orb{position:absolute;width:30px;height:30px;border-radius:50%;z-index:1;background:radial-gradient(circle,#fff4d6 0 38%,rgba(255,214,140,.4) 60%,transparent 72%)}
@@ -303,7 +299,6 @@
   .fxpos button{background:#1b252b;border:1px solid var(--line);color:#e8f0ec;border-radius:6px;padding:4px 9px;font-size:11px}
   .bgv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
   .scene.hasv .sk,.scene.hasv .haze,.scene.hasv .lamps{display:none}
-  /* V11 MOTION GRAPHICS */
   .skyfx{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
   .cld{position:absolute;left:-30%;border-radius:50px;filter:blur(6px);animation:cld linear infinite}
   @keyframes cld{from{left:-30%}to{left:110%}}
@@ -344,7 +339,6 @@
   .scene.hasv .art,.scene.hasv .skyfx{display:none}
   .mo .scene *{animation-play-state:paused!important}
   @media (prefers-reduced-motion:reduce){.scene *{animation:none!important}}
-  /* V12 CHARACTER LIFE + DAY/NIGHT */
   .av,.npc{bottom:38px}
   @keyframes breathe{0%,100%{transform:none}40%{transform:scale(1.015) translateY(-1px)}72%{transform:skewX(-.8deg)}}
   .skyl{position:absolute;inset:0;z-index:0;transition:opacity 1.2s linear}
@@ -382,14 +376,17 @@ window.onerror = function(msg, url, line, col, error) {
   return false;
 };
 </script>
-<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
 "use strict";
 
-const SUPABASE_URL = (window.EH && EH.url) || "PASTE_YOUR_PROJECT_URL_HERE";
-const SUPABASE_KEY = (window.EH && EH.key) || "PASTE_YOUR_ANON_KEY_HERE";
+/* =========================================================
+   EKO HUSTLE — Step 2 applied (Hide systems until earned)
+   ========================================================= */
+
+const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL_HERE";
+const SUPABASE_KEY = "PASTE_YOUR_ANON_KEY_HERE";
 
 const IS_SUPABASE_CONFIGURED = 
   SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
@@ -399,7 +396,7 @@ let sb = null;
 if (IS_SUPABASE_CONFIGURED) {
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
     });
   } catch (e) { console.warn("Supabase init failed:", e); }
 }
@@ -408,8 +405,17 @@ const KEY="ekohustle_v1", HOUR=3600000, DAY=86400000;
 let S=null, currentEvent=null, cloudTimer=null, syncStatus="idle", session=null, authError=null;
 const $app=document.getElementById("app"), $modal=document.getElementById("modal-root"), $toast=document.getElementById("toast");
 
+/* ---- UNLOCK GATES (Step 2) ---- */
+function unlocked(system) {
+  if (!S) return false;
+  const chap = S.chap || 0;
+  if (system === "empire")  return chap >= 2 || (S.assets && S.assets.length >= 1);
+  if (system === "market")  return chap >= 3;
+  if (system === "stocks")  return chap >= 4;
+  return true;
+}
+
 /* ---------------- CHARACTER IMAGES CONFIG ---------------- */
-// IF YOUR IMAGE NAMES ARE DIFFERENT, CHANGE THEM HERE!
 const CHAR_IMAGES = {
   tunde: 'tunde.png',
   chinedu: 'chinedu.png',
@@ -418,7 +424,7 @@ const CHAR_IMAGES = {
   ada: 'ada.png'
 };
 
-const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓🏾"},avatar:{c:"var(--blue)",e:"🏃🏾‍♂️"},ada:{c:"#f472b6",e:"👩🏾‍💼"}};
+const CHAR_META={tunde:{c:"var(--green)",e:"🧑‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓"},avatar:{c:"var(--blue)",e:"🏃‍♂️"},ada:{c:"#f472b6",e:"👩‍💼"}};
 let DLG={k:null,t:"Welcome to Lagos. What will you do today?"},dlgTimer=null,typeTimer=null;
 function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${charSrc(DLG.k)}"`:""} style="display:${m?"block":"none"}" onerror="if(!this.dataset.f&&this.src.indexOf('avatar_m')>-1){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?charEm(DLG.k):""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
 function paintDlg(type){const n=document.getElementById("npc");if(n)n.innerHTML=npcInner();if(type){const t=document.querySelector(DLG.k==="avatar"?".av":"#npc");if(t){t.classList.add("talk");sprState(DLG.k==="avatar"?".av":"#npc",DLG.k,"talk");setTimeout(()=>{t.classList.remove("talk");sprState(DLG.k==="avatar"?".av":"#npc",DLG.k,"idle");},Math.min(5000,(DLG.t||"").length*18+300));}}const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
@@ -464,11 +470,11 @@ const ASSETS = [
 ];
 
 const EVENTS=[
-  {id:"conductor",title:"Danfo conductor",text:"The conductor wants ₦100 extra because of \u201chold-up\u201d.",choices:[
+  {id:"conductor",title:"Danfo conductor",text:"The conductor wants ₦100 extra because of “hold-up”.",choices:[
     {label:"Pay quietly",fx:{cash:-100},res:"You pay. Lagos no dey carry last."},
     {label:"Argue am",fx:{happiness:-5,reputation:1},res:"You argue and win. Small win, big joy."},
     {label:"Jump out",fx:{energy:-10,health:-5},res:"Rough landing. But you saved ₦100."}]},
-  {id:"alaye",title:"Area boys",text:"Three guys block your way. \u201cOga, anything for the boys?\u201d",choices:[
+  {id:"alaye",title:"Area boys",text:"Three guys block your way. “Oga, anything for the boys?”",choices:[
     {label:"Drop ₦500",fx:{cash:-500},res:"They nod. You pass."},
     {label:"Walk fast",fx:{energy:-15,health:-5},res:"You jog. They laugh. You're safe."},
     {label:"Shout",fx:{reputation:2,happiness:-3},res:"People look. They back off. Small respect."}]},
@@ -476,7 +482,7 @@ const EVENTS=[
     {label:"Buy umbrella",fx:{cash:-800,health:2},res:"You stay dry. Smart."},
     {label:"Run",fx:{energy:-15,health:-8},res:"You arrive soaked. Health down."},
     {label:"Wait it out",fx:{energy:-5,happiness:-3},res:"You wait. Time lost."}]},
-  {id:"sidehustle",title:"Side hustle offer",text:"A friend wants you to join a \u201cquick money\u201d scheme.",choices:[
+  {id:"sidehustle",title:"Side hustle offer",text:"A friend wants you to join a “quick money” scheme.",choices:[
     {label:"Join with ₦2000",fx:{cash:-2000},res:"You join. You may never see it again.",tag:"mystery"},
     {label:"Decline",fx:{reputation:1},res:"You decline. Wise."}]},
   {id:"freefood",title:"Free food",text:"Aunty at the buka offers you jollof on the house.",choices:[
@@ -486,9 +492,9 @@ const EVENTS=[
     {label:"Charge at shop ₦300",fx:{cash:-300,energy:3},res:"Charged. Back in business."},
     {label:"Manage",fx:{happiness:-4},res:"You switch off. Life is harder today."}]},
   {id:"oldfriend",title:"Old friend",text:"Chinedu from secondary school sees you. He's driving a Camry.",choices:[
-    {label:"Hail am",fx:{network:3,happiness:-3},res:"He gives you his card. \u201cCall me.\u201d"},
+    {label:"Hail am",fx:{network:3,happiness:-3},res:"He gives you his card. “Call me.”"},
     {label:"Avoid am",fx:{happiness:2},res:"You dodge. Pride intact."}]},
-  {id:"gigoffer",title:"Gig offer",text:"A stranger says he has a quick job \u2014 ₦3,000 for 2 hours.",choices:[
+  {id:"gigoffer",title:"Gig offer",text:"A stranger says he has a quick job — ₦3,000 for 2 hours.",choices:[
     {label:"Accept",fx:{cash:3000,energy:-20},res:"You work. It's real. Cash in hand."},
     {label:"Ask questions first",fx:{reputation:1,energy:-3},res:"He respects you. But the job goes to another."}]},
   {id:"bet",title:"Betting slip",text:"A friend wants you to put ₦1,000 on a sure game.",choices:[
@@ -574,7 +580,7 @@ function updateMission(type) {
     m.claimed = true;
     S.cash += 5000;
     S.energy = S.maxEnergy;
-    addXp(100); // Bonus XP for completing all missions
+    addXp(100);
     addLog("🏆 Daily Missions Completed! +₦5,000, Full Energy, +100 XP.");
     toast("🏆 Missions Complete! +₦5,000");
     postToFeed(`${esc(S.name)} completed all daily missions! 🏆`);
@@ -651,7 +657,7 @@ window.upgradeSkill = function(skill) {
   toast(`Upgraded ${skill} to Lvl ${S.skills[skill]}!`);
   addLog(`💡 Upgraded ${skill} skill to Lvl ${S.skills[skill]}.`);
   save();
-  openSkills(); // Refresh the modal
+  openSkills();
   renderGame();
 };
 
@@ -670,7 +676,7 @@ async function ensureAuth(){
 /* ---------------- SAVE / SYNC ---------------- */
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function save(){
-  if(S){try{checkAch();}catch(e){}S.lastSaved=Date.now();if(session&&session.user)S.uid=session.user.id;}
+  if(S){try{checkAch();}catch(e){}S.lastSaved=Date.now();}
   saveLocal();
   scheduleCloudSync();
 }
@@ -710,7 +716,7 @@ async function newGame(name,originId,dreamId,look){
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
     assets:[], vipUntil:0, missions:null,
     appointments:[],flags:{firstGigDone:false,workCount:0,mysteryScheduled:false},
-    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString(),lastOwambe:0,streak:1,shield:0,ach:{}};
+    log:[],lastReset:Date.now(),createdAt:Date.now(),lastSaved:Date.now(),lastLoginDate:new Date().toDateString(),lastOwambe:0,streak:1,shield:0,ach:{},chap:0};
   applyFx(o.fx);applyFx(d.fx);
   
   const urlParams = new URLSearchParams(window.location.search);
@@ -757,7 +763,7 @@ function checkReset(){
         S.health=clamp(S.health-15*days);S.happiness=clamp(S.happiness-15*days);
         addLog(`Day ${S.day}. Couldn't pay ₦${fmtMoney(short)} upkeep.`);
       }
-    }else addLog(`Day ${S.day}. Grace period \u2014 no upkeep yet.`);
+    }else addLog(`Day ${S.day}. Grace period — no upkeep yet.`);
     save();
   }
 }
@@ -779,33 +785,18 @@ function checkAppts(){
   return changed;
 }
 
-/* ---------------- V4: ANIMATED SCENE ENGINE ---------------- */
+/* ---------------- SCENE (simplified reliable version) ---------------- */
 function rng(seed){let s=seed;return()=>((s=(s*9301+49297)%233280)/233280);}
 function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect class="wn${(wx*7+wy*3)%9===0?" twk":""}" x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
 const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
 function charSrc(k){return k==="avatar"?`avatar_${(S&&S.look)||"m"}.png`:CHAR_IMAGES[k];}
-function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃🏾‍♀️":"🏃🏾‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
+function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃‍♀️":"🏃‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
 function charImg(k){const lk=(S&&S.look)||"m";if(SPM&&SPM[sprKey(k)+":idle"])return `<div class="spr" style="${sprCss(sprKey(k),"idle")}"></div>`;return `<img src="${charSrc(k)}" alt="" onerror="if(!this.dataset.f&&'${k}'==='avatar'&&'${lk}'==='m'){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';this.nextSibling.style.display='block'"><b style="display:none">${charEm(k)}</b>`;}
 function npcKey(){if(DLG.k&&DLG.k!=="avatar")return DLG.k;const a=(S.appointments||[]).find(x=>x.status==="ready"&&x.loc===S.location);return a?(a.id.startsWith("chief")?"chief":a.id.startsWith("tunde")?"tunde":null):null;}
 function npcInner(){const k=npcKey();return k?`<div class="bubble">${DLG.k===k?"…":"!"}</div>${charImg(k)}`:"";}
 const CAR=`<svg width="50" height="18" viewBox="0 0 50 18"><path d="M2 14 L7 7 Q9 4 15 4 H31 Q37 4 40 8 L47 11 V15 H2Z" fill="#05080b"/><path d="M12 6 H30 L36 9 H10Z" fill="#1d2a36"/><circle cx="12" cy="15" r="3" fill="#000"/><circle cx="38" cy="15" r="3" fill="#000"/><rect x="46" y="10" width="4" height="2" fill="#ffd9a0"/><rect x="0" y="10" width="3" height="2" fill="#ff3b3b"/></svg>`;
 const BUS=`<svg width="78" height="24" viewBox="0 0 78 24"><rect x="2" y="3" width="74" height="16" rx="3" fill="#0b1118"/><rect x="6" y="6" width="62" height="6" fill="#2b3b4a" opacity=".75"/><circle cx="16" cy="20" r="3.5" fill="#000"/><circle cx="62" cy="20" r="3.5" fill="#000"/><rect x="74" y="12" width="4" height="3" fill="#ffd9a0"/><rect x="0" y="12" width="3" height="3" fill="#ff3b3b"/></svg>`;
-/* ---------------- V11: MOTION GRAPHICS ---------------- */
-const SH="viewBox=\"0 0 480 120\" preserveAspectRatio=\"xMidYMax meet\"",D="#0b1118";
-const ART={
- ojota:l=>`<svg ${SH}><g fill="${D}"><path d="M20 58H310V66H20Z"/><rect x="30" y="66" width="3" height="46"/><rect x="297" y="66" width="3" height="46"/><rect x="62" y="84" width="92" height="26" rx="4"/><rect x="172" y="84" width="92" height="26" rx="4"/></g><g fill="#e9b949" opacity=".55"><rect x="68" y="90" width="80" height="5"/><rect x="178" y="90" width="80" height="5"/></g>${l?'<circle cx="152" cy="104" r="10" fill="#ffd9a0" opacity=".18"/>':""}<circle class="bl" cx="152" cy="104" r="2" fill="#ffb347"/><circle class="bl d2" cx="262" cy="104" r="2" fill="#ffb347"/><g class="walk"><circle cx="0" cy="92" r="3" fill="${D}"/><rect x="-3" y="95" width="6" height="15" rx="2" fill="${D}"/></g><g class="walk w2"><circle cx="0" cy="94" r="3" fill="${D}"/><rect x="-3" y="97" width="6" height="13" rx="2" fill="${D}"/></g></svg>`,
- yaba:l=>`<svg ${SH}><path d="M380 110L388 20L396 110M382 82H394M384 56H392" stroke="${D}" stroke-width="2" fill="none"/><circle class="bl" cx="388" cy="18" r="3" fill="#ff3b3b"/><path class="dash" d="M20 104H110V80H190V94H260V72H330" stroke="#2de2c1" stroke-width="1.6" fill="none" stroke-dasharray="6 18" opacity="${l?.9:.5}"/></svg>`,
- ikeja:l=>`<svg ${SH}><path d="M10 44Q160 66 310 44" stroke="${D}" fill="none" stroke-width="1.2"/>${[30,70,110,150,190,230,270].map((x,i)=>`<path class="sw" style="animation-delay:${i*.3}s" d="M${x} ${(44+11*Math.sin(Math.PI*(x-10)/300)).toFixed(0)}l7 0l-3.5 10z" fill="${["#e9b949","#2de2c1","#ff4fa3"][i%3]}" opacity=".85"/>`).join("")}<g fill="${D}"><rect x="40" y="88" width="70" height="22"/><rect x="130" y="88" width="70" height="22"/><rect x="220" y="88" width="70" height="22"/></g><g fill="#c0392b" opacity=".8"><path d="M36 88h78l-6 -9h-66z"/><path d="M126 88h78l-6 -9h-66z" fill="#e9b949"/><path d="M216 88h78l-6 -9h-66z"/></g>${[75,165,255].map((x,i)=>`<circle class="fl" style="animation-delay:${i*.7}s" cx="${x}" cy="94" r="3" fill="#ffd9a0"/>`).join("")}</svg>`,
- surulere:l=>`<svg ${SH}><defs><linearGradient id="bm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe8ff" stop-opacity=".5"/><stop offset="1" stop-color="#cfe8ff" stop-opacity="0"/></linearGradient></defs><path d="M60 110Q60 60 190 60T320 110Z" fill="${D}"/><g class="beam"><polygon points="90,64 50,-10 130,-10" fill="url(#bm)" opacity="${l?.55:.12}"/></g><g class="beam" style="animation-delay:-3s"><polygon points="290,64 250,-10 330,-10" fill="url(#bm)" opacity="${l?.55:.12}"/></g><text class="neon" x="350" y="70" font-size="15" font-weight="800" fill="#ff4fa3" font-family="sans-serif" letter-spacing="3">LIVE</text>${[0,1,2,3,4].map(i=>`<rect class="eq" style="animation-delay:${i*.17}s" x="${352+i*9}" y="84" width="6" height="22" fill="#2de2c1" opacity=".85"/>`).join("")}</svg>`,
- vi:l=>`<svg ${SH}><defs><clipPath id="tw"><rect x="330" y="8" width="56" height="102"/></clipPath><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect x="330" y="8" width="56" height="102" fill="${D}"/><g clip-path="url(#tw)"><rect class="sweep" x="330" y="-10" width="56" height="30" fill="url(#sg)"/></g>${[0,1,2,3,4,5].map(r=>[0,1,2,3].map(c=>(r*3+c)%4===0?"":`<rect x="${336+c*13}" y="${16+r*15}" width="7" height="6" fill="${l?"#ffd9a0":"#3a4b5a"}" opacity=".7"/>`).join("")).join("")}<path class="dash" d="M20 106H320" stroke="#e9b949" stroke-width="2" stroke-dasharray="10 6 4 6" opacity=".8"/></svg>`,
- lekki:l=>{const A=l?"#ffd9a0":D;return `<svg ${SH}><path d="M144 110L150 24L156 110M254 110L260 24L266 110" stroke="${D}" stroke-width="2.5" fill="none"/><path d="M90 96H340" stroke="${D}" stroke-width="3"/>${[100,115,130,170,185,200,215,230,245].map(x=>`<path d="M${x<200?150:260} 26L${x} 96" stroke="${A}" stroke-width=".8" opacity=".55"/>`).join("")}${[110,160,210,300].map((x,i)=>`<circle class="bl" style="animation-delay:${i*.4}s" cx="${x}" cy="93" r="1.8" fill="#ffb347"/>`).join("")}<g class="boat"><path d="M0 108h26l-5 5h-16z" fill="${D}"/><rect x="9" y="100" width="2" height="8" fill="${D}"/></g><g class="palm"><path d="M400 112Q405 84 398 58" stroke="${D}" stroke-width="3" fill="none"/><path d="M398 58Q380 52 366 62M398 58Q384 46 374 42M398 58Q410 48 424 50M398 58Q414 58 428 68" stroke="${D}" stroke-width="2.5" fill="none"/></g></svg>`;},
- ajah:l=>`<svg ${SH}>${[30,100,170,240].map((x,i)=>`<g fill="${D}"><rect x="${x}" y="${78+i%2*6}" width="50" height="${32-i%2*6}"/><path d="M${x-4} ${78+i%2*6}L${x+25} ${60+i%2*6}L${x+54} ${78+i%2*6}Z"/></g><rect class="fl" style="animation-delay:${i*.6}s" x="${x+10}" y="${88+i%2*6}" width="8" height="8" fill="#ffd9a0" opacity="${l?.9:.35}"/>`).join("")}<circle class="fl" cx="330" cy="104" r="${l?14:0}" fill="#ffb347" opacity=".25"/><path d="M20 76Q150 90 300 74" stroke="${D}" fill="none" stroke-width="1"/>${[0,1,2,3,4,5].map(i=>`<circle class="ff" style="animation-delay:-${i*1.1}s" cx="${40+i*55}" cy="${70+(i%3)*14}" r="1.6" fill="#e6ff7a" opacity="${l?.9:0}"/>`).join("")}</svg>`
-};
-function skyFx(loc,night,dusk,fog){const cl=night?"rgba(150,170,200,.10)":dusk?"rgba(255,200,160,.35)":"rgba(255,255,255,.5)";let o=[0,1,2].map(i=>`<i class="cld" style="top:${8+i*16}%;width:${70+i*28}px;height:${16+i*4}px;background:${cl};animation-duration:${70+i*35}s;animation-delay:-${i*28}s"></i>`).join("");
-  if(!night)o+=[0,1,2].map(i=>`<svg class="brd" style="top:${14+i*9}%;animation-duration:${24+i*7}s;animation-delay:-${i*6}s" width="12" height="6" viewBox="0 0 12 6"><path d="M0 4Q3 0 6 4Q9 0 12 4" stroke="#1b2a36" fill="none"/></svg>`).join("")+'<i class="ray"></i>';
-  else o+='<i class="shoot"></i>';
-  if(loc==="ikeja"||loc==="vi")o+=`<svg class="fly" style="top:${loc==="vi"?"26%":"16%"};animation-duration:${loc==="vi"?30:42}s" width="26" height="10" viewBox="0 0 26 10"><path d="M0 5L22 4L26 5L22 6Z" fill="${D}"/><circle class="bl" cx="13" cy="4" r="1" fill="#ff3b3b"/></svg>`;
-  if(fog)o+='<i class="fog"></i>';return o;}
+
 function hourF(){if(window._hO!=null)return window._hO;const d=new Date();return d.getHours()+d.getMinutes()/60;}
 const sst=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
 function phase(h){const ni=(h>=20.5||h<4.5)?1:h>=17?sst((h-17)/3.5):h>=7?0:1-sst((h-4.5)/2.5);return{ni,du:Math.sin(Math.PI*ni),wl:Math.min(1,Math.max(0,(ni-.2)/.6))};}
@@ -825,13 +816,13 @@ function sceneHtml(){
   const veh=[0,1,2].map(i=>{const d=10+i*5+li,dl=-(i*3.7+li),b=[1,7,13][i],left=(i+li)%2===0,svg=(i===0&&li%2===1)?BUS:CAR;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s"><div style="${left?"":"transform:scaleX(-1)"}">${svg}</div></div>`;}).join("");
   const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/><circle class="gl" cx="${x+14}" cy="19" r="10" fill="#ffd9a0"/><circle class="gl2" cx="${x+14}" cy="17" r="2" fill="#ffe9c0"/>`).join("");
   const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`,tag=rainy?" · Rain":night?" · Night":dusk?" · Dusk":"";
-  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,true)}${skyline(S.location+"a",c.h[0],c.h[1],far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}</div><div class="lamps">${lamps}${lamps}</div><div id="nsh" class="nsh" style="opacity:${(f.ni*.55).toFixed(3)}"></div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
+  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx"></div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,true)}${skyline(S.location+"a",c.h[0],c.h[1],far,true)}</div><div class="haze"></div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}</div><div class="lamps">${lamps}${lamps}</div><div id="nsh" class="nsh" style="opacity:${(f.ni*.55).toFixed(3)}"></div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
 }
 function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);if(t==="arrive"){snd("whoosh");setTimeout(()=>snd("horn"),350);}{const stt={work:"work",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(stt){sprState(".av","avatar",stt);setTimeout(()=>sprState(".av","avatar","idle"),1400);}}if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
 function workGo(id){const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
 window.doTravel=function(id){const p=S.location;doTravelCore(id);if(S.location!==p)setTimeout(()=>sceneFx("arrive"),30);};
 
-/* ---------------- V3: MINIGAME, STORY, BACKDROPS ---------------- */
+/* ---------------- WORK MINIGAME ---------------- */
 let _mg=null;
 window.doWork=function(id){
   const job=(JOBS[S.location]||[]).find(j=>j.id===id);if(!job)return;
@@ -845,35 +836,45 @@ window.doWork=function(id){
 window.stopMg=function(id){const m=document.getElementById("tm"),b=document.getElementById("stopbtn");if(!m||b.disabled)return;cancelAnimationFrame(_mg);b.disabled=true;const d=Math.abs(parseFloat(m.dataset.p)-0.5);let x=0.8,l="Miss… x0.8",c="#ef4444";if(d<0.07){x=1.5;l="🎯 PERFECT! x1.5";c="#fbbf24";burst();sfx(3);buzz([30,20,60]);}else if(d<0.17){x=1.2;l="👍 Good! x1.2";c="#22c55e";sfx(2);}document.getElementById("tres").innerHTML=`<b style="color:${c};font-size:18px">${l}</b>`;window._perf=x;setTimeout(()=>workGo(id),700);};
 window.mgSkip=function(id){cancelAnimationFrame(_mg);window._perf=1;workGo(id);};
 
-const LOCBG={ojota:"linear-gradient(135deg,#1a1a0b,#4a3a12)",yaba:"linear-gradient(135deg,#0d1b2a,#1d4a7c)",ikeja:"linear-gradient(135deg,#2a1a0d,#6b3a12)",surulere:"linear-gradient(135deg,#2a0d2a,#6b1d6b)",vi:"linear-gradient(135deg,#10202a,#2a5a6b)",lekki:"linear-gradient(135deg,#0d2a1a,#1d6b3a)",ajah:"linear-gradient(135deg,#1d1d1d,#4a4a4a)"};
-const pr=(a,b)=>Math.min(1,a/b);
+/* ---------------- CHAPTERS + FREEDOM ---------------- */
 const CHAPTERS=[
- {t:"Earn your first ₦20,000",k:"ada",say:"Income comes first. Work, learn, stack your first ₦20,000.",p:s=>pr(s.cash+(s.vault||0),20000),r:3000},
- {t:"Pay yourself first: ₦10,000 in your Vault",k:"ada",say:"Before spending, save. Open the Freedom Plan and fill your Emergency Vault.",p:s=>pr(s.vault||0,10000),r:6000},
+ {t:"Earn your first ₦20,000",k:"ada",say:"Income comes first. Work, learn, stack your first ₦20,000.",p:s=>Math.min(1,(s.cash+(s.vault||0))/20000),r:3000},
+ {t:"Pay yourself first: ₦10,000 in your Vault",k:"ada",say:"Before spending, save. Open the Freedom Plan and fill your Emergency Vault.",p:s=>Math.min(1,(s.vault||0)/10000),r:6000},
  {t:"Learn a skill that raises your pay",k:"tunde",say:"Skills are the best investment. Take a course in your Freedom Plan.",p:s=>Object.keys(s.edu||{}).length?1:0,r:8000},
- {t:"Vault covers 7 days of expenses",k:"ada",say:"One week of safety. Now a bad day will not break you.",p:s=>pr(s.vault||0,7*dailyCost()),r:10000},
- {t:"Invest ₦25,000 in stocks",k:"chief",say:"Own pieces of great companies. Your money works while you work.",p:s=>pr(window.STK_VAL||0,25000),r:20000},
+ {t:"Vault covers 7 days of expenses",k:"ada",say:"One week of safety. Now a bad day will not break you.",p:s=>Math.min(1,(s.vault||0)/(7*dailyCost())),r:10000},
+ {t:"Invest ₦25,000 in stocks",k:"chief",say:"Own pieces of great companies. Your money works while you work.",p:s=>Math.min(1,(window.STK_VAL||0)/25000),r:20000},
  {t:"Own your first income asset",k:"chief",say:"A rent-paying property or a business: assets pay while you sleep.",p:s=>(s.assets.some(i=>(ASSETS.find(a=>a.id===i)||{}).rent)||Object.values(s.biz||{}).some(v=>v>0))?1:0,r:15000},
- {t:"Reach 25% Freedom",k:"tunde",say:"A quarter of your lifestyle is paid by passive income.",p:s=>pr(freedomPct(),25),r:25000},
- {t:"Debt-free with a 30-day Vault",k:"ada",say:"No debt and a month of safety. That is real discipline.",p:s=>(s.debt||0)>0?0:pr(s.vault||0,30*dailyCost()),r:40000},
- {t:"FINANCIAL FREEDOM: passive income covers your life",k:"chief",say:"When your assets pay for your lifestyle, you are free.",p:s=>pr(freedomPct(),100),r:150000}];
-function chapCheck(){const i=S.chap||0,c=CHAPTERS[i];if(!c||c.p(S)<1)return;S.chap=i+1;track('chapter_'+(i+1));S.cash+=c.r;addXp(60);const n=CHAPTERS[i+1];addLog(`📖 Chapter ${i+1} done: ${c.t}. +₦${fmtMoney(c.r)}`);toast(`📖 Chapter ${i+1} complete! +₦${fmtMoney(c.r)}`);burst();sfx(3);buzz([40,30,90]);showCharacter(n?n.k:"chief",n?`Chapter ${i+1} done, +₦${fmtMoney(c.r)}. Next: ${n.t}. ${n.say}`:"You did it. You are a Legend of Eko. 👑",8000);}
+ {t:"Reach 25% Freedom",k:"tunde",say:"A quarter of your lifestyle is paid by passive income.",p:s=>Math.min(1,freedomPct()/25),r:25000},
+ {t:"Debt-free with a 30-day Vault",k:"ada",say:"No debt and a month of safety. That is real discipline.",p:s=>(s.debt||0)>0?0:Math.min(1,(s.vault||0)/(30*dailyCost())),r:40000},
+ {t:"FINANCIAL FREEDOM: passive income covers your life",k:"chief",say:"When your assets pay for your lifestyle, you are free.",p:s=>Math.min(1,freedomPct()/100),r:150000}];
+function chapCheck(){const i=S.chap||0,c=CHAPTERS[i];if(!c||c.p(S)<1)return;S.chap=i+1;track('chapter_'+(i+1));S.cash+=c.r;addXp(60);const n=CHAPTERS[i+1];addLog(`📖 Chapter ${i+1} done: ${c.t}. +₦${fmtMoney(c.r)}`);toast(`📖 Chapter ${i+1} complete! +₦${fmtMoney(c.r)}`);
+  // Step 2 unlock announcements
+  if (S.chap === 2) toast("🏭 Empire unlocked!");
+  if (S.chap === 3) toast("💹 Market unlocked!");
+  if (S.chap === 4) toast("📈 Stocks unlocked!");
+  burst();sfx(3);buzz([40,30,90]);showCharacter(n?n.k:"chief",n?`Chapter ${i+1} done, +₦${fmtMoney(c.r)}. Next: ${n.t}. ${n.say}`:"You did it. You are a Legend of Eko. 👑",8000);}
 function chapCard(){const i=S.chap||0,c=CHAPTERS[i];if(!c)return `<div class="rival" style="border-color:var(--gold)"><div class="rv-top"><span>👑 <b>Legend of Eko</b></span><span>All chapters done</span></div></div>`;const p=Math.round(c.p(S)*100);return `<div class="rival" style="border-color:#2a4033"><div class="rv-top"><span>📖 Chapter ${i+1}/${CHAPTERS.length}</span><span style="color:var(--green)">+₦${fmtMoney(c.r)}</span></div><div style="font-size:14px;font-weight:700;margin:4px 0 6px">${c.t}</div><div class="bar"><i style="width:${p}%"></i></div></div>`;}
 
-/* ---------------- V6: EMPIRE, MARKET, RISK ---------------- */
+/* ---------------- EMPIRE ---------------- */
 const BIZ=[{id:"pepper",n:"Pepper Stall",e:"🌶️",c:15000,i:900},{id:"shop",n:"Provision Shop",e:"🏪",c:60000,i:3800},{id:"pos",n:"POS Network",e:"💳",c:200000,i:14000},{id:"haul",n:"Logistics Fleet",e:"🚚",c:800000,i:62000}];
 function bizRate(){return BIZ.reduce((s,b)=>s+b.i*((S.biz||{})[b.id]||0),0);}
 function bizPending(){return Math.floor(bizRate()*Math.min(8,(Date.now()-(S.bizT||Date.now()))/HOUR));}
-window.openBiz=function(){S.biz=S.biz||{};const p=bizPending();openModal(`<h3>🏭 Your Empire</h3><div class="opt" style="border-color:var(--green)">₦${fmtMoney(bizRate())}/hr · ready <b>₦${fmtMoney(p)}</b><span class="sub">Earns even when you're offline (8h cap). Upgrades compound.</span></div><button class="btn primary" style="width:100%;margin-bottom:8px" onclick="bizCollect()" ${p?"":"disabled"}>💰 Collect ₦${fmtMoney(p)}</button>`+BIZ.map(b=>{const l=S.biz[b.id]||0,c=Math.floor(b.c*Math.pow(1.7,l));return `<button class="opt ${S.cash>=c?"":"locked"}" onclick="bizBuy('${b.id}')">${b.e} ${b.n} · Lv ${l}<span class="sub">${l?"Upgrade":"Open"} ₦${fmtMoney(c)} · +₦${fmtMoney(b.i)}/hr · pays back in ${(c/b.i).toFixed(0)}h</span></button>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openBiz=function(){if(!unlocked("empire"))return toast("Unlock Empire by completing Chapter 2 or buying your first asset.");S.biz=S.biz||{};const p=bizPending();openModal(`<h3>🏭 Your Empire</h3><div class="opt" style="border-color:var(--green)">₦${fmtMoney(bizRate())}/hr · ready <b>₦${fmtMoney(p)}</b><span class="sub">Earns even when you're offline (8h cap). Upgrades compound.</span></div><button class="btn primary" style="width:100%;margin-bottom:8px" onclick="bizCollect()" ${p?"":"disabled"}>💰 Collect ₦${fmtMoney(p)}</button>`+BIZ.map(b=>{const l=S.biz[b.id]||0,c=Math.floor(b.c*Math.pow(1.7,l));return `<button class="opt ${S.cash>=c?"":"locked"}" onclick="bizBuy('${b.id}')">${b.e} ${b.n} · Lv ${l}<span class="sub">${l?"Upgrade":"Open"} ₦${fmtMoney(c)} · +₦${fmtMoney(b.i)}/hr · pays back in ${(c/b.i).toFixed(0)}h</span></button>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 window.bizCollect=function(){const p=bizPending();if(!p)return;S.cash+=p;S.bizT=Date.now();addLog(`🏭 Collected ₦${fmtMoney(p)} from your empire.`);floatText("+₦"+fmtMoney(p));burst();sfx(2);save();closeModal();renderGame();};
 window.bizBuy=function(id){S.biz=S.biz||{};const b=BIZ.find(x=>x.id===id),l=S.biz[id]||0,c=Math.floor(b.c*Math.pow(1.7,l));if(S.cash<c)return toast("Not enough cash");S.cash+=bizPending();S.bizT=Date.now();S.cash-=c;S.biz[id]=l+1;track('biz_buy',{id:id,lv:l+1});addXp(40);addLog(`🏭 ${b.n} is now Lv ${l+1}. -₦${fmtMoney(c)}`);postToFeed(`${esc(S.name)} upgraded ${b.n} to Lv ${l+1}! 🏭`);sfx(2);save();openBiz();renderGame();};
 
+/* ---------------- MARKET (local) ---------------- */
 const MK=[{id:"usd",n:"Dollar",e:"💵",b:1500,v:.035},{id:"coin",n:"Okada Coin",e:"🪙",b:2000,v:.12},{id:"land",n:"Ajah Land",e:"🏞️",b:50000,v:.015}];
 function mv(i,n){const R=rng(n*977+i*131+7);R();R();return(R()-.5)*2*MK[i].v;}
 function mkPrice(i,off=0){const n=Math.floor(Date.now()/HOUR)-off;let p=MK[i].b;for(let k=n-72;k<=n;k++)p*=1+mv(i,k);return Math.max(MK[i].b*.3,p);}
-window.openMarket=function(){S.inv=S.inv||{};S.invC=S.invC||{};const n=Math.floor(Date.now()/HOUR);
+window.openMarket=function(){
+  if(!unlocked("market")) return toast("Unlock Market by completing Chapter 3.");
+  // Prefer server forex if available
+  if(sb && session?.user){openForex();return;}
+  S.inv=S.inv||{};S.invC=S.invC||{};const n=Math.floor(Date.now()/HOUR);
   const news=MK.map((m,i)=>{const x=mv(i,n+1);if(Math.abs(x)<m.v*.45)return"";const rel=rng(n*3+i)()>.2,up=rel?x>0:x<=0;return `<div class="rw">${up?"📈":"📉"} ${m.e} Insiders say <b>${m.n}</b> will ${up?"rise":"drop"} soon <small style="color:var(--muted)">(rumours can be wrong)</small></div>`}).join("")||`<div class="rw">No strong rumours this hour.</div>`;
-  openModal(`<h3>💹 Lagos Market</h3><div class="opt" style="border-color:var(--gold)"><b>📰 Street rumours</b>${news}<span class="sub">Prices move every hour. Buy low, sell high. 2% fee on selling.</span></div>`+MK.map((m,i)=>{const p=mkPrice(i),ch=(p/mkPrice(i,1)-1)*100,u=S.inv[m.id]||0,val=u*p,pl=val-(S.invC[m.id]||0);return `<div class="opt"><b>${m.e} ${m.n}</b> ₦${fmtMoney(p)} <span style="color:${ch>=0?"var(--green)":"var(--red)"}">${ch>=0?"▲":"▼"}${Math.abs(ch).toFixed(1)}%</span><span class="sub">${u?`Holding ₦${fmtMoney(val)} (${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))})`:"Not holding"}</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:1;padding:8px" onclick="mkBuy(${i},5000)">Buy ₦5k</button><button class="btn" style="flex:1;padding:8px" onclick="mkBuy(${i},25000)">Buy ₦25k</button><button class="btn warn" style="flex:1;padding:8px" onclick="mkSell(${i})" ${u?"":"disabled"}>Sell all</button></div></div>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+  openModal(`<h3>💹 Lagos Market</h3><div class="opt" style="border-color:var(--gold)"><b>📰 Street rumours</b>${news}<span class="sub">Prices move every hour. Buy low, sell high. 2% fee on selling.</span></div>`+MK.map((m,i)=>{const p=mkPrice(i),ch=(p/mkPrice(i,1)-1)*100,u=S.inv[m.id]||0,val=u*p,pl=val-(S.invC[m.id]||0);return `<div class="opt"><b>${m.e} ${m.n}</b> ₦${fmtMoney(p)} <span style="color:${ch>=0?"var(--green)":"var(--red)"}">${ch>=0?"▲":"▼"}${Math.abs(ch).toFixed(1)}%</span><span class="sub">${u?`Holding ₦${fmtMoney(val)} (${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))})`:"Not holding"}</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:1;padding:8px" onclick="mkBuy(${i},5000)">Buy ₦5k</button><button class="btn" style="flex:1;padding:8px" onclick="mkBuy(${i},25000)">Buy ₦25k</button><button class="btn warn" style="flex:1;padding:8px" onclick="mkSell(${i})" ${u?"":"disabled"}>Sell all</button></div></div>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);
+};
 window.mkBuy=function(i,a){if(S.cash<a)return toast("Not enough cash");const m=MK[i];S.cash-=a;S.inv[m.id]=(S.inv[m.id]||0)+a/mkPrice(i);S.invC[m.id]=(S.invC[m.id]||0)+a;sfx(1);save();openMarket();renderGame();};
 window.mkSell=function(i){const m=MK[i],u=S.inv[m.id]||0;if(!u)return;const v=Math.floor(u*mkPrice(i)*.98),c=S.invC[m.id]||0;S.cash+=v;S.inv[m.id]=0;S.invC[m.id]=0;addXp(Math.max(10,Math.min(80,Math.round((v-c)/500))));addLog(`💹 Sold ${m.n}: ₦${fmtMoney(v)} (${v>=c?"+":"-"}₦${fmtMoney(Math.abs(v-c))}).`);if(v>c*1.25){burst();sfx(3);postToFeed(`${esc(S.name)} made a killing on ${m.n}! 💹`);showCharacter('chief',"Ah! You read the market well. That is how big men think.",5000);}else if(v<c*.8)showCharacter('chinedu',"Haha, you lost money? Rookie mistake.",5000);save();openMarket();renderGame();};
 
@@ -883,7 +884,16 @@ window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const
   if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+2000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
   else{const p=Math.floor(rand(6000,15000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
-window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button><button class="opt" onclick="openStocks()">📈 Stock Market</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+
+/* ---- MORE MENU (Step 2 gating) ---- */
+window.openMore=function(){openModal(`<h3>More</h3>
+  <button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button>
+  ${unlocked("stocks")?`<button class="opt" onclick="openStocks()">📈 Stock Market</button>`:""}
+  <button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button>
+  <button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button>
+  <button class="opt" onclick="openLog()">📜 Activity log</button>
+  ${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}
+  <button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
@@ -894,7 +904,7 @@ function burst(){try{sceneFx("cheer");}catch(e){}const col=["#e9b949","#34d399",
 function hustleCombo(){const n=Date.now();S.combo=(n-(S.lastWork||0)<120000)?Math.min(5,(S.combo||0)+1):0;S.lastWork=n;return 1+S.combo*0.1;}
 
 /* Rival ladder */
-const RIVALS=[{n:"Chinedu",e:"🚗",b:30000,d:6000},{n:"Chief Obi",e:"🧥",b:200000,d:30000},{n:"Madam Folake",e:"👩🏾‍💼",b:1000000,d:120000},{n:"Dangote Jr",e:"👑",b:5000000,d:600000}];
+const RIVALS=[{n:"Chinedu",e:"🚗",b:30000,d:6000},{n:"Chief Obi",e:"🧥",b:200000,d:30000},{n:"Madam Folake",e:"👩‍💼",b:1000000,d:120000},{n:"Big Boss",e:"👑",b:5000000,d:600000}];
 function worth(){return S.cash+(S.assets||[]).reduce((s,id)=>s+((ASSETS.find(a=>a.id===id)||{}).cost||0),0)+S.reputation*200;}
 function rival(){const t=Math.min(S.rivalTier||0,RIVALS.length-1),r=RIVALS[t];return{r,t,w:r.b+r.d*((Date.now()-(S.rivalStart||S.createdAt))/DAY)};}
 function rivalCheck(){const v=rival();if((S.rivalTier||0)>=RIVALS.length||worth()<v.w)return;const b=10000*(v.t+1);S.cash+=b;S.rivalTier=v.t+1;S.rivalStart=Date.now();addLog(`🔥 You overtook ${v.r.n}! +₦${fmtMoney(b)}`);burst();sfx(3);buzz([60,40,120]);const nx=RIVALS[S.rivalTier];
@@ -907,7 +917,7 @@ function rivalCard(){const v=rival(),me=worth(),p=Math.min(100,Math.round(me/v.w
 const ACH=[
  {id:"w1",n:"First Hustle",e:"💼",t:s=>s.flags.workCount>=1,r:500},
  {id:"w25",n:"25 Jobs Done",e:"🔨",t:s=>s.flags.workCount>=25,r:3000},
- {id:"w100",n:"Street Veteran",e:"🏋🏾",t:s=>s.flags.workCount>=100,r:15000},
+ {id:"w100",n:"Street Veteran",e:"🥊",t:s=>s.flags.workCount>=100,r:15000},
  {id:"c50",n:"₦50k Club",e:"💵",t:s=>s.cash>=50000,r:2000},
  {id:"c500",n:"Half a Million",e:"💰",t:s=>s.cash>=500000,r:25000},
  {id:"a1",n:"First Asset",e:"🛺",t:s=>s.assets.length>=1,r:2000},
@@ -948,14 +958,14 @@ function startSession(){track('session');fxQuiet();
 }
 function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor((n-r)/30000);if(k>0){S.lastRegen=r+k*30000;if(S.energy<S.maxEnergy){S.energy=Math.min(S.maxEnergy,S.energy+k);if(!$modal.firstChild)renderGame();}}}
 
-/* ---------------- V8: SERVER-SIDE FOREX ---------------- */
-const FXN=["USD/NGN","GBP/NGN","EUR/NGN","OKADA/NGN"];
-const FXS={p:0,stake:5000,lev:10,risk:1,d:null,timer:null};
+/* ---------------- FOREX (server) ---------------- */
+const FXN=["USD/NGN","GBP/NGN","EUR/NGN"];
+const FXS={p:0,stake:5000,lev:5,risk:1,d:null,timer:null}; // leverage capped at 5
 async function fxCall(fn,args){if(!sb||!session||!session.user){toast("Trading needs an online connection");return null;}const{data,error}=await sb.rpc(fn,args||{});if(error){toast(String(error.message).slice(0,90));return null;}FXS.d=data;fxHandle(data);return data;}
 function fxQuiet(){try{if(sb&&session&&session.user){sb.rpc("fx_state").then(r=>{if(r.data){FXS.d=r.data;fxHandle(r.data);}});sb.rpc("stk_state").then(r=>{if(r.data)stkSync(r.data);});}}catch(e){}}
 function fxHandle(d){(d.closed||[]).forEach(c=>{const pl=Number(c.pnl);addLog(`📊 ${FXN[c.pair]} ${c.side==="buy"?"LONG":"SHORT"} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);toast(`${FXN[c.pair]} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);addXp(Math.min(60,Math.max(5,Math.round(Math.abs(pl)/1000))));if(pl>0){burst();sfx(3);if(pl>=50000)postToFeed(`${esc(S.name)} banked ₦${fmtMoney(pl)} on ${FXN[c.pair]} 📈`);}else if(c.reason==="liquidated"){buzz([80,40,80]);showCharacter('chinedu',"Margin call. Leverage does not forgive.",6000);}});if((d.closed||[]).length)save();}
 window.fxSet=function(k,v){FXS[k]=v;fxPaint();};
-window.fxOpen=async function(side){const d=await fxCall("fx_open",{p_pair:FXS.p,p_side:side,p_stake:FXS.stake,p_lev:FXS.lev,p_protect:!!FXS.risk});if(d){sfx(1);buzz(20);track('fx_open');fxPaint();}};
+window.fxOpen=async function(side){const d=await fxCall("fx_open",{p_pair:FXS.p,p_side:side,p_stake:FXS.stake,p_lev:Math.min(5,FXS.lev),p_protect:!!FXS.risk});if(d){sfx(1);buzz(20);track('fx_open');fxPaint();}};
 window.fxClose=async function(id){const d=await fxCall("fx_close",{p_id:id});if(d)fxPaint();};
 window.fxMove=async function(delta){if(!delta)return;if(delta>0){if(S.cash<delta)return toast("Not enough cash");await cloudPush();}const d=await fxCall("fx_wallet_move",{p_delta:delta});if(d){S.cash-=delta;save();renderGame();fxPaint();}};
 function fxDraw(){const cv=document.getElementById("fxc");if(!cv||!FXS.d)return;const cs=FXS.d.pairs[FXS.p].candles.map(a=>({o:a[0],h:a[1],l:a[2],c:a[3]}));if(!cs.length)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle="#090e11";g.fillRect(0,0,w,h);
@@ -971,19 +981,19 @@ function fxPaint(){const hd=document.getElementById("fxhead");if(!hd)return;docu
   fxDraw();const ls=document.getElementById("fxpos"),key=(d.positions||[]).map(x=>x.id).join();
   if(ls.dataset.k!==key){ls.dataset.k=key;ls.innerHTML=(d.positions||[]).map(po=>`<div class="fxpos"><span><b>${FXN[po.pair]}</b> ${po.side==="buy"?'<span class="up">▲ LONG</span>':'<span class="dn">▼ SHORT</span>'} x${po.lev} · ₦${fmtMoney(po.stake)}</span><b id="pl${po.id}"></b><button onclick="fxClose('${po.id}')">Close</button></div>`).join("")||`<div class="rw" style="color:#5d6e78">No open trades</div>`;}
   (d.positions||[]).forEach(po=>{const e=document.getElementById("pl"+po.id);if(e){const pl=Number(po.pnl);e.className=pl>=0?"up":"dn";e.textContent=(pl>=0?"+":"-")+"₦"+fmtMoney(Math.abs(pl));}});}
-window.openMarket=function(){track('fx_view');
+function openForex(){track('fx_view');
   const chip=(k,v,l)=>`<button class="fxc" data-fx="${k}:${v}" onclick="fxSet('${k}',${v})">${l}</button>`;
   openModal(`<div class="fx"><div class="fx-tabs">${FXN.map((n,i)=>`<button class="fxt" data-fx="p:${i}" onclick="fxSet('p',${i})">${n}</button>`).join("")}</div><div id="fxhead"></div><div class="fxnews" id="fxnews"></div><canvas id="fxc" style="width:100%;height:170px;border-radius:8px;display:block"></canvas>
   <div class="fxrow">WALLET <b id="fxw" style="color:#e8f0ec"></b></div>
   <div class="fxrow"><button class="fxc" onclick="fxMove(5000)">+₦5k</button><button class="fxc" onclick="fxMove(25000)">+₦25k</button><button class="fxc" onclick="fxMove(100000)">+₦100k</button><button class="fxc" onclick="fxMove(-((FXS.d&&FXS.d.balance)||0))">Withdraw all</button></div>
-  <div class="fxrow">STAKE ${[2000,5000,25000,100000].map(v=>chip("stake",v,"₦"+(v>=1000?v/1000+"k":v))).join("")} LEV ${[5,10,25].map(v=>chip("lev",v,"x"+v)).join("")}</div>
+  <div class="fxrow">STAKE ${[2000,5000,25000,100000].map(v=>chip("stake",v,"₦"+(v>=1000?v/1000+"k":v))).join("")} LEV ${[1,2,5].map(v=>chip("lev",v,"x"+v)).join("")}</div>
   <div class="fxrow">PROTECT ${chip("risk",1,"SL 40% / TP 80%")}${chip("risk",0,"None")}</div>
   <div class="fxbtns"><button class="fxbuy" onclick="fxOpen('buy')">▲ BUY</button><button class="fxsell" onclick="fxOpen('sell')">▼ SELL</button></div>
-  <div id="fxpos"></div><div class="fxsub" style="margin-top:8px">Simulated market, priced and settled on the server. Trades auto-close after 3 hours. A 90% loss liquidates the trade.</div>
+  <div id="fxpos"></div><div class="fxsub" style="margin-top:8px">Simulated market. Max leverage x5. Trades auto-close after 3 hours. This is a game, not financial advice.</div>
   <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);
   fxPaint();clearInterval(FXS.timer);const poll=()=>{if(!document.getElementById("fxc")){clearInterval(FXS.timer);return;}fxCall("fx_state").then(fxPaint);};poll();FXS.timer=setInterval(poll,3000);};
 
-/* ---------------- V9: FINANCIAL FREEDOM CORE ---------------- */
+/* ---------------- FREEDOM CORE ---------------- */
 const LIFE=[{n:"Modest",c:0,h:0},{n:"Comfortable",c:1200,h:2},{n:"Flashy",c:3500,h:5},{n:"Luxury",c:9000,h:9}];
 const COURSES=[{id:"lit",n:"Financial Literacy",e:"📘",c:3000,b:.05},{id:"book",n:"Bookkeeping",e:"🧮",c:8000,b:.08},{id:"sales",n:"Sales & Negotiation",e:"🤝",c:25000,b:.12},{id:"mkt",n:"Digital Marketing",e:"📣",c:40000,b:.15},{id:"code",n:"Coding & Data",e:"💻",c:60000,b:.2}];
 const dailyCost=()=>1500+LIFE[(S&&S.life)||0].c;
@@ -997,7 +1007,7 @@ function celebrate(t,msg,k,rw){burst();setTimeout(burst,350);sfx(3);buzz([60,40,
 const FM=[[25,"Financially Aware",10000,"A quarter of your lifestyle now runs on passive income."],[50,"Financially Stable",30000,"Half your life is paid for by your assets. Keep going."],[100,"FINANCIALLY FREE 🕊️",150000,"Your assets pay for your lifestyle. Work is now a choice."],[200,"Wealthy",500000,"Double your freedom number. Time to give back and think legacy."]];
 function freedomCheck(){if(!S||!S.assets)return;S.fm=S.fm||{};const p=freedomPct();FM.forEach(m=>{if(p>=m[0]&&!S.fm[m[0]]){S.fm[m[0]]=1;S.cash+=m[2];addLog(`🕊️ ${m[1]}! +₦${fmtMoney(m[2])}`);track('freedom_'+m[0]);if(m[0]===100)postToFeed(`${esc(S.name)} reached FINANCIAL FREEDOM! 🕊️`);setTimeout(()=>celebrate(m[1],m[3],"chief",m[2]),600);}});}
 function freedomCard(){const p=Math.round(Math.min(100,freedomPct())),dc=dailyCost();return `<div class="rival" onclick="openFreedom()" style="border-color:#3a3115;cursor:pointer"><div class="rv-top"><span>🕊️ Freedom <b>${p}%</b></span><span>${S.debt>0?"⚠️ debt":"🛡️ "+((S.vault||0)/dc).toFixed(0)+"d"}</span></div><div class="bar"><i style="width:${p}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div><div class="rv-sub">₦${fmtMoney(passiveDay())} of ₦${fmtMoney(freedomNeed())}/day</div></div>`;}
-const SHOCKS=[["🏥 Hospital bill","Malaria and a night in hospital.",1],["📱 Phone stolen","Area boys took your phone.",.6],["🏠 Rent hike","Your landlord raised the rent.",1.4],["👨🏾‍👩🏾‍👧🏾 Family emergency","A relative needs urgent help.",1.2],["🔧 Repairs","Your generator packed up.",.8]];
+const SHOCKS=[["🏥 Hospital bill","Malaria and a night in hospital.",1],["📱 Phone stolen","Area boys took your phone.",.6],["🏠 Rent hike","Your landlord raised the rent.",1.4],["👨‍👩‍👧‍👦 Family emergency","A relative needs urgent help.",1.2],["🔧 Repairs","Your generator packed up.",.8]];
 function lifeShock(){if(!S||!S.shockDue)return;if($modal.firstChild)return setTimeout(lifeShock,4000);S.shockDue=false;const sh=SHOCKS[rand(0,SHOCKS.length-1)],cost=Math.round(dailyCost()*rand(4,8)*sh[2]+S.level*400);let msg,good=false;
   if((S.vault||0)>=cost){S.vault-=cost;good=true;S.happiness=clamp(S.happiness+3);addXp(40);msg=`Your Emergency Vault paid ₦${fmtMoney(cost)}. No stress, no debt. <b>Discipline paid off.</b>`;}
   else{const rest=cost-(S.vault||0);S.vault=0;if(S.cash>=rest){S.cash-=rest;S.happiness=clamp(S.happiness-6);msg=`Your vault was too small. ₦${fmtMoney(rest)} came out of the cash you needed for growth.`;}else{const loan=rest-S.cash;S.cash=0;S.debt=(S.debt||0)+loan;S.happiness=clamp(S.happiness-15);S.health=clamp(S.health-8);msg=`No savings, no cash. You took a ₦${fmtMoney(loan)} quick loan at <b>10% interest per day</b>. Stress is high.`;}}
@@ -1016,7 +1026,7 @@ window.openFreedom=function(){const need=freedomNeed(),pas=passiveDay(),pct=Math
   <div class="section-title">🏠 Lifestyle (higher lifestyle raises your Freedom Number)</div>${LIFE.map((l,i)=>`<button class="opt" style="${(S.life||0)===i?"border-color:var(--green)":""}" onclick="setLife(${i})">${l.n}${(S.life||0)===i?" ✅":""}<span class="sub">₦${fmtMoney(1500+l.c)}/day cost · Freedom Number ₦${fmtMoney(300000+l.c*30)} · happiness +${l.h}/day</span></button>`).join("")}
   <div class="section-title">Rival</div>${rivalCard()}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
 
-/* ---------------- V10: STOCK MARKET (server-side) ---------------- */
+/* ---------------- STOCKS (server) ---------------- */
 const STK=[{p:4,s:"TSLA",n:"Tesla",e:"🚗"},{p:5,s:"NVDA",n:"Nvidia",e:"🧠"},{p:6,s:"AAPL",n:"Apple",e:"🍎"},{p:7,s:"MTNN",n:"MTN Nigeria",e:"📶"},{p:8,s:"DANGCEM",n:"Dangote Cement",e:"🏗️"}];
 const SK={d:null,amt:10000,timer:null};
 function stkSync(d){SK.d=d;window.STK_DIV=Number(d.div_day)||0;window.STK_VAL=Number(d.value)||0;S.stkDiv=window.STK_DIV;}
@@ -1034,9 +1044,9 @@ function stkPaint(){const el=document.getElementById("stkbody");if(!el)return;co
   STK.map(m=>{const q=d.quotes.find(x=>x.pair===m.p),c=q.candles,ch=c.length?(c[c.length-1][3]/c[0][0]-1)*100:0,h=hs.find(x=>x.pair===m.p),pl=h?Number(h.value)-Number(h.cost):0;
     return `<div class="opt"><b>${m.e} ${m.s}</b> <span style="color:#8fa3ad">${m.n}</span><br><span class="fxp ${ch>=0?"up":"dn"}" style="font-size:20px">₦${fmtMoney(q.price)}</span> <span class="${ch>=0?"up":"dn"}" style="font-size:12px">${ch>=0?"▲":"▼"}${Math.abs(ch).toFixed(2)}%</span><span class="sub">${q.yield>0?`Pays ~${(q.yield*100).toFixed(2)}%/day in dividends`:"Growth stock: no dividends"} · ${h?`You own ₦${fmtMoney(h.value)} (${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))})`:"Not owned"}</span>
     <div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:2;padding:8px" onclick="stkBuy(${m.p})">Buy ₦${fmtMoney(SK.amt)}</button><button class="btn" style="flex:1;padding:8px" onclick="stkSell(${m.p},50)" ${h?"":"disabled"}>Sell 50%</button><button class="btn warn" style="flex:1;padding:8px" onclick="stkSell(${m.p},100)" ${h?"":"disabled"}>Sell all</button></div></div>`;}).join("")+`<div class="fxsub">Prices are simulated and set on the server. Stocks drift up over time but swing day to day. 0.5% fee on each trade. This is a game, not financial advice.</div>`;}
-window.openStocks=function(){track('stocks_view');openModal(`<div class="fx"><h3>📈 Stock Market</h3><div id="stkbody"></div><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);stkPaint();clearInterval(SK.timer);const poll=()=>{if(!document.getElementById("stkbody")){clearInterval(SK.timer);return;}stkCall("stk_state").then(stkPaint);};poll();SK.timer=setInterval(poll,5000);};
+window.openStocks=function(){if(!unlocked("stocks"))return toast("Unlock Stocks by completing Chapter 4.");track('stocks_view');openModal(`<div class="fx"><h3>📈 Stock Market</h3><div id="stkbody"></div><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);stkPaint();clearInterval(SK.timer);const poll=()=>{if(!document.getElementById("stkbody")){clearInterval(SK.timer);return;}stkCall("stk_state").then(stkPaint);};poll();SK.timer=setInterval(poll,5000);};
 
-/* ---------------- V13: AUDIO, VOICE, SPRITES ---------------- */
+/* ---------------- AUDIO ---------------- */
 let AX=null,MG=null;
 function ax(){try{if(!AX){AX=new(window.AudioContext||window.webkitAudioContext)();MG=AX.createGain();MG.gain.value=1;MG.connect(AX.destination);}if(AX.state==="suspended")AX.resume();return AX;}catch(e){return null;}}
 function tn(f,t,d,ty,v,f2){const a=ax();if(!a)return;const o=a.createOscillator(),g=a.createGain(),T=a.currentTime+t;o.type=ty||"sine";o.frequency.setValueAtTime(f,T);if(f2)o.frequency.exponentialRampToValueAtTime(f2,T+d);g.gain.setValueAtTime(v||.1,T);g.gain.exponentialRampToValueAtTime(.0008,T+d);o.connect(g);g.connect(MG);o.start(T);o.stop(T+d+.02);}
@@ -1062,20 +1072,6 @@ function sprKey(k){return k==="avatar"?"avatar_"+((S&&S.look)||"m"):k;}
 function sprCss(key,st){const m=SPM&&(SPM[key+":"+st]||SPM[key+":idle"]);return m?`aspect-ratio:${m.ar};background:url(sprites/${m.f}) 0 0/${m.n*100}% 100% no-repeat;animation:spr ${((m.n-1)/m.fps).toFixed(2)}s steps(${m.n-1}) infinite`:"";}
 function sprState(sel,k,st){const e=document.querySelector(sel+" .spr");if(e&&SPM&&SPM[sprKey(k)+":"+st])e.style.cssText=sprCss(sprKey(k),st);}
 
-/* ---------------- V14: ACCOUNT RECOVERY ---------------- */
-const isAnon=()=>!!(session&&session.user&&session.user.is_anonymous);
-const accEmail=()=>(session&&session.user&&session.user.email)||"";
-const rcOk=e=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e);
-window.openRecover=function(){const em=accEmail();
-  openModal(`<h3>☁️ Your progress</h3>`+(em?`<div class="opt" style="border-color:var(--green)">✅ Saved to <b>${esc(em)}</b><span class="sub">On a new phone, or after clearing your browser, choose "I already have a saved game" and use this email.</span></div>`:`<div class="opt" style="border-color:var(--gold)">⚠️ Not saved to an email yet<span class="sub">Without an email, your progress (and any VIP pass you paid for) is lost if you clear your browser or change phones.</span></div><div class="field"><label>Your email</label><input id="rcEmail" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com"/></div><button class="btn primary" style="width:100%" onclick="rcSave()">Save my progress</button>`)+`<div class="section-title">Already have a save?</div><div class="field"><input id="rcEmail2" type="email" inputmode="email" autocomplete="email" placeholder="email you saved with"/></div><button class="btn" style="width:100%" onclick="rcSignIn()">Email me a sign-in link</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
-function rcSent(em,msg){openModal(`<h3>📧 Check your email</h3><p class="rw">${msg} <b>${esc(em)}</b>. Check your spam folder if you don't see it within a minute.</p><button class="btn primary" style="width:100%" onclick="closeModal()">OK</button>`);}
-window.rcSave=async function(){const em=((document.getElementById("rcEmail")||{}).value||"").trim().toLowerCase();if(!rcOk(em))return toast("Enter a valid email");if(!sb||!session)return toast("You need an internet connection");
-  const{error}=await sb.auth.updateUser({email:em},{emailRedirectTo:location.origin+location.pathname});if(error)return toast(String(error.message).slice(0,90));track('recover_save');rcSent(em,"We sent a confirmation link to");};
-window.rcSignIn=async function(){const em=((document.getElementById("rcEmail2")||{}).value||"").trim().toLowerCase();if(!rcOk(em))return toast("Enter a valid email");if(!sb)return toast("You need an internet connection");
-  localStorage.setItem("eh_recover","1");const{error}=await sb.auth.signInWithOtp({email:em,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});
-  if(error){localStorage.removeItem("eh_recover");return toast(/signups|not found|not allowed/i.test(error.message)?"No saved progress found for that email":String(error.message).slice(0,90));}track('recover_signin');rcSent(em,"We sent a sign-in link to");};
-function rcNudge(){if(!S||$modal.firstChild||!isAnon()||S.level<3||S.nudged)return;S.nudged=1;save();openModal(`<h3>☁️ Protect your progress</h3><p class="rw">You are Level ${S.level}. If you clear your browser or change phones, everything is lost. Save it to your email in 20 seconds.</p><button class="btn primary" style="width:100%" onclick="openRecover()">Save my progress</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Later</button>`);}
-
 /* ---------------- BOOT / RENDER ---------------- */
 window.SRV_VIP=0;
 const vipOn=()=>(window.SRV_VIP||0)>Date.now();
@@ -1087,8 +1083,7 @@ async function render(){
   if(cloud?.state){
     const cloudTime=new Date(cloud.updated_at).getTime();
     const localTime=local?(local.lastSaved||local.createdAt||0):0;
-    const foreign=local&&local.uid&&session&&session.user&&local.uid!==session.user.id,forced=localStorage.getItem("eh_recover")==="1"&&session&&session.user&&!session.user.is_anonymous;
-    if(cloudTime>localTime||foreign||forced){S=cloud.state;saveLocal();localStorage.removeItem("eh_recover");}
+    if(cloudTime>localTime){S=cloud.state;saveLocal();}
     else S=local;
   }else S=local;
   if(!S)return renderOnboarding();
@@ -1106,10 +1101,11 @@ async function render(){
   if(!S.look) S.look = "m";
   if(!S.streak) S.streak = 1;
   if(!S.shield) S.shield = 0;
+  if(!S.chap) S.chap = 0;
   
   window._awayMs=Date.now()-(S.lastSaved||Date.now());checkReset();checkAppts();renderGame();
   
-  startSession();setTimeout(lifeShock,3500);setTimeout(rcNudge,9000);
+  startSession();setTimeout(lifeShock,3500);
 }
 
 function renderOnboarding(){document.body.classList.remove("in-game");
@@ -1130,7 +1126,6 @@ function renderOnboarding(){document.body.classList.remove("in-game");
         <span>I agree to the <a href="#" onclick="showPrivacy();return false" style="color:var(--green)">privacy notice</a>. No email or phone collected. Display name only.</span>
       </label>
       <button class="btn primary" id="startBtn" style="width:100%">Start your hustle</button>
-      <button class="reset" style="display:block;margin:14px auto 0" onclick="openRecover()">I already have a saved game</button>
       ${authError?`<div class="sync" style="color:#fca5a5">Auth error: ${esc(authError)}</div>`:""}
       ${!sb?`<div class="sync" style="color:var(--amber)">⚠ Cloud not configured. Playing locally.</div>`:""}
     </div>`;
@@ -1187,7 +1182,14 @@ function renderGame(){
     <div class="cards">${chapCard()}${freedomCard()}</div>
     <div class="dock">
       <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset" onclick="openAssets()">🏠<span>Assets</span></button><button class="btn warn" onclick="doAjo()">🪙<span>Ajo${S.ajo.streak>0?' '+S.ajo.streak:''}</span></button></div>
-      <div class="dk2"><button onclick="openOwambe()">🎉<span>Owambe</span></button><button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button><button class="${bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">🏭<span>Empire</span></button><button onclick="openMarket()">💹<span>Forex</span></button><button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
+      <div class="dk2">
+        <button onclick="openOwambe()">🎉<span>Owambe</span></button>
+        <button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button>
+        ${unlocked("empire")?`<button class="${bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">🏭<span>Empire</span></button>`:""}
+        ${unlocked("market")?`<button onclick="openMarket()">💹<span>Market</span></button>`:""}
+        <button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button>
+        <button onclick="openMore()">⋯<span>More</span></button>
+      </div>
     </div>`;
     
   fetchFeed();ambUpdate();
@@ -1275,8 +1277,7 @@ window.openVipStore = function() {
 };
 
 window.buyVip = function() {
-  // REPLACE THIS WITH YOUR PAYSTACK PUBLIC KEY (pk_live_... for real payments, pk_test_... for testing)
-  const PAYSTACK_PUBLIC_KEY = (window.EH && EH.paystack) || "pk_test_YOUR_KEY_HERE"; 
+  const PAYSTACK_PUBLIC_KEY = "pk_test_YOUR_KEY_HERE"; 
   
   if (PAYSTACK_PUBLIC_KEY.includes("YOUR_KEY_HERE")) {
     return toast("Please add your Paystack Public Key to the code first!");
@@ -1285,7 +1286,7 @@ window.buyVip = function() {
   const handler = PaystackPop.setup({
     key: PAYSTACK_PUBLIC_KEY,
     email: `player_${session.user.id.substring(0,8)}@ekohustle.com`,
-    amount: 100000, // 100,000 kobo = ₦1,000
+    amount: 100000,
     currency: "NGN",
     callback: function(response) {
       closeModal();
@@ -1300,7 +1301,7 @@ window.buyVip = function() {
           S.energy = S.maxEnergy;await loadVip();track('vip_purchase');
           addLog("👑 Upgraded to VIP via Paystack!");
           save();
-          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p>${isAnon()?'<p class="rw" style="color:var(--gold)">Protect your pass: save your progress with your email in Settings.</p>':""}<button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
+          openModal(`<h3>👑 VIP Activated!</h3><p style="color:#c8d6ce;font-size:13px">Thank you for your payment. Enjoy 2x cash for 24 hours!</p><button class="btn primary" onclick="closeModal();renderGame()">Let's Hustle</button>`);
         }
       });
     },
@@ -1327,7 +1328,7 @@ window.openProfile = function() {
     }).join("") + `</div>`;
   }
 
-  const shareText = encodeURIComponent(`I'm Level ${S.level} on Day ${S.day} with ₦${fmtMoney(S.cash)} and ${S.reputation} Rep in Eko Hustle! 🏃🏾‍♂️💨\n\nCan you beat my hustle? Play free here: https://jhaythrives-svg.github.io/eko-hustle/`);
+  const shareText = encodeURIComponent(`I'm Level ${S.level} on Day ${S.day} with ₦${fmtMoney(S.cash)} and ${S.reputation} Rep in Eko Hustle! 🏃‍♂️💨\n\nCan you beat my hustle? Play free here: https://jhaythrives-svg.github.io/eko-hustle/`);
   const waLink = `https://wa.me/?text=${shareText}`;
 
   const inviteBaseUrl = window.location.origin + window.location.pathname;
@@ -1449,7 +1450,7 @@ window.buyAsset = function(id) {
   S.cash -= a.cost;
   S.assets.push(a.id);if(isFirstAsset)track('first_asset');
   applyFx(a.fx);
-  addXp(50); // Big XP for buying assets
+  addXp(50);
   addLog(`Bought ${a.name}! -₦${fmtMoney(a.cost)}. +50 XP.`);
   save();
   closeModal();
@@ -1618,7 +1619,6 @@ window.openSettings=function(){
     <button class="opt" onclick="S.amb=S.amb===false;save();ambUpdate();openSettings()">${S.amb===false?"🌆 City ambience: Off":"🌆 City ambience: On"}</button>
     <button class="opt" onclick="S.vo=S.vo===false;save();openSettings()">${S.vo===false?"🗣️ Voices: Off":"🗣️ Voices: On"}</button>
     <button class="opt" onclick="S.look=S.look==='f'?'m':'f';save();renderGame();openSettings()">🎭 Switch look (${S.look==='f'?'Female':'Male'})</button>
-    <button class="opt" onclick="openRecover()">${accEmail()?"☁️ Progress saved to your email ✅":"☁️ Save my progress ⚠️"}</button>
     <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
