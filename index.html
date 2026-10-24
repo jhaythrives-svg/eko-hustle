@@ -344,6 +344,24 @@
   .scene.hasv .art,.scene.hasv .skyfx{display:none}
   .mo .scene *{animation-play-state:paused!important}
   @media (prefers-reduced-motion:reduce){.scene *{animation:none!important}}
+  /* V12 CHARACTER LIFE + DAY/NIGHT */
+  .av,.npc{bottom:38px}
+  @keyframes breathe{0%,100%{transform:none}40%{transform:scale(1.015) translateY(-1px)}72%{transform:skewX(-.8deg)}}
+  .skyl{position:absolute;inset:0;z-index:0;transition:opacity 1.2s linear}
+  .orb{transition:opacity 1.2s linear,left 1.2s linear,top 1.2s linear}
+  #stars{transition:opacity 1.5s linear}
+  .nsh{position:absolute;inset:0;z-index:4;background:#0a1220;mix-blend-mode:multiply;pointer-events:none;transition:opacity 1.2s linear}
+  .wn{opacity:calc(var(--wl,0)*.85)}
+  .gl{opacity:calc(var(--wl,0)*.28)}.gl2{opacity:calc(.25 + var(--wl,0)*.75)}
+  @keyframes tk{50%{opacity:calc(var(--wl,0)*.2)}}
+  .scene.cheer .av{animation:cheer .6s ease-out 2}
+  @keyframes cheer{35%{transform:translateY(-22px) scale(1.04)}70%{transform:scale(.98,1.02)}100%{transform:none}}
+  .scene.hit .av{animation:hit .5s ease-in-out}
+  @keyframes hit{20%{transform:translateX(-7px) rotate(-3deg)}40%{transform:translateX(6px) rotate(3deg)}60%{transform:translateX(-4px)}}
+  .scene.hit:after{content:"";position:absolute;inset:0;background:rgba(239,91,105,.24);z-index:10;pointer-events:none;animation:flash .6s ease-out forwards}
+  @keyframes flash{to{opacity:0}}
+  .talk img,.talk b{animation:talk .32s ease-in-out infinite alternate}
+  @keyframes talk{to{transform:translateY(-3px) scaleY(1.012)}}
 </style>
 </head>
 <body>
@@ -399,7 +417,7 @@ const CHAR_IMAGES = {
 const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--red)",e:"😏"},chief:{c:"var(--gold)",e:"🧓🏾"},avatar:{c:"var(--blue)",e:"🏃🏾‍♂️"},ada:{c:"#f472b6",e:"👩🏾‍💼"}};
 let DLG={k:null,t:"Welcome to Lagos. What will you do today?"},dlgTimer=null,typeTimer=null;
 function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${charSrc(DLG.k)}"`:""} style="display:${m?"block":"none"}" onerror="if(!this.dataset.f&&this.src.indexOf('avatar_m')>-1){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?charEm(DLG.k):""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
-function paintDlg(type){const n=document.getElementById("npc");if(n)n.innerHTML=npcInner();const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
+function paintDlg(type){const n=document.getElementById("npc");if(n)n.innerHTML=npcInner();if(type){const t=document.querySelector(DLG.k==="avatar"?".av":"#npc");if(t){t.classList.add("talk");setTimeout(()=>t.classList.remove("talk"),Math.min(5000,(DLG.t||"").length*18+300));}}const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
 window.showCharacter=function(k,text,hideAfter=0){if(!CHAR_META[k])return;DLG={k,t:text};clearTimeout(dlgTimer);if(hideAfter>0)dlgTimer=setTimeout(()=>{DLG={k:null,t:"What will you do next?"};paintDlg(false);},hideAfter);paintDlg(true);};
 
 /* ---------------- DATA ---------------- */
@@ -759,7 +777,7 @@ function checkAppts(){
 
 /* ---------------- V4: ANIMATED SCENE ENGINE ---------------- */
 function rng(seed){let s=seed;return()=>((s=(s*9301+49297)%233280)/233280);}
-function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect class="${(wx*7+wy*3)%9===0?"twk":""}" x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
+function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect class="wn${(wx*7+wy*3)%9===0?" twk":""}" x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
 const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
 function charSrc(k){return k==="avatar"?`avatar_${(S&&S.look)||"m"}.png`:CHAR_IMAGES[k];}
 function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃🏾‍♀️":"🏃🏾‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
@@ -772,7 +790,7 @@ const BUS=`<svg width="78" height="24" viewBox="0 0 78 24"><rect x="2" y="3" wid
 const SH="viewBox=\"0 0 480 120\" preserveAspectRatio=\"xMidYMax meet\"",D="#0b1118";
 const ART={
  ojota:l=>`<svg ${SH}><g fill="${D}"><path d="M20 58H310V66H20Z"/><rect x="30" y="66" width="3" height="46"/><rect x="297" y="66" width="3" height="46"/><rect x="62" y="84" width="92" height="26" rx="4"/><rect x="172" y="84" width="92" height="26" rx="4"/></g><g fill="#e9b949" opacity=".55"><rect x="68" y="90" width="80" height="5"/><rect x="178" y="90" width="80" height="5"/></g>${l?'<circle cx="152" cy="104" r="10" fill="#ffd9a0" opacity=".18"/>':""}<circle class="bl" cx="152" cy="104" r="2" fill="#ffb347"/><circle class="bl d2" cx="262" cy="104" r="2" fill="#ffb347"/><g class="walk"><circle cx="0" cy="92" r="3" fill="${D}"/><rect x="-3" y="95" width="6" height="15" rx="2" fill="${D}"/></g><g class="walk w2"><circle cx="0" cy="94" r="3" fill="${D}"/><rect x="-3" y="97" width="6" height="13" rx="2" fill="${D}"/></g></svg>`,
- yaba:l=>`<svg ${SH}><path d="M380 110L388 20L396 110M382 82H394M384 56H392" stroke="${D}" stroke-width="2" fill="none"/><circle class="bl" cx="388" cy="18" r="3" fill="#ff3b3b"/><path class="dash" d="M20 104H110V80H190V94H260V72H330" stroke="#2de2c1" stroke-width="1.6" fill="none" stroke-dasharray="6 18" opacity="${l?.9:.5}"/><g class="drone" style="transform:translateY(34px)"><rect x="0" y="0" width="12" height="3" rx="1.5" fill="${D}"/><circle class="bl" cx="6" cy="5" r="1.6" fill="#2de2c1"/></g></svg>`,
+ yaba:l=>`<svg ${SH}><path d="M380 110L388 20L396 110M382 82H394M384 56H392" stroke="${D}" stroke-width="2" fill="none"/><circle class="bl" cx="388" cy="18" r="3" fill="#ff3b3b"/><path class="dash" d="M20 104H110V80H190V94H260V72H330" stroke="#2de2c1" stroke-width="1.6" fill="none" stroke-dasharray="6 18" opacity="${l?.9:.5}"/></svg>`,
  ikeja:l=>`<svg ${SH}><path d="M10 44Q160 66 310 44" stroke="${D}" fill="none" stroke-width="1.2"/>${[30,70,110,150,190,230,270].map((x,i)=>`<path class="sw" style="animation-delay:${i*.3}s" d="M${x} ${(44+11*Math.sin(Math.PI*(x-10)/300)).toFixed(0)}l7 0l-3.5 10z" fill="${["#e9b949","#2de2c1","#ff4fa3"][i%3]}" opacity=".85"/>`).join("")}<g fill="${D}"><rect x="40" y="88" width="70" height="22"/><rect x="130" y="88" width="70" height="22"/><rect x="220" y="88" width="70" height="22"/></g><g fill="#c0392b" opacity=".8"><path d="M36 88h78l-6 -9h-66z"/><path d="M126 88h78l-6 -9h-66z" fill="#e9b949"/><path d="M216 88h78l-6 -9h-66z"/></g>${[75,165,255].map((x,i)=>`<circle class="fl" style="animation-delay:${i*.7}s" cx="${x}" cy="94" r="3" fill="#ffd9a0"/>`).join("")}</svg>`,
  surulere:l=>`<svg ${SH}><defs><linearGradient id="bm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe8ff" stop-opacity=".5"/><stop offset="1" stop-color="#cfe8ff" stop-opacity="0"/></linearGradient></defs><path d="M60 110Q60 60 190 60T320 110Z" fill="${D}"/><g class="beam"><polygon points="90,64 50,-10 130,-10" fill="url(#bm)" opacity="${l?.55:.12}"/></g><g class="beam" style="animation-delay:-3s"><polygon points="290,64 250,-10 330,-10" fill="url(#bm)" opacity="${l?.55:.12}"/></g><text class="neon" x="350" y="70" font-size="15" font-weight="800" fill="#ff4fa3" font-family="sans-serif" letter-spacing="3">LIVE</text>${[0,1,2,3,4].map(i=>`<rect class="eq" style="animation-delay:${i*.17}s" x="${352+i*9}" y="84" width="6" height="22" fill="#2de2c1" opacity=".85"/>`).join("")}</svg>`,
  vi:l=>`<svg ${SH}><defs><clipPath id="tw"><rect x="330" y="8" width="56" height="102"/></clipPath><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect x="330" y="8" width="56" height="102" fill="${D}"/><g clip-path="url(#tw)"><rect class="sweep" x="330" y="-10" width="56" height="30" fill="url(#sg)"/></g>${[0,1,2,3,4,5].map(r=>[0,1,2,3].map(c=>(r*3+c)%4===0?"":`<rect x="${336+c*13}" y="${16+r*15}" width="7" height="6" fill="${l?"#ffd9a0":"#3a4b5a"}" opacity=".7"/>`).join("")).join("")}<path class="dash" d="M20 106H320" stroke="#e9b949" stroke-width="2" stroke-dasharray="10 6 4 6" opacity=".8"/></svg>`,
@@ -784,19 +802,28 @@ function skyFx(loc,night,dusk,fog){const cl=night?"rgba(150,170,200,.10)":dusk?"
   else o+='<i class="shoot"></i>';
   if(loc==="ikeja"||loc==="vi")o+=`<svg class="fly" style="top:${loc==="vi"?"26%":"16%"};animation-duration:${loc==="vi"?30:42}s" width="26" height="10" viewBox="0 0 26 10"><path d="M0 5L22 4L26 5L22 6Z" fill="${D}"/><circle class="bl" cx="13" cy="4" r="1" fill="#ff3b3b"/></svg>`;
   if(fog)o+='<i class="fog"></i>';return o;}
+function hourF(){if(window._hO!=null)return window._hO;const d=new Date();return d.getHours()+d.getMinutes()/60;}
+const sst=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
+function phase(h){const ni=(h>=20.5||h<4.5)?1:h>=17?sst((h-17)/3.5):h>=7?0:1-sst((h-4.5)/2.5);return{ni,du:Math.sin(Math.PI*ni),wl:Math.min(1,Math.max(0,(ni-.2)/.6))};}
+function orbPos(p){p=Math.min(1,Math.max(0,p));return[8+p*77,10+Math.abs(p-.5)*52];}
+function band(f){return f.ni>.6?"n":f.du>.5?"d":"a";}
+const SKYD="linear-gradient(#5d8fb3,#c9d9df 80%)",SKYU="linear-gradient(#2a3350,#b4684a 80%,#e6a05b)",SKYN="linear-gradient(#04070d,#0e1a2b 78%,#1b2a3b)";
+function skyApply(){const sc=document.getElementById("scene");if(!sc)return;const h=hourF(),f=phase(h),set=(id,fn)=>{const e=document.getElementById(id);if(e)fn(e);};sc.style.setProperty("--wl",f.wl.toFixed(3));set("sk-u",e=>e.style.opacity=f.du.toFixed(3));set("sk-n",e=>e.style.opacity=f.ni.toFixed(3));set("stars",e=>e.style.opacity=Math.max(0,(f.ni-.3)/.7).toFixed(3));set("nsh",e=>e.style.opacity=(f.ni*.55).toFixed(3));const sp=orbPos((h-6)/12),mh=h<12?h+24:h,mp=orbPos((mh-18)/12);set("sun",e=>{e.style.left=sp[0]+"%";e.style.top=sp[1]+"px";e.style.opacity=(1-f.ni).toFixed(3);});set("moon",e=>{e.style.left=mp[0]+"%";e.style.top=mp[1]+"px";e.style.opacity=f.ni.toFixed(3);});
+  const b=band(f);if(b!==window._band){window._band=b;if(!$modal.firstChild)renderGame();}}
+window.previewTime=function(){closeModal();let t=4;clearInterval(window._pv);window._pv=setInterval(()=>{t+=.25;window._hO=t%24;skyApply();if(t>=28){clearInterval(window._pv);window._hO=null;renderGame();}},170);};
+setInterval(()=>{try{if(S&&window._hO==null)skyApply();}catch(e){}},30000);
 function sceneHtml(){
-  const h=new Date().getHours(),L=LOCS[S.location],c=SCN[S.location],ids=Object.keys(LOCS),li=ids.indexOf(S.location);
-  const night=h<5||h>=20,dusk=h>=17&&h<20,dawn=h>=5&&h<7,rainy=(S.day*7+li)%5===0;
-  const sky=night?"linear-gradient(#04070d,#0e1a2b 78%,#1b2a3b)":dusk?"linear-gradient(#2a3350,#b4684a 80%,#e6a05b)":dawn?"linear-gradient(#34406a,#c58a6a 82%,#f0c48a)":"linear-gradient(#5d8fb3,#c9d9df 80%)";
-  const cx=night?72:Math.max(8,Math.min(85,(h-6)/12*80+8)),R=rng(S.day*13+li);
-  const stars=night?Array.from({length:22},()=>`<i class="star" style="left:${R()*100}%;top:${R()*70}px;opacity:${.3+R()*.6};animation-delay:${R()*2}s"></i>`).join(""):"";
-  const lit=night||dusk,far=night?"#101c29":dusk?"#4a4458":"#7f9aae",near=night?"#060a10":dusk?"#1c1a24":"#3c4f5d";
-  const veh=[0,1,2].map(i=>{const d=10+i*5+li,dl=-(i*3.7+li),b=3+i*8,left=(i+li)%2===0,svg=(i+li)%3===1?BUS:CAR;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s"><div style="${left?"":"transform:scaleX(-1)"}">${svg}</div></div>`;}).join("");
-  const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/>${lit?`<circle cx="${x+14}" cy="19" r="10" fill="#ffd9a0" opacity=".28"/>`:""}<circle cx="${x+14}" cy="17" r="2" fill="${lit?"#ffe9c0":"#2a3138"}"/>`).join("");
-  const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`;
-  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${sky}"><div class="locname">${L.name}${rainy?" · Rain":night?" · Night":dusk?" · Dusk":""}</div><div class="orb ${night?"moon":""}" style="left:${cx}%;top:${night?18:Math.abs(cx-45)/3+10}px"></div>${stars}<div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}</div><div class="lamps">${lamps}${lamps}</div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
+  const h=hourF(),f=phase(h),L=LOCS[S.location],c=SCN[S.location],ids=Object.keys(LOCS),li=ids.indexOf(S.location);
+  const night=f.ni>.6,dusk=f.du>.5&&!night,lit=f.wl>.3,dawn=h>=4.5&&h<7,rainy=(S.day*7+li)%5===0,R=rng(S.day*13+li);window._band=band(f);
+  const far=night?"#101c29":dusk?"#4a4458":"#7f9aae",near=night?"#060a10":dusk?"#1c1a24":"#3c4f5d";
+  const stars=Array.from({length:22},()=>`<i class="star" style="left:${R()*100}%;top:${R()*70}px;opacity:${.3+R()*.6};animation-delay:${R()*2}s"></i>`).join("");
+  const sp=orbPos((h-6)/12),mh=h<12?h+24:h,mp=orbPos((mh-18)/12);
+  const veh=[0,1,2].map(i=>{const d=10+i*5+li,dl=-(i*3.7+li),b=[1,7,13][i],left=(i+li)%2===0,svg=(i===0&&li%2===1)?BUS:CAR;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s"><div style="${left?"":"transform:scaleX(-1)"}">${svg}</div></div>`;}).join("");
+  const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/><circle class="gl" cx="${x+14}" cy="19" r="10" fill="#ffd9a0"/><circle class="gl2" cx="${x+14}" cy="17" r="2" fill="#ffe9c0"/>`).join("");
+  const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`,tag=rainy?" · Rain":night?" · Night":dusk?" · Dusk":"";
+  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,true)}${skyline(S.location+"a",c.h[0],c.h[1],far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}</div><div class="lamps">${lamps}${lamps}</div><div id="nsh" class="nsh" style="opacity:${(f.ni*.55).toFixed(3)}"></div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
 }
-function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive");void s.offsetWidth;s.classList.add(t);if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
+function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
 function workGo(id){const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
 window.doTravel=function(id){const p=S.location;doTravelCore(id);if(S.location!==p)setTimeout(()=>sceneFx("arrive"),30);};
 
@@ -857,9 +884,9 @@ window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
 function sfx(n){if(S&&S.mute)return;try{_ac=_ac||new(window.AudioContext||window.webkitAudioContext)();const t=_ac.currentTime;[[520],[520,780],[523,659,784,1046]][n-1].forEach((f,i)=>{const o=_ac.createOscillator(),g=_ac.createGain();o.frequency.value=f;o.type="triangle";g.gain.setValueAtTime(.12,t+i*.09);g.gain.exponentialRampToValueAtTime(.001,t+i*.09+.2);o.connect(g);g.connect(_ac.destination);o.start(t+i*.09);o.stop(t+i*.09+.22);});}catch(e){}}
-function buzz(p){try{if(!S||!S.mute)navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
+function buzz(p){try{if(Array.isArray(p)&&p.length>=3&&p[0]>=80)sceneFx("hit");if(!S||!S.mute)navigator.vibrate&&navigator.vibrate(p);}catch(e){}}
 function floatText(t,c){const e=document.createElement("div");e.className="float";e.textContent=t;e.style.color=c||"#22c55e";e.style.left=(35+Math.random()*30)+"%";document.body.appendChild(e);setTimeout(()=>e.remove(),1100);}
-function burst(){const col=["#e9b949","#34d399","#f5f5f4","#93c5fd"];for(let i=0;i<26;i++){const e=document.createElement("i");e.className="conf";e.style.cssText=`width:${3+i%3*2}px;height:${3+i%3*2}px;background:${col[i%4]};border-radius:${i%2?"50%":"1px"}`;e.style.setProperty("--x",(Math.random()*300-150)+"px");e.style.setProperty("--y",(-Math.random()*260-40)+"px");e.style.left="50%";e.style.top="55%";document.body.appendChild(e);setTimeout(()=>e.remove(),1300);}}
+function burst(){try{sceneFx("cheer");}catch(e){}const col=["#e9b949","#34d399","#f5f5f4","#93c5fd"];for(let i=0;i<26;i++){const e=document.createElement("i");e.className="conf";e.style.cssText=`width:${3+i%3*2}px;height:${3+i%3*2}px;background:${col[i%4]};border-radius:${i%2?"50%":"1px"}`;e.style.setProperty("--x",(Math.random()*300-150)+"px");e.style.setProperty("--y",(-Math.random()*260-40)+"px");e.style.left="50%";e.style.top="55%";document.body.appendChild(e);setTimeout(()=>e.remove(),1300);}}
 function hustleCombo(){const n=Date.now();S.combo=(n-(S.lastWork||0)<120000)?Math.min(5,(S.combo||0)+1):0;S.lastWork=n;return 1+S.combo*0.1;}
 
 /* Rival ladder */
@@ -1543,6 +1570,7 @@ window.openSettings=function(){
   openModal(`<h3>⚙️ Settings</h3>
     <button class="opt" onclick="S.mute=!S.mute;save();openSettings()">${S.mute?"🔇 Sound: Off":"🔊 Sound: On"}</button>
     <button class="opt" onclick="S.look=S.look==='f'?'m':'f';save();renderGame();openSettings()">🎭 Switch look (${S.look==='f'?'Female':'Male'})</button>
+    <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
     <button class="opt" onclick="closeModal()">Close</button>`);
