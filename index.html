@@ -950,13 +950,13 @@ function startSession(){track('session');fxQuiet();
 function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor((n-r)/30000);if(k>0){S.lastRegen=r+k*30000;if(S.energy<S.maxEnergy){S.energy=Math.min(S.maxEnergy,S.energy+k);if(!$modal.firstChild)renderGame();}}}
 
 /* ---------------- V8: SERVER-SIDE FOREX ---------------- */
-const FXN=["USD/NGN","GBP/NGN","EUR/NGN","OKADA/NGN"];
-const FXS={p:0,stake:5000,lev:10,risk:1,d:null,timer:null};
+const FXN=["USD/NGN","GBP/NGN","EUR/NGN"];
+const FXS={p:0,stake:5000,lev:2,risk:1,d:null,timer:null};
 async function fxCall(fn,args){if(!sb||!session||!session.user){toast("Trading needs an online connection");return null;}const{data,error}=await sb.rpc(fn,args||{});if(error){toast(String(error.message).slice(0,90));return null;}FXS.d=data;fxHandle(data);return data;}
 function fxQuiet(){try{if(sb&&session&&session.user){sb.rpc("fx_state").then(r=>{if(r.data){FXS.d=r.data;fxHandle(r.data);}});sb.rpc("stk_state").then(r=>{if(r.data)stkSync(r.data);});}}catch(e){}}
 function fxHandle(d){(d.closed||[]).forEach(c=>{const pl=Number(c.pnl);addLog(`📊 ${FXN[c.pair]} ${c.side==="buy"?"LONG":"SHORT"} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);toast(`${FXN[c.pair]} ${c.reason}: ${pl>=0?"+":"-"}₦${fmtMoney(Math.abs(pl))}`);addXp(Math.min(60,Math.max(5,Math.round(Math.abs(pl)/1000))));if(pl>0){burst();sfx(3);if(pl>=50000)postToFeed(`${esc(S.name)} banked ₦${fmtMoney(pl)} on ${FXN[c.pair]} 📈`);}else if(c.reason==="liquidated"){buzz([80,40,80]);showCharacter('chinedu',"Margin call. Leverage does not forgive.",6000);}});if((d.closed||[]).length)save();}
-window.fxSet=function(k,v){FXS[k]=v;fxPaint();};
-window.fxOpen=async function(side){const d=await fxCall("fx_open",{p_pair:FXS.p,p_side:side,p_stake:FXS.stake,p_lev:FXS.lev,p_protect:!!FXS.risk});if(d){sfx(1);buzz(20);track('fx_open');fxPaint();}};
+window.fxSet=function(k,v){FXS[k]=v;if(k==="lev"&&v>=3)FXS.risk=1;fxPaint();};
+window.fxOpen=async function(side){const d0=FXS.d,tot0=d0?Number(d0.balance)+(d0.positions||[]).reduce((t,p)=>t+Number(p.stake),0):0;if(FXS.stake>tot0*.25)return toast("Risk rule: max 25% of your wallet per trade");if(FXS.lev>=3&&!FXS.risk)return toast("Stop-loss is required above x2 leverage");const d=await fxCall("fx_open",{p_pair:FXS.p,p_side:side,p_stake:FXS.stake,p_lev:FXS.lev,p_protect:!!FXS.risk});if(d){sfx(1);buzz(20);track('fx_open');fxPaint();}};
 window.fxClose=async function(id){const d=await fxCall("fx_close",{p_id:id});if(d)fxPaint();};
 window.fxMove=async function(delta){if(!delta)return;if(delta>0){if(S.cash<delta)return toast("Not enough cash");await cloudPush();}const d=await fxCall("fx_wallet_move",{p_delta:delta});if(d){S.cash-=delta;save();renderGame();fxPaint();}};
 function fxDraw(){const cv=document.getElementById("fxc");if(!cv||!FXS.d)return;const cs=FXS.d.pairs[FXS.p].candles.map(a=>({o:a[0],h:a[1],l:a[2],c:a[3]}));if(!cs.length)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.fillStyle="#090e11";g.fillRect(0,0,w,h);
@@ -965,7 +965,7 @@ function fxDraw(){const cv=document.getElementById("fxc");if(!cv||!FXS.d)return;
   cs.forEach((c,q)=>{const x=q*bw+bw/2,col=c.c>=c.o?"#26e07f":"#ff4d5e";g.strokeStyle=g.fillStyle=col;g.beginPath();g.moveTo(x,Y(c.h));g.lineTo(x,Y(c.l));g.stroke();const y1=Y(Math.max(c.o,c.c)),y2=Y(Math.min(c.o,c.c));g.fillRect(x-bw*.32,y1,bw*.64,Math.max(1.5,y2-y1));});
   const lc=cs[cs.length-1],yl=Y(lc.c),col=lc.c>=lc.o?"#26e07f":"#ff4d5e";g.setLineDash([4,3]);g.strokeStyle="rgba(255,255,255,.45)";g.beginPath();g.moveTo(0,yl);g.lineTo(w-50,yl);g.stroke();g.setLineDash([]);g.fillStyle=col;g.fillRect(w-52,yl-8,52,16);g.fillStyle="#03100a";g.fillText(lc.c.toFixed(2),w-49,yl+3);
   (FXS.d.positions||[]).filter(po=>po.pair===FXS.p).forEach(po=>{const y=Y(po.entry);g.strokeStyle="#e9b949";g.setLineDash([2,3]);g.beginPath();g.moveTo(0,y);g.lineTo(w-50,y);g.stroke();g.setLineDash([]);g.fillStyle="#e9b949";g.fillText((po.side==="buy"?"▲ LONG":"▼ SHORT")+" entry",4,y-3);});}
-function fxPaint(){const hd=document.getElementById("fxhead");if(!hd)return;document.querySelectorAll("[data-fx]").forEach(b=>{const[k,v]=b.dataset.fx.split(":");b.classList.toggle("on",String(FXS[k])===v);});const d=FXS.d;if(!d){hd.innerHTML='<div class="fxsub">Connecting to the market…</div>';return;}
+function fxPaint(){const hd=document.getElementById("fxhead");if(!hd)return;document.querySelectorAll("[data-fx]").forEach(b=>{const[k,v]=b.dataset.fx.split(":");b.classList.toggle("on",String(FXS[k])===v);});const d=FXS.d;if(!d){hd.innerHTML='<div class="fxsub">Connecting to the market…</div>';return;}const tot=Number(d.balance)+(d.positions||[]).reduce((t,p)=>t+Number(p.stake),0);document.querySelectorAll('[data-fx^="stake:"]').forEach(b=>b.classList.toggle("lck",Number(b.dataset.fx.split(":")[1])>tot*.25));
   const cs=d.pairs[FXS.p].candles,lc=cs[cs.length-1]||[0,0,0,0],p=lc[3],ch=cs.length?(p/cs[0][0]-1)*100:0;
   hd.innerHTML=`<div class="fxp ${ch>=0?"up":"dn"}">${p.toFixed(2)}</div><div class="fxsub">${ch>=0?"▲":"▼"} ${Math.abs(ch).toFixed(2)}% (44m) · Bid ${(p*.9997).toFixed(2)} · Ask ${(p*1.0003).toFixed(2)}</div>`;
   document.getElementById("fxnews").textContent="📰 "+d.pairs[FXS.p].news;document.getElementById("fxw").textContent="₦"+fmtMoney(d.balance)+" · Game cash ₦"+fmtMoney(S.cash);
@@ -977,10 +977,10 @@ window.openMarket=function(){track('fx_view');
   openModal(`<div class="fx"><div class="fx-tabs">${FXN.map((n,i)=>`<button class="fxt" data-fx="p:${i}" onclick="fxSet('p',${i})">${n}</button>`).join("")}</div><div id="fxhead"></div><div class="fxnews" id="fxnews"></div><canvas id="fxc" style="width:100%;height:170px;border-radius:8px;display:block"></canvas>
   <div class="fxrow">WALLET <b id="fxw" style="color:#e8f0ec"></b></div>
   <div class="fxrow"><button class="fxc" onclick="fxMove(5000)">+₦5k</button><button class="fxc" onclick="fxMove(25000)">+₦25k</button><button class="fxc" onclick="fxMove(100000)">+₦100k</button><button class="fxc" onclick="fxMove(-((FXS.d&&FXS.d.balance)||0))">Withdraw all</button></div>
-  <div class="fxrow">STAKE ${[2000,5000,25000,100000].map(v=>chip("stake",v,"₦"+(v>=1000?v/1000+"k":v))).join("")} LEV ${[5,10,25].map(v=>chip("lev",v,"x"+v)).join("")}</div>
+  <div class="fxrow">STAKE ${[2000,5000,25000,100000].map(v=>chip("stake",v,"₦"+(v>=1000?v/1000+"k":v))).join("")} LEV ${[1,2,3,5].map(v=>chip("lev",v,"x"+v)).join("")}</div>
   <div class="fxrow">PROTECT ${chip("risk",1,"SL 40% / TP 80%")}${chip("risk",0,"None")}</div>
   <div class="fxbtns"><button class="fxbuy" onclick="fxOpen('buy')">▲ BUY</button><button class="fxsell" onclick="fxOpen('sell')">▼ SELL</button></div>
-  <div id="fxpos"></div><div class="fxsub" style="margin-top:8px">Simulated market, priced and settled on the server. Trades auto-close after 3 hours. A 90% loss liquidates the trade.</div>
+  <div id="fxpos"></div><div class="fxsub" style="margin-top:8px">Simulated market, priced on the server. Most real retail forex traders lose money, and leverage magnifies losses. Rules here: max x5, max 25% of your wallet per trade, stop-loss required above x2. Trades auto-close after 3 hours.</div>
   <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button></div>`);
   fxPaint();clearInterval(FXS.timer);const poll=()=>{if(!document.getElementById("fxc")){clearInterval(FXS.timer);return;}fxCall("fx_state").then(fxPaint);};poll();FXS.timer=setInterval(poll,3000);};
 
