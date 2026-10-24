@@ -1629,11 +1629,11 @@ window.showPrivacy=function(){
   openModal(`<h3>Privacy</h3>
     <div style="color:#c8d6ce;font-size:13px;line-height:1.6">
       <p><b>What we store:</b> an anonymous account (random ID), the display name you type, and your game save.</p>
-      <p><b>What we never collect:</b> real name, email, phone, location, contacts, photos.</p>
+      <p><b>What we never collect:</b> real name, phone, location, contacts, photos. An email is stored only if you choose to save your progress with it.</p>
       <p><b>Where:</b> Supabase (Postgres, EU/US). Encrypted in transit.</p>
       <p><b>Who can see it:</b> only you. Leaderboard shows display name, cash, reputation, day. No IDs.</p>
       <p><b>Delete:</b> Settings → Delete all my data. Immediate and permanent.</p>
-      <p><b>Retention:</b> inactive saves over 90 days are deleted.</p>
+      <p><b>Retention:</b> progress that is not saved to an email is deleted after 90 days without playing. Progress saved to your email is deleted after 12 months without playing. Payment records are kept for accounting.</p>
       <p style="color:#8fa39a;font-size:12px;margin-top:12px">NDPR-aligned. Questions: reply on our WhatsApp Channel.</p>
     </div>
     <button class="opt" onclick="closeModal()">Close</button>`);
