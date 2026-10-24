@@ -376,6 +376,7 @@ window.onerror = function(msg, url, line, col, error) {
   return false;
 };
 </script>
+<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js"></script>
 <script src="https://js.paystack.co/v1/inline.js"></script>
 <script>
@@ -385,18 +386,17 @@ window.onerror = function(msg, url, line, col, error) {
    EKO HUSTLE — Step 2 applied (Hide systems until earned)
    ========================================================= */
 
-const SUPABASE_URL = "PASTE_YOUR_PROJECT_URL_HERE";
-const SUPABASE_KEY = "PASTE_YOUR_ANON_KEY_HERE";
+const SUPABASE_URL = (window.EH && EH.url) || "";
+const SUPABASE_KEY = (window.EH && EH.key) || "";
 
 const IS_SUPABASE_CONFIGURED = 
-  SUPABASE_URL && SUPABASE_URL.indexOf("PASTE") === -1 && 
-  SUPABASE_KEY && SUPABASE_KEY.indexOf("PASTE") === -1;
+  SUPABASE_URL.indexOf("http") === 0 && SUPABASE_KEY.length > 20;
 
 let sb = null;
 if (IS_SUPABASE_CONFIGURED) {
   try {
     sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
     });
   } catch (e) { console.warn("Supabase init failed:", e); }
 }
@@ -1277,7 +1277,7 @@ window.openVipStore = function() {
 };
 
 window.buyVip = function() {
-  const PAYSTACK_PUBLIC_KEY = "pk_test_YOUR_KEY_HERE"; 
+  const PAYSTACK_PUBLIC_KEY = (window.EH && EH.paystack) || ""; 
   
   if (PAYSTACK_PUBLIC_KEY.includes("YOUR_KEY_HERE")) {
     return toast("Please add your Paystack Public Key to the code first!");
@@ -1599,7 +1599,7 @@ window.claimAppt=function(id){
 
 /* ---------------- LEADERBOARD ---------------- */
 window.openLeaderboard=async function(){
-  if(!sb)return toast("Cloud not configured. Play locally.");
+  if(!sb)return toast("Cloud offline. Check config.js is next to index.html, then hard-refresh.");
   openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">Loading…</div>`);
   if(!session?.user){openModal(`<h3>🏆 Leaderboard</h3><div style="color:#8fa39a;font-size:13px">Sign-in required. Reload the page.</div><button class="opt" onclick="closeModal()">Close</button>`);return;}
   const { data, error } = await sb.rpc("get_leaderboard");
