@@ -303,6 +303,47 @@
   .fxpos button{background:#1b252b;border:1px solid var(--line);color:#e8f0ec;border-radius:6px;padding:4px 9px;font-size:11px}
   .bgv{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
   .scene.hasv .sk,.scene.hasv .haze,.scene.hasv .lamps{display:none}
+  /* V11 MOTION GRAPHICS */
+  .skyfx{position:absolute;inset:0;z-index:1;overflow:hidden;pointer-events:none}
+  .cld{position:absolute;left:-30%;border-radius:50px;filter:blur(6px);animation:cld linear infinite}
+  @keyframes cld{from{left:-30%}to{left:110%}}
+  .brd{position:absolute;left:-10%;animation:cld linear infinite}
+  .fly{position:absolute;left:-10%;animation:cld linear infinite}
+  .shoot{position:absolute;top:12%;left:70%;width:60px;height:1.5px;background:linear-gradient(90deg,#fff,transparent);opacity:0;animation:shoot 9s linear infinite}
+  @keyframes shoot{0%,86%{opacity:0;transform:translate(0,0) rotate(25deg)}88%{opacity:1}100%{opacity:0;transform:translate(-120px,56px) rotate(25deg)}}
+  .ray{position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,230,170,.16) 40%,transparent 52%);animation:rayp 7s ease-in-out infinite alternate;mix-blend-mode:screen}
+  @keyframes rayp{to{opacity:.35;transform:translateX(12%)}}
+  .fog{position:absolute;left:0;right:0;bottom:28%;height:32%;background:linear-gradient(transparent,rgba(190,205,215,.28),transparent);animation:fogd 24s ease-in-out infinite alternate}
+  @keyframes fogd{to{transform:translateX(8%);opacity:.6}}
+  .art{position:absolute;left:0;right:0;bottom:46px;z-index:3;pointer-events:none}.art svg{display:block;width:100%;height:auto}
+  .bl{animation:blk 1.6s steps(2) infinite}.d2{animation-delay:.8s}
+  @keyframes blk{50%{opacity:.1}}
+  .fl{animation:fli 2.4s ease-in-out infinite}
+  @keyframes fli{0%,100%{opacity:.95}40%{opacity:.5}60%{opacity:.85}}
+  .sw{animation:swy 2.6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 0}
+  @keyframes swy{to{transform:rotate(14deg)}}
+  .dash{animation:dsh 2s linear infinite}
+  @keyframes dsh{to{stroke-dashoffset:-48}}
+  .drone,.walk,.boat{animation:xmv 26s linear infinite}
+  @keyframes xmv{from{transform:translateX(-40px)}to{transform:translateX(500px)}}
+  .walk{animation-duration:60s}.w2{animation-duration:48s;animation-delay:-20s}.boat{animation-duration:48s;animation-delay:-10s}
+  .beam{animation:bm 6s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes bm{from{transform:rotate(-24deg)}to{transform:rotate(24deg)}}
+  .eq{animation:eqa .9s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes eqa{from{transform:scaleY(.25)}to{transform:scaleY(1)}}
+  .sweep{animation:swp 5s ease-in-out infinite}
+  @keyframes swp{from{transform:translateY(0)}to{transform:translateY(100px)}}
+  .palm{animation:plm 4s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes plm{to{transform:rotate(3deg)}}
+  .ff{animation:ffa 6s ease-in-out infinite alternate}
+  @keyframes ffa{to{transform:translate(14px,-18px);opacity:.2}}
+  .neon{animation:nf 3.2s steps(1) infinite}
+  @keyframes nf{0%,100%{opacity:1}46%{opacity:.25}48%{opacity:1}52%{opacity:.4}54%{opacity:1}}
+  .twk{animation:tk 3s ease-in-out infinite alternate}
+  @keyframes tk{50%{opacity:.15}}
+  .scene.hasv .art,.scene.hasv .skyfx{display:none}
+  .mo .scene *{animation-play-state:paused!important}
+  @media (prefers-reduced-motion:reduce){.scene *{animation:none!important}}
 </style>
 </head>
 <body>
@@ -718,7 +759,7 @@ function checkAppts(){
 
 /* ---------------- V4: ANIMATED SCENE ENGINE ---------------- */
 function rng(seed){let s=seed;return()=>((s=(s*9301+49297)%233280)/233280);}
-function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
+function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect class="${(wx*7+wy*3)%9===0?"twk":""}" x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
 const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
 function charSrc(k){return k==="avatar"?`avatar_${(S&&S.look)||"m"}.png`:CHAR_IMAGES[k];}
 function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃🏾‍♀️":"🏃🏾‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
@@ -727,6 +768,22 @@ function npcKey(){if(DLG.k&&DLG.k!=="avatar")return DLG.k;const a=(S.appointment
 function npcInner(){const k=npcKey();return k?`<div class="bubble">${DLG.k===k?"…":"!"}</div>${charImg(k)}`:"";}
 const CAR=`<svg width="50" height="18" viewBox="0 0 50 18"><path d="M2 14 L7 7 Q9 4 15 4 H31 Q37 4 40 8 L47 11 V15 H2Z" fill="#05080b"/><path d="M12 6 H30 L36 9 H10Z" fill="#1d2a36"/><circle cx="12" cy="15" r="3" fill="#000"/><circle cx="38" cy="15" r="3" fill="#000"/><rect x="46" y="10" width="4" height="2" fill="#ffd9a0"/><rect x="0" y="10" width="3" height="2" fill="#ff3b3b"/></svg>`;
 const BUS=`<svg width="78" height="24" viewBox="0 0 78 24"><rect x="2" y="3" width="74" height="16" rx="3" fill="#0b1118"/><rect x="6" y="6" width="62" height="6" fill="#2b3b4a" opacity=".75"/><circle cx="16" cy="20" r="3.5" fill="#000"/><circle cx="62" cy="20" r="3.5" fill="#000"/><rect x="74" y="12" width="4" height="3" fill="#ffd9a0"/><rect x="0" y="12" width="3" height="3" fill="#ff3b3b"/></svg>`;
+/* ---------------- V11: MOTION GRAPHICS ---------------- */
+const SH="viewBox=\"0 0 480 120\" preserveAspectRatio=\"xMidYMax meet\"",D="#0b1118";
+const ART={
+ ojota:l=>`<svg ${SH}><g fill="${D}"><path d="M20 58H310V66H20Z"/><rect x="30" y="66" width="3" height="46"/><rect x="297" y="66" width="3" height="46"/><rect x="62" y="84" width="92" height="26" rx="4"/><rect x="172" y="84" width="92" height="26" rx="4"/></g><g fill="#e9b949" opacity=".55"><rect x="68" y="90" width="80" height="5"/><rect x="178" y="90" width="80" height="5"/></g>${l?'<circle cx="152" cy="104" r="10" fill="#ffd9a0" opacity=".18"/>':""}<circle class="bl" cx="152" cy="104" r="2" fill="#ffb347"/><circle class="bl d2" cx="262" cy="104" r="2" fill="#ffb347"/><g class="walk"><circle cx="0" cy="92" r="3" fill="${D}"/><rect x="-3" y="95" width="6" height="15" rx="2" fill="${D}"/></g><g class="walk w2"><circle cx="0" cy="94" r="3" fill="${D}"/><rect x="-3" y="97" width="6" height="13" rx="2" fill="${D}"/></g></svg>`,
+ yaba:l=>`<svg ${SH}><path d="M380 110L388 20L396 110M382 82H394M384 56H392" stroke="${D}" stroke-width="2" fill="none"/><circle class="bl" cx="388" cy="18" r="3" fill="#ff3b3b"/><path class="dash" d="M20 104H110V80H190V94H260V72H330" stroke="#2de2c1" stroke-width="1.6" fill="none" stroke-dasharray="6 18" opacity="${l?.9:.5}"/><g class="drone" style="transform:translateY(34px)"><rect x="0" y="0" width="12" height="3" rx="1.5" fill="${D}"/><circle class="bl" cx="6" cy="5" r="1.6" fill="#2de2c1"/></g></svg>`,
+ ikeja:l=>`<svg ${SH}><path d="M10 44Q160 66 310 44" stroke="${D}" fill="none" stroke-width="1.2"/>${[30,70,110,150,190,230,270].map((x,i)=>`<path class="sw" style="animation-delay:${i*.3}s" d="M${x} ${(44+11*Math.sin(Math.PI*(x-10)/300)).toFixed(0)}l7 0l-3.5 10z" fill="${["#e9b949","#2de2c1","#ff4fa3"][i%3]}" opacity=".85"/>`).join("")}<g fill="${D}"><rect x="40" y="88" width="70" height="22"/><rect x="130" y="88" width="70" height="22"/><rect x="220" y="88" width="70" height="22"/></g><g fill="#c0392b" opacity=".8"><path d="M36 88h78l-6 -9h-66z"/><path d="M126 88h78l-6 -9h-66z" fill="#e9b949"/><path d="M216 88h78l-6 -9h-66z"/></g>${[75,165,255].map((x,i)=>`<circle class="fl" style="animation-delay:${i*.7}s" cx="${x}" cy="94" r="3" fill="#ffd9a0"/>`).join("")}</svg>`,
+ surulere:l=>`<svg ${SH}><defs><linearGradient id="bm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#cfe8ff" stop-opacity=".5"/><stop offset="1" stop-color="#cfe8ff" stop-opacity="0"/></linearGradient></defs><path d="M60 110Q60 60 190 60T320 110Z" fill="${D}"/><g class="beam"><polygon points="90,64 50,-10 130,-10" fill="url(#bm)" opacity="${l?.55:.12}"/></g><g class="beam" style="animation-delay:-3s"><polygon points="290,64 250,-10 330,-10" fill="url(#bm)" opacity="${l?.55:.12}"/></g><text class="neon" x="350" y="70" font-size="15" font-weight="800" fill="#ff4fa3" font-family="sans-serif" letter-spacing="3">LIVE</text>${[0,1,2,3,4].map(i=>`<rect class="eq" style="animation-delay:${i*.17}s" x="${352+i*9}" y="84" width="6" height="22" fill="#2de2c1" opacity=".85"/>`).join("")}</svg>`,
+ vi:l=>`<svg ${SH}><defs><clipPath id="tw"><rect x="330" y="8" width="56" height="102"/></clipPath><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect x="330" y="8" width="56" height="102" fill="${D}"/><g clip-path="url(#tw)"><rect class="sweep" x="330" y="-10" width="56" height="30" fill="url(#sg)"/></g>${[0,1,2,3,4,5].map(r=>[0,1,2,3].map(c=>(r*3+c)%4===0?"":`<rect x="${336+c*13}" y="${16+r*15}" width="7" height="6" fill="${l?"#ffd9a0":"#3a4b5a"}" opacity=".7"/>`).join("")).join("")}<path class="dash" d="M20 106H320" stroke="#e9b949" stroke-width="2" stroke-dasharray="10 6 4 6" opacity=".8"/></svg>`,
+ lekki:l=>{const A=l?"#ffd9a0":D;return `<svg ${SH}><path d="M144 110L150 24L156 110M254 110L260 24L266 110" stroke="${D}" stroke-width="2.5" fill="none"/><path d="M90 96H340" stroke="${D}" stroke-width="3"/>${[100,115,130,170,185,200,215,230,245].map(x=>`<path d="M${x<200?150:260} 26L${x} 96" stroke="${A}" stroke-width=".8" opacity=".55"/>`).join("")}${[110,160,210,300].map((x,i)=>`<circle class="bl" style="animation-delay:${i*.4}s" cx="${x}" cy="93" r="1.8" fill="#ffb347"/>`).join("")}<g class="boat"><path d="M0 108h26l-5 5h-16z" fill="${D}"/><rect x="9" y="100" width="2" height="8" fill="${D}"/></g><g class="palm"><path d="M400 112Q405 84 398 58" stroke="${D}" stroke-width="3" fill="none"/><path d="M398 58Q380 52 366 62M398 58Q384 46 374 42M398 58Q410 48 424 50M398 58Q414 58 428 68" stroke="${D}" stroke-width="2.5" fill="none"/></g></svg>`;},
+ ajah:l=>`<svg ${SH}>${[30,100,170,240].map((x,i)=>`<g fill="${D}"><rect x="${x}" y="${78+i%2*6}" width="50" height="${32-i%2*6}"/><path d="M${x-4} ${78+i%2*6}L${x+25} ${60+i%2*6}L${x+54} ${78+i%2*6}Z"/></g><rect class="fl" style="animation-delay:${i*.6}s" x="${x+10}" y="${88+i%2*6}" width="8" height="8" fill="#ffd9a0" opacity="${l?.9:.35}"/>`).join("")}<circle class="fl" cx="330" cy="104" r="${l?14:0}" fill="#ffb347" opacity=".25"/><path d="M20 76Q150 90 300 74" stroke="${D}" fill="none" stroke-width="1"/>${[0,1,2,3,4,5].map(i=>`<circle class="ff" style="animation-delay:-${i*1.1}s" cx="${40+i*55}" cy="${70+(i%3)*14}" r="1.6" fill="#e6ff7a" opacity="${l?.9:0}"/>`).join("")}</svg>`
+};
+function skyFx(loc,night,dusk,fog){const cl=night?"rgba(150,170,200,.10)":dusk?"rgba(255,200,160,.35)":"rgba(255,255,255,.5)";let o=[0,1,2].map(i=>`<i class="cld" style="top:${8+i*16}%;width:${70+i*28}px;height:${16+i*4}px;background:${cl};animation-duration:${70+i*35}s;animation-delay:-${i*28}s"></i>`).join("");
+  if(!night)o+=[0,1,2].map(i=>`<svg class="brd" style="top:${14+i*9}%;animation-duration:${24+i*7}s;animation-delay:-${i*6}s" width="12" height="6" viewBox="0 0 12 6"><path d="M0 4Q3 0 6 4Q9 0 12 4" stroke="#1b2a36" fill="none"/></svg>`).join("")+'<i class="ray"></i>';
+  else o+='<i class="shoot"></i>';
+  if(loc==="ikeja"||loc==="vi")o+=`<svg class="fly" style="top:${loc==="vi"?"26%":"16%"};animation-duration:${loc==="vi"?30:42}s" width="26" height="10" viewBox="0 0 26 10"><path d="M0 5L22 4L26 5L22 6Z" fill="${D}"/><circle class="bl" cx="13" cy="4" r="1" fill="#ff3b3b"/></svg>`;
+  if(fog)o+='<i class="fog"></i>';return o;}
 function sceneHtml(){
   const h=new Date().getHours(),L=LOCS[S.location],c=SCN[S.location],ids=Object.keys(LOCS),li=ids.indexOf(S.location);
   const night=h<5||h>=20,dusk=h>=17&&h<20,dawn=h>=5&&h<7,rainy=(S.day*7+li)%5===0;
@@ -737,7 +794,7 @@ function sceneHtml(){
   const veh=[0,1,2].map(i=>{const d=10+i*5+li,dl=-(i*3.7+li),b=3+i*8,left=(i+li)%2===0,svg=(i+li)%3===1?BUS:CAR;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s"><div style="${left?"":"transform:scaleX(-1)"}">${svg}</div></div>`;}).join("");
   const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/>${lit?`<circle cx="${x+14}" cy="19" r="10" fill="#ffd9a0" opacity=".28"/>`:""}<circle cx="${x+14}" cy="17" r="2" fill="${lit?"#ffe9c0":"#2a3138"}"/>`).join("");
   const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`;
-  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${sky}"><div class="locname">${L.name}${rainy?" · Rain":night?" · Night":dusk?" · Dusk":""}</div><div class="orb ${night?"moon":""}" style="left:${cx}%;top:${night?18:Math.abs(cx-45)/3+10}px"></div>${stars}<video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}</div><div class="haze"></div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}</div><div class="lamps">${lamps}${lamps}</div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
+  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${sky}"><div class="locname">${L.name}${rainy?" · Rain":night?" · Night":dusk?" · Dusk":""}</div><div class="orb ${night?"moon":""}" style="left:${cx}%;top:${night?18:Math.abs(cx-45)/3+10}px"></div>${stars}<div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}${skyline(S.location+"a",c.h[0],c.h[1],far,lit)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,lit)}</div><div class="lamps">${lamps}${lamps}</div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
 }
 function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive");void s.offsetWidth;s.classList.add(t);if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
 function workGo(id){const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
@@ -1546,10 +1603,10 @@ window.pickChoice=function(i){
 };
 
 /* ---------------- MODAL ---------------- */
-function openModal(html){
+function openModal(html){document.body.classList.add("mo");
   $modal.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
 }
-window.closeModal=function(){$modal.innerHTML="";};
+window.closeModal=function(){$modal.innerHTML="";document.body.classList.remove("mo");};
 
 /* ---------------- TICK ---------------- */
 setInterval(()=>{
