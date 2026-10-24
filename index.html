@@ -1164,7 +1164,11 @@ function renderGame(){
   
   const nextLevelXp = S.level * 100;
   const xpPct = Math.min(100, Math.round((S.xp / nextLevelXp) * 100));
-  
+
+  const mNow = getMissions();
+const dailyLeft = (mNow.work>=3?0:1)+(mNow.travel>=2?0:1)+(mNow.social>=1?0:1);
+const dailyN = (ready?1:0) + (spinReady?1:0) + (mNow.claimed?0:dailyLeft);
+const dailyPulse = dailyN>0;
   document.body.classList.add("in-game");
   const ready=S.appointments.filter(a=>a.status==="ready").length,sy=!sb?"⚠":syncStatus==="syncing"?"↻":syncStatus==="synced"?"✓":syncStatus==="offline"?"⚡":syncStatus==="error"?"⚠":"";
   $app.innerHTML=`
@@ -1180,17 +1184,19 @@ function renderGame(){
       <div class="hud-chips"><span>❤️${S.health}</span><span>😊${S.happiness}</span><span>⭐${S.reputation}</span><span>🤝${S.network}</span><span>🔥${S.streak||0}</span></div>
     </div>
     <div class="cards">${chapCard()}${freedomCard()}</div>
-    <div class="dock">
-      <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset" onclick="openAssets()">🏠<span>Assets</span></button><button class="btn warn" onclick="doAjo()">🪙<span>Ajo${S.ajo.streak>0?' '+S.ajo.streak:''}</span></button></div>
-      <div class="dk2">
-        <button onclick="openOwambe()">🎉<span>Owambe</span></button>
-        <button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button>
-        ${unlocked("empire")?`<button class="${bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">🏭<span>Empire</span></button>`:""}
-        ${unlocked("market")?`<button onclick="openMarket()">💹<span>Market</span></button>`:""}
-        <button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button>
-        <button onclick="openMore()">⋯<span>More</span></button>
-      </div>
-    </div>`;
+<div class="dock">
+  <div class="dk1">
+    <button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button>
+    <button class="btn" onclick="openTravel()">🚌<span>Travel</span></button>
+    <button class="btn asset" onclick="openAssets()">🏠<span>Assets</span></button>
+    <button class="btn warn ${dailyPulse?'pulse':''}" onclick="openDaily()">📅<span>Daily${dailyN?(' '+dailyN):''}</span></button>
+  </div>
+  <div class="dk2">
+    ${unlocked("empire")?`<button class="${bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">🏭<span>Empire</span></button>`:""}
+    ${unlocked("market")?`<button onclick="openMarket()">💹<span>Market</span></button>`:""}
+    <button onclick="openMore()">⋯<span>More</span></button>
+  </div>
+</div>`;
     
   fetchFeed();ambUpdate();
 }
@@ -1258,6 +1264,23 @@ window.openMissions = function() {
     <button class="opt" onclick="closeModal()" style="text-align:center;margin-top:12px">Close</button>
   `);
 };
+
+window.openDaily=function(){
+  const m=getMissions();
+  const today=new Date().toDateString();
+  const ajoDone=S.ajo.lastPaid===today;
+  const spinDone=S.spinDay===today;
+  const hrs=S.lastOwambe?Math.max(0,24-(Date.now()-S.lastOwambe)/HOUR):0;
+  const ap=S.appointments.filter(a=>a.status!=="done");
+  openModal(`<h3>📅 Daily</h3>
+    <div class="opt"><b>🔥 Streak: Day ${S.streak||1}</b><span class="sub">Come back tomorrow for the next login reward. Freeze left: ${S.shield||0}.</span></div>
+    <button class="opt" onclick="openMissions()">📋 Missions<span class="sub">${m.claimed?"Done today":`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1`}</span></button>
+    <button class="opt ${ajoDone?"locked":""}" onclick="closeModal();doAjo()">🪙 Pay Ajo · ₦500<span class="sub">${ajoDone?"Paid today":"Streak "+(S.ajo.streak||0)+"/7 · payout on day 7"}</span></button>
+    <button class="opt ${hrs>0?"locked":""}" onclick="openOwambe()">🎉 Owambe<span class="sub">${hrs>0?"Back in "+Math.ceil(hrs)+"h":"Spend to gain Rep and Network"}</span></button>
+    <button class="opt ${spinDone?"locked":""}" onclick="openSpin()">🎰 Lucky spin<span class="sub">${spinDone?"Used today":"Free once a day"}</span></button>
+    <button class="opt" onclick="openAppts()">📌 Appointments<span class="sub">${ap.length?ap.length+" open":"None yet"}</span></button>
+    <button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);
+};  
 
 /* ---------------- VIP STORE ---------------- */
 window.openVipStore = function() {
