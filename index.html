@@ -365,6 +365,7 @@
   .spr{height:clamp(54px,15vh,104px);width:auto;display:block}
   @keyframes spr{to{background-position:100% 0}}
   .av .spr,.npc .spr{filter:drop-shadow(0 8px 10px rgba(0,0,0,.65))}
+  .lck{opacity:.42;filter:grayscale(.6)}
 </style>
 </head>
 <body>
@@ -883,7 +884,7 @@ window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const
   if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+2000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
   else{const p=Math.floor(rand(6000,15000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
-window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button><button class="opt" onclick="openStocks()">📈 Stock Market</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFreedom()">🕊️ Freedom Plan</button><button class="opt ${unl('stocks')?'':'lck'}" onclick="openStocks()">${unl('stocks')?'📈':'🔒'} Stock Market</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
@@ -917,7 +918,7 @@ const ACH=[
  {id:"s7",n:"7-Day Streak",e:"🔥",t:s=>(s.streak||0)>=7,r:10000},
  {id:"r100",n:"Known in Lagos",e:"🤝",t:s=>s.reputation>=100,r:8000},
  {id:"v1",n:"Beat Chinedu",e:"🏆",t:s=>(s.rivalTier||0)>=1,r:5000}];
-function checkAch(){if(!S||!S.flags||!S.assets)return;S.ach=S.ach||{};ACH.forEach(a=>{if(!S.ach[a.id]&&a.t(S)){S.ach[a.id]=1;S.cash+=a.r;addLog(`🏅 ${a.n}! +₦${fmtMoney(a.r)}`);toast(`🏅 ${a.n} +₦${fmtMoney(a.r)}`);burst();sfx(2);}});rivalCheck();chapCheck();freedomCheck();}
+function checkAch(){if(!S||!S.flags||!S.assets)return;S.ach=S.ach||{};ACH.forEach(a=>{if(!S.ach[a.id]&&a.t(S)){S.ach[a.id]=1;S.cash+=a.r;addLog(`🏅 ${a.n}! +₦${fmtMoney(a.r)}`);toast(`🏅 ${a.n} +₦${fmtMoney(a.r)}`);burst();sfx(2);}});rivalCheck();chapCheck();freedomCheck();unlockCheck();}
 window.openAch=function(){openModal(`<h3>🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</h3>`+ACH.map(a=>{const d=S.ach&&S.ach[a.id];return `<div class="mission ${d?"done":""}"><div><div class="m-title">${a.e} ${a.n}</div><div class="m-desc">Reward ₦${fmtMoney(a.r)}</div></div><div class="m-check">${d?"✅":"🔒"}</div></div>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* Daily lucky spin */
@@ -1186,8 +1187,8 @@ function renderGame(){
     </div>
     <div class="cards">${chapCard()}${freedomCard()}</div>
     <div class="dock">
-      <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset" onclick="openAssets()">🏠<span>Assets</span></button><button class="btn warn" onclick="doAjo()">🪙<span>Ajo${S.ajo.streak>0?' '+S.ajo.streak:''}</span></button></div>
-      <div class="dk2"><button onclick="openOwambe()">🎉<span>Owambe</span></button><button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button><button class="${bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">🏭<span>Empire</span></button><button onclick="openMarket()">💹<span>Forex</span></button><button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
+      <div class="dk1"><button class="btn primary" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset ${unl('assets')?'':'lck'}" onclick="openAssets()">${unl('assets')?'🏠':'🔒'}<span>Assets</span></button><button class="btn warn" onclick="doAjo()">🪙<span>Ajo${S.ajo.streak>0?' '+S.ajo.streak:''}</span></button></div>
+      <div class="dk2"><button class="${unl('owambe')?'':'lck'}" onclick="openOwambe()">${unl('owambe')?'🎉':'🔒'}<span>Owambe</span></button><button class="${spinReady?'pulse':''}" onclick="openSpin()">🎰<span>${spinReady?'FREE':'Spin'}</span></button><button class="${!unl('biz')?'lck':bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">${unl('biz')?'🏭':'🔒'}<span>Empire</span></button><button class="${unl('forex')?'':'lck'}" onclick="openMarket()">${unl('forex')?'💹':'🔒'}<span>Forex</span></button><button class="${ready?'pulse':''}" onclick="openAppts()">📅<span>Appts${appts.length?' '+appts.length:''}</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
     </div>`;
     
   fetchFeed();ambUpdate();
@@ -1697,6 +1698,15 @@ setInterval(()=>{
     else if(a.status==="ready")el.textContent=fmtDur(a.expiresAt-now);
   });
 },1000);
+
+/* ---------------- V15: PROGRESSIVE UNLOCKS ---------------- */
+const needCh=n=>()=>(S.chap||0)>=n;
+const UNL={assets:{ok:()=>S.level>=2,t:()=>"Reach Level 2"},owambe:{ok:()=>S.level>=3,t:()=>"Reach Level 3"},biz:{ok:needCh(4),n:4},stocks:{ok:needCh(4),n:4},forex:{ok:needCh(6),n:6}};
+const unl=k=>{try{return UNL[k].ok();}catch(e){return true;}};
+const lockMsg=k=>{const u=UNL[k];return "🔒 Locked. "+(u.t?u.t():"Finish the chapter: "+(CHAPTERS[u.n-1]||{t:""}).t);};
+const UNAME={assets:"Assets",owambe:"Owambe",biz:"Empire",stocks:"Stock Market",forex:"Forex"};
+function unlockCheck(){if(!S||!S.assets)return;if(!S.unl){S.unl={};Object.keys(UNL).forEach(k=>{if(unl(k))S.unl[k]=1;});return;}Object.keys(UNL).forEach(k=>{if(unl(k)&&!S.unl[k]){S.unl[k]=1;addLog("🔓 Unlocked: "+UNAME[k]);toast("🔓 Unlocked: "+UNAME[k]+"!");burst();sfx(2);track('unlock_'+k);}});}
+[["openAssets","assets"],["openOwambe","owambe"],["openBiz","biz"],["openStocks","stocks"],["openMarket","forex"]].forEach(([n,k])=>{const f=window[n];window[n]=function(){if(!unl(k))return toast(lockMsg(k));return f.apply(this,arguments);};});
 
 render();
 
