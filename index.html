@@ -473,9 +473,9 @@ const JOBS={
 };
 
 const ASSETS = [
-  {id:"keke", type:"car", name:"Keke Napep", emoji:"🛺", cost:40000, fx:{reputation:5}, desc:"Small transport. Big relief."},
-  {id:"camry", type:"car", name:"Tokunbo Camry", emoji:"🚗", cost:150000, fx:{reputation:15, network:5}, desc:"You don blow. Chinedu is jealous."},
-  {id:"suv", type:"car", name:"Brand New SUV", emoji:"🚙", cost:500000, fx:{reputation:30, network:10}, desc:"Boss-level ting."},
+  {id:"keke", type:"car", name:"Keke Napep", emoji:"🛺", cost:40000, fx:{reputation:5}, desc:"Travel perk: fares -15%, energy -25%."},
+  {id:"camry", type:"car", name:"Tokunbo Camry", emoji:"🚗", cost:150000, fx:{reputation:15, network:5}, desc:"Travel perk: fares -50%, energy -25%. Chinedu is jealous."},
+  {id:"suv", type:"car", name:"Brand New SUV", emoji:"🚙", cost:500000, fx:{reputation:30, network:10}, desc:"Travel perk: fares -70%, energy -40%."},
   {id:"selfcon", type:"house", name:"Self-Contained", emoji:"🏠", cost:100000, fx:{maxEnergy:20}, rent: 2000, desc:"No landlord trouble. +20 Energy, +₦2k/day rent."},
   {id:"duplex", type:"house", name:"Lekki Duplex", emoji:"🏡", cost:500000, fx:{maxEnergy:50}, rent: 10000, desc:"Ajah landlord. +50 Energy, +₦10k/day rent."},
   {id:"shopunit", type:"house", name:"Shop Unit", emoji:"🏬", cost:250000, fx:{reputation:10}, rent: 4000, desc:"Tenants pay you daily. +₦4k/day passive income."},
@@ -857,7 +857,7 @@ let _mg=null;
 window.doWork=function(id){
   const job=(JOBS[S.location]||[]).find(j=>j.id===id);if(!job)return;
   const cost=Math.ceil(job.energy*(1-((S.skills&&S.skills.hustle)||0)*0.05));
-  if(S.energy<cost)return toast(`Not enough energy (needs ${cost}). Rest first.`);
+  if(S.energy<cost)return toast(`Not enough energy (needs ${cost}). Tap the ⚡ bar to eat.`);
   openModal(`<h3 style="text-align:center">${job.emoji} ${job.name}</h3><p class="rw">Tap STOP in the <b style="color:var(--gold)">gold zone</b> for x1.5 pay!</p><div class="tbar"><div class="tz"></div><div class="tm" id="tm"></div></div><div class="rw" id="tres">&nbsp;</div><button class="btn primary" style="width:100%" id="stopbtn" onclick="stopMg('${id}')">✋ STOP</button><button class="opt" onclick="mgSkip('${id}')" style="text-align:center;margin-top:8px">Skip (normal pay)</button>`);
   const t0=performance.now(),sp=0.0016+Math.min(S.level,8)*0.00008;cancelAnimationFrame(_mg);
   const loop=t=>{const m=document.getElementById("tm");if(!m)return;const p=(Math.sin((t-t0)*sp*Math.PI*1.2-Math.PI/2)+1)/2;m.style.left=(p*100)+"%";m.dataset.p=p;_mg=requestAnimationFrame(loop);};
@@ -1204,7 +1204,7 @@ function renderGame(){
     ${dlgHtml()}
     <div class="hud">
       <div class="hud-top"><span class="lv">Lv ${S.level}</span><div class="xp-bar"><i style="width:${xpPct}%"></i></div><span>${S.xp}/${nextLevelXp}</span>${S.skillPoints>0?`<button class="mini" onclick="openSkills()">💡${S.skillPoints}</button>`:""}</div>
-      <div class="hud-row"><div class="cash">₦${fmtMoney(S.cash)}</div><div class="en"><div class="bar"><i style="width:${energyPct}%"></i></div>⚡ ${S.energy}/${S.maxEnergy}</div></div>
+      <div class="hud-row"><div class="cash">₦${fmtMoney(S.cash)}</div><div class="en" onclick="openFood()" style="cursor:pointer"><div class="bar"><i style="width:${energyPct}%"></i></div>⚡ ${S.energy}/${S.maxEnergy} · <b style="color:var(--gold)">🍴 Eat</b></div></div>
       <div class="hud-chips"><span>❤️${S.health}</span><span>😊${S.happiness}</span><span>⭐${S.reputation}</span><span>🤝${S.network}</span><span>🔥${S.streak||0}</span></div>
     </div>
     <div class="cards">${chapCard()}${freedomCard()}</div>
@@ -1405,7 +1405,7 @@ window.doWorkCore=function(jobId){
   const hustleDiscount = 1 - ((S.skills?.hustle || 0) * 0.05);
   const actualEnergyCost = Math.ceil(job.energy * hustleDiscount);
   
-  if(S.energy < actualEnergyCost) return toast(`Not enough energy (needs ${actualEnergyCost}). Rest first.`);
+  if(S.energy < actualEnergyCost) return toast(`Not enough energy (needs ${actualEnergyCost}). Tap the ⚡ bar to eat.`);
   
   let pay=rand(job.pay[0],job.pay[1]);const cb=hustleCombo();pay=Math.floor(pay*cb*(window._perf||1));pay=Math.floor(pay*eduMult());window._perf=1;
   const isVip = vipOn();
@@ -1567,17 +1567,17 @@ window.openTravel=function(){
   const html=Object.entries(LOCS).map(([id,l])=>{
     if(id===S.location)return `<button class="opt locked">📍 ${l.emoji} ${l.name} (here)</button>`;
     return `<button class="opt" onclick="doTravel('${id}')">${l.emoji} ${l.name}
-      <span class="sub">₦${fmtMoney(TRAVEL_COST[l.tier])} • ${TRAVEL_ENERGY} energy</span></button>`;
+      <span class="sub">₦${fmtMoney(travelCost(l))} • ${travelEnergy()} energy</span></button>`;
   }).join("");
-  openModal(`<h3>Travel</h3>${html}<button class="opt" onclick="closeModal()">Close</button>`);
+  openModal(`<h3>Travel</h3>${tPerk().c?`<div class="rw" style="color:var(--green)">🚗 Your vehicle: fares -${Math.round(tPerk().c*100)}%, energy -${Math.round(tPerk().e*100)}%</div>`:""}${html}<button class="opt" onclick="closeModal()">Close</button>`);
 };
 
 window.doTravelCore=function(id){
   const l=LOCS[id];if(!l)return;
-  const cost=TRAVEL_COST[l.tier];
+  const cost=travelCost(l);
   if(S.cash<cost)return toast("Not enough cash.");
-  if(S.energy<TRAVEL_ENERGY)return toast("Too tired.");
-  S.cash-=cost;S.energy-=TRAVEL_ENERGY;S.location=id;
+  const te=travelEnergy();if(S.energy<te)return toast("Too tired to travel.");
+  S.cash-=cost;S.energy-=te;S.location=id;
   addLog(`Traveled to ${l.name}. -₦${fmtMoney(cost)}.`);
   
   updateMission('travel');
@@ -1649,6 +1649,7 @@ window.openSettings=function(){
     <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
+    <div class="fxsub" style="text-align:center;margin:6px 0">Version ${BUILD}</div>
     <button class="opt" onclick="closeModal()">Close</button>`);
 };
 window.showPrivacy=function(){
@@ -1774,12 +1775,33 @@ function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=
   else setTimeout(tutSay,900);
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
+/* ---------------- V19: FOOD & TRANSPORT ---------------- */
+const BUILD="v19 · 24 Oct 2026";
+const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
+function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
+const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
+const travelEnergy=()=>Math.max(2,Math.round(TRAVEL_ENERGY*(1-tPerk().e)));
+const FOOD={
+ ojota:[["🥤","Gala & Coke",400,18,0,0],["🍢","Akara & Pap",300,20,0,0],["🍛","Rice & Beans",900,38,2,0]],
+ yaba:[["🍜","Noodles & Egg",700,30,0,0],["☕","Coffee & Doughnut",1200,25,0,3],["🌯","Shawarma",1800,40,0,3]],
+ ikeja:[["🥣","Moi Moi & Pap",500,22,1,0],["🍢","Suya",1500,35,0,2],["🍗","Chicken & Chips",2500,50,0,4]],
+ surulere:[["🍹","Zobo & Ice Cream",600,15,0,5],["🍌","Fried Plantain & Fish",1000,32,1,0],["🍲","Pepper Soup",1800,38,3,0]],
+ vi:[["🥪","Café Sandwich",3000,36,0,2],["🥗","Salad Bowl",3500,40,5,0],["🍱","Business Lunch",6000,70,0,5]],
+ lekki:[["🥤","Smoothie Bowl",4000,38,5,0],["🐟","Grilled Fish & Plantain",5000,55,2,0],["🥞","Brunch Special",7500,75,0,6]],
+ ajah:[["💧","Gala & Pure Water",300,15,0,0],["🍲","Amala & Ewedu",800,35,1,0],["🍚","Fried Rice & Turkey",1500,45,0,3]]};
+window.openFood=function(){const t=tdy();if(S.foodDay!==t){S.foodDay=t;S.foodN=0;}
+  openModal(`<h3>🍴 Eat in ${LOCS[S.location].name}</h3><p class="rw">Energy ${S.energy}/${S.maxEnergy} · Meals today ${S.foodN}/6<br><span style="color:var(--muted)">Food and prices depend on the area.</span></p>`+FOOD[S.location].map((f,i)=>`<button class="opt ${S.cash>=f[2]?"":"locked"}" onclick="eat(${i})">${f[0]} ${f[1]}<span class="sub">₦${fmtMoney(f[2])} · +${f[3]} energy${f[4]?` · +${f[4]} health`:""}${f[5]?` · +${f[5]} mood`:""}</span></button>`).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.eat=function(i){const f=FOOD[S.location][i],t=tdy();if(S.foodDay!==t){S.foodDay=t;S.foodN=0;}if(S.foodN>=6)return toast("You're full for today. Come back tomorrow.");if(S.energy>=S.maxEnergy)return toast("Your energy is already full.");if(S.cash<f[2])return toast("Not enough cash");
+  S.cash-=f[2];S.energy=clamp(S.energy+f[3],0,S.maxEnergy);S.health=clamp(S.health+f[4]);S.happiness=clamp(S.happiness+f[5]);S.foodN++;sfx(1);addLog(`🍴 ${f[1]}: -₦${fmtMoney(f[2])}, +${f[3]} energy.`);track('eat');save();renderGame();openFood();toast(`${f[0]} ${f[1]}: +${f[3]} energy`);};
+
 render();
 
 // Register Service Worker for offline support
 if ('serviceWorker' in navigator) {
+  const hadCtl = !!navigator.serviceWorker.controller; let rl = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (!hadCtl || rl) return; rl = true; const go = () => { if ($modal.firstChild) return setTimeout(go, 5000); location.reload(); }; go(); });
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW registration failed', err));
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(r => { r.update(); }).catch(err => console.log('SW registration failed', err));
   });
 }
 </script>
