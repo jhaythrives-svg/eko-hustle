@@ -366,6 +366,19 @@
   @keyframes spr{to{background-position:100% 0}}
   .av .spr,.npc .spr{filter:drop-shadow(0 8px 10px rgba(0,0,0,.65))}
   .lck{opacity:.42;filter:grayscale(.6)}
+  /* V17 PERFORMANCE */
+  .cld,.brd,.fly{left:0!important;filter:none}
+  @keyframes cld{from{transform:translateX(-160px)}to{transform:translateX(580px)}}
+  .veh{left:0}
+  @keyframes drive{from{transform:translateX(-90px)}to{transform:translateX(560px)}}
+  @keyframes driveL{from{transform:translateX(560px)}to{transform:translateX(-90px)}}
+  .nsh{mix-blend-mode:normal;background:#050a14}
+  .ray{mix-blend-mode:normal}
+  .scene.rainy{filter:none}
+  .scene.rainy:before{content:"";position:absolute;inset:0;background:rgba(10,20,30,.28);z-index:8;pointer-events:none}
+  .av img,.npc img,.av .spr,.npc .spr{filter:none}
+  .lite .skyfx,.lite .art,.lite .rain,.lite .haze,.lite .vig,.lite .nsh{display:none}
+  .lite .sk,.lite .lamps,.lite .star,.lite .orb{animation:none!important}
 </style>
 </head>
 <body>
@@ -782,7 +795,7 @@ function checkAppts(){
 
 /* ---------------- V4: ANIMATED SCENE ENGINE ---------------- */
 function rng(seed){let s=seed;return()=>((s=(s*9301+49297)%233280)/233280);}
-function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.4)o+=`<rect class="wn${(wx*7+wy*3)%9===0?" twk":""}" x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
+function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.charCodeAt(0)*31,7));let x=0,o="";while(x<480){const w=22+R()*26,h=lo+R()*(hi-lo);o+=`<rect x="${x}" y="${100-h}" width="${w}" height="${h}" fill="${fill}"/>`;if(lit)for(let wy=100-h+6;wy<94;wy+=11)for(let wx=x+4;wx<x+w-6;wx+=9)if(R()<.22)o+=`<rect class="wn${(wx*7+wy*3)%13===0?" twk":""}" x="${wx}" y="${wy}" width="4" height="5" fill="#fde68a" opacity=".85"/>`;x+=w+2;}return `<svg viewBox="0 0 480 100">${o}</svg>`;}
 const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
 function charSrc(k){return k==="avatar"?`avatar_${(S&&S.look)||"m"}.png`:CHAR_IMAGES[k];}
 function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃🏾‍♀️":"🏃🏾‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
@@ -817,6 +830,7 @@ function skyApply(){const sc=document.getElementById("scene");if(!sc)return;cons
   const b=band(f);if(b!==window._band){window._band=b;if(!$modal.firstChild)renderGame();}}
 window.previewTime=function(){closeModal();let t=4;clearInterval(window._pv);window._pv=setInterval(()=>{t+=.25;window._hO=t%24;skyApply();if(t>=28){clearInterval(window._pv);window._hO=null;renderGame();}},170);};
 setInterval(()=>{try{if(S&&window._hO==null)skyApply();}catch(e){}},30000);
+function sceneKey(){const li=Object.keys(LOCS).indexOf(S.location);return [S.location,band(phase(hourF())),(S.day*7+li)%5===0,S.look||"m",SPM?1:0].join("|");}
 function sceneHtml(){
   const h=hourF(),f=phase(h),L=LOCS[S.location],c=SCN[S.location],ids=Object.keys(LOCS),li=ids.indexOf(S.location);
   const night=f.ni>.6,dusk=f.du>.5&&!night,lit=f.wl>.3,dawn=h>=4.5&&h<7,rainy=(S.day*7+li)%5===0,R=rng(S.day*13+li);window._band=band(f);
@@ -826,7 +840,7 @@ function sceneHtml(){
   const veh=[0,1,2].map(i=>{const d=10+i*5+li,dl=-(i*3.7+li),b=[1,7,13][i],left=(i+li)%2===0,svg=(i===0&&li%2===1)?BUS:CAR;return `<div class="veh" style="bottom:${b}px;animation:${left?"driveL":"drive"} ${d}s linear infinite ${dl}s"><div style="${left?"":"transform:scaleX(-1)"}">${svg}</div></div>`;}).join("");
   const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/><circle class="gl" cx="${x+14}" cy="19" r="10" fill="#ffd9a0"/><circle class="gl2" cx="${x+14}" cy="17" r="2" fill="#ffe9c0"/>`).join("");
   const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`,tag=rainy?" · Rain":night?" · Night":dusk?" · Dusk":"";
-  return `<div id="scene" class="scene ${rainy?"rainy":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,true)}${skyline(S.location+"a",c.h[0],c.h[1],far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}</div><div class="lamps">${lamps}${lamps}</div><div id="nsh" class="nsh" style="opacity:${(f.ni*.55).toFixed(3)}"></div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
+  return `<div id="scene" data-k="${sceneKey()}" class="scene ${rainy?"rainy":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",c.h[0],c.h[1],far,true)}${skyline(S.location+"a",c.h[0],c.h[1],far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="sk sk2">${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}${skyline(S.location+"b",c.h[0]*.6,c.h[1]*.7,near,true)}</div><div class="lamps">${lamps}${lamps}</div><div id="nsh" class="nsh" style="opacity:${(f.ni*.55).toFixed(3)}"></div><div class="ground"></div>${veh}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charImg("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div class="vig"></div></div>`;
 }
 function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);if(t==="arrive"){snd("whoosh");setTimeout(()=>snd("horn"),350);}{const stt={work:"work",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(stt){sprState(".av","avatar",stt);setTimeout(()=>sprState(".av","avatar","idle"),1400);}}if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
 function workGo(id){const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
@@ -1173,12 +1187,13 @@ function renderGame(){
   
   document.body.classList.add("in-game");
   const ready=S.appointments.filter(a=>a.status==="ready").length,sy=!sb?"⚠":syncStatus==="syncing"?"↻":syncStatus==="synced"?"✓":syncStatus==="offline"?"⚡":syncStatus==="error"?"⚠":"";
+  const _sk=sceneKey(),_old=document.getElementById("scene"),keep=_old&&_old.dataset.k===_sk?_old:null;if(keep)keep.remove();
   $app.innerHTML=`
     <div class="topbar"><div class="brand">Eko <span>Hustle</span> ${isVip?'👑':''}</div><div class="topbar-right"><div class="day">Day ${S.day} <small>${sy}</small></div>
       
       <button class="icon-btn" onclick="openLeaderboard()">🏆</button><button class="icon-btn" onclick="openProfile()">👤</button><button class="icon-btn" onclick="openSettings()">⚙️</button></div></div>
     <div class="feed" id="live-feed"><span style="flex-shrink:0">📡</span><div class="feed-text" id="feed-text">Loading feed...</div></div>
-    ${sceneHtml()}
+    ${keep?'<div id="scene-slot"></div>':sceneHtml()}
     ${dlgHtml()}
     <div class="hud">
       <div class="hud-top"><span class="lv">Lv ${S.level}</span><div class="xp-bar"><i style="width:${xpPct}%"></i></div><span>${S.xp}/${nextLevelXp}</span>${S.skillPoints>0?`<button class="mini" onclick="openSkills()">💡${S.skillPoints}</button>`:""}</div>
@@ -1191,17 +1206,19 @@ function renderGame(){
       <div class="dk2"><button class="${!unl('biz')?'lck':bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">${unl('biz')?'🏭':'🔒'}<span>Empire</span></button><button class="${unl('forex')?'':'lck'}" onclick="openMarket()">${unl('forex')?'💹':'🔒'}<span>Forex</span></button><button class="${unl('stocks')?'':'lck'}" onclick="openStocks()">${unl('stocks')?'📈':'🔒'}<span>Stocks</span></button><button onclick="openFreedom()">🕊️<span>Freedom</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
     </div>`;
     
-  fetchFeed();ambUpdate();
+  if(keep){const sl=document.getElementById("scene-slot");if(sl)sl.replaceWith(keep);const nn=document.getElementById("npc");if(nn)nn.innerHTML=npcInner();}
+  fetchFeed();ambUpdate();applyLite();
 }
 
 async function fetchFeed() {
   const $feedText = document.getElementById("feed-text");
   if(!$feedText || !sb) return;
+  if(window._feed){ $feedText.textContent = window._feed.txt; if(Date.now()-window._feed.t < 60000) return; }
   try {
     const { data } = await sb.from('public_events').select('message').order('created_at', {ascending: false}).limit(5);
     if (data && data.length > 0) {
       const messages = data.map(d => d.message).join('  •  ');
-      $feedText.textContent = messages;
+      $feedText.textContent = messages; window._feed = {t: Date.now(), txt: messages};
     } else {
       $feedText.textContent = "Quiet in Lagos today... Start a hustle to make news!";
     }
@@ -1620,6 +1637,7 @@ window.openSettings=function(){
     <button class="opt" onclick="S.vo=S.vo===false;save();openSettings()">${S.vo===false?"🗣️ Voices: Off":"🗣️ Voices: On"}</button>
     <button class="opt" onclick="S.look=S.look==='f'?'m':'f';save();renderGame();openSettings()">🎭 Switch look (${S.look==='f'?'Female':'Male'})</button>
     <button class="opt" onclick="openRecover()">${accEmail()?"☁️ Progress saved to your email ✅":"☁️ Save my progress ⚠️"}</button>
+    <button class="opt" onclick="cycleLite()">⚡ Battery saver: ${S.lite===undefined?"Auto":S.lite?"On":"Off"}</button>
     <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
@@ -1688,7 +1706,7 @@ window.closeModal=function(){$modal.innerHTML="";document.body.classList.remove(
 
 /* ---------------- TICK ---------------- */
 setInterval(()=>{
-  if(!S)return;
+  if(!S||document.hidden)return;
   if(checkAppts())renderGame();regen();
   const now=Date.now();
   document.querySelectorAll("[data-cd]").forEach(el=>{
@@ -1728,6 +1746,12 @@ window.openDaily=function(){const t=tdy(),m=getMissions(),rd=S.appointments.filt
   card("📋","Daily quests",`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1 (Ajo or Owambe). Reward ₦5,000 and full energy.`,!!m.claimed,"")+
   (rd||pend?card("📅","Appointments",`${rd} ready · ${pend} waiting`,false,bt("View","openAppts()","")):"")+
   `<div class="rw" style="color:var(--muted)">🔥 Login streak: day ${S.streak||1}. Tomorrow: ₦${fmtMoney(STREAK[(S.streak||1)%7])}</div><button class="opt" onclick="closeModal();renderGame()" style="text-align:center">Close</button>`);};
+
+/* ---------------- V17: PERFORMANCE ---------------- */
+function applyLite(){const auto=(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3;document.body.classList.toggle("lite",!!S&&(S.lite===true||(S.lite===undefined&&auto)));}
+window.cycleLite=function(){S.lite=S.lite===undefined?true:S.lite===true?false:undefined;save();applyLite();openSettings();};
+function perfProbe(){if(!S||S.perfDay===tdy()||document.hidden||$modal.firstChild)return;S.perfDay=tdy();let n=0;const t0=performance.now();const f=()=>{n++;const dt=performance.now()-t0;if(dt<3000)requestAnimationFrame(f);else{const fps=Math.round(n/dt*1000);track('perf_fps',{fps:fps,c:navigator.hardwareConcurrency||0,m:navigator.deviceMemory||0,lite:document.body.classList.contains("lite")});if(fps<30&&S.lite===undefined){S.lite=true;applyLite();toast("⚡ Battery saver turned on to keep the game smooth");}save();}};requestAnimationFrame(f);}
+setTimeout(perfProbe,15000);
 
 render();
 
