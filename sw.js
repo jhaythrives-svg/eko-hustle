@@ -1,17 +1,40 @@
-const CACHE_NAME = 'eko-hustle-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.js'
-];
+// Eko Hustle service worker. Pages and scripts always load fresh from the network
+// (so the installed app never gets stuck on an old version) and fall back to the
+// cache only when the player is offline. Images and sounds are cached for speed.
+const V = "eh-assets-v1";
+const CORE = ["./", "./index.html", "./config.js", "./manifest.json"];
 
-self.addEventListener('install', (e) => {
+self.addEventListener("install", e => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  e.waitUntil(caches.open(V).then(c => c.addAll(CORE).catch(() => {})));
 });
 
-self.addEventListener('fetch', (e) => {
-  if (e.request.url.includes('supabase.co')) return;
-  e.respondWith(caches.match(e.request).then((response) => response || fetch(e.request)));
+self.addEventListener("activate", e => {
+  e.waitUntil(
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== V).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
+  );
+});
+
+self.addEventListener("fetch", e => {
+  const r = e.request;
+  if (r.method !== "GET") return;
+  const u = new URL(r.url);
+  if (u.origin !== location.origin) return;            // never touch Supabase, Paystack, CDNs
+  const isDoc = r.mode === "navigate" || /\.(html|js|json)$/.test(u.pathname) || u.pathname.endsWith("/");
+  if (isDoc) {
+    e.respondWith(
+      fetch(u.href, { cache: "no-store" })
+        .then(res => { const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); return res; })
+        .catch(() => caches.match(r).then(m => m || caches.match("./index.html")))
+    );
+    return;
+  }
+  e.respondWith(
+    caches.match(r).then(m => {
+      const net = fetch(r).then(res => { if (res.ok) { const cp = res.clone(); caches.open(V).then(c => c.put(r, cp)); } return res; }).catch(() => m);
+      return m || net;
+    })
+  );
 });
