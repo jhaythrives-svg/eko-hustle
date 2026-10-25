@@ -572,15 +572,15 @@ const EVENTS=[
 
 const ORIGINS=[
   {id:"lagos",label:"Lagos born",fx:{network:8}},
-  {id:"ibadan",label:"From Ibadan",fx:{cash:2000}},
-  {id:"enugu",label:"From Enugu",fx:{cash:2000}},
-  {id:"kano",label:"From Kano",fx:{cash:2000}},
-  {id:"abroad",label:"Returned from abroad",fx:{cash:10000,reputation:-5}}
+  {id:"ibadan",label:"From Ibadan",fx:{cash:4000}},
+  {id:"enugu",label:"From Enugu",fx:{cash:4000}},
+  {id:"kano",label:"From Kano",fx:{cash:4000}},
+  {id:"abroad",label:"Returned from abroad",fx:{cash:20000,reputation:-5}}
 ];
 const DREAMS=[
   {id:"bigman",label:"Become a big boss",fx:{reputation:2}},
   {id:"japa",label:"Japa",fx:{happiness:10}},
-  {id:"landlord",label:"Own a house",fx:{cash:3000}},
+  {id:"landlord",label:"Own a house",fx:{cash:5000}},
   {id:"tech",label:"Tech founder",fx:{network:3}}
 ];
 
@@ -637,11 +637,11 @@ function updateMission(type) {
   
   if (m.work >= 3 && m.travel >= 2 && m.social >= 1 && !m.claimed) {
     m.claimed = true;
-    S.cash += 5000;
+    S.cash += 8000;
     S.energy = S.maxEnergy;
     addXp(100); // Bonus XP for completing all missions
-    addLog("🏆 Daily Missions Completed! +₦5,000, Full Energy, +100 XP.");
-    toast("🏆 Missions Complete! +₦5,000");
+    addLog("🏆 Daily Missions Completed! +₦8,000, Full Energy, +100 XP.");
+    toast("🏆 Missions Complete! +₦8,000");
     postToFeed('mission');
     showCharacter('avatar', "You crushed all your missions today! Lagos is yours.", 5000);
   }
@@ -769,7 +769,7 @@ async function cloudPull(){
 /* ---------------- NEW GAME ---------------- */
 async function newGame(name,originId,dreamId,look){
   const o=ORIGINS.find(x=>x.id===originId), d=DREAMS.find(x=>x.id===dreamId);
-  S={name:cleanName(name)||"Hustler",look:look||"m",tut:0,origin:originId,dream:dreamId,day:1,cash:5000,
+  S={name:cleanName(name)||"Hustler",look:look||"m",tut:0,origin:originId,dream:dreamId,day:1,cash:12000,econ:2,
     energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,
     level:1, xp:0, skillPoints:0, skills:{hustle:0, business:0, charisma:0},
     location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},
@@ -781,15 +781,15 @@ async function newGame(name,originId,dreamId,look){
   const urlParams = new URLSearchParams(window.location.search);
   const refId = urlParams.get('ref');
   if (refId && sb && session?.user) {
-    S.cash += 2000;
-    addLog("🎁 Welcome bonus: +₦2,000 from invite link!");
+    S.cash += 6000;
+    addLog("🎁 Welcome bonus: +₦6,000 from invite link!");
     try { await sb.rpc('reward_referrer', { inviter_id: refId }); } catch(e) {}
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
   addLog(`You land in Lagos with ₦${fmtMoney(S.cash)}. ${o.label}. Dream: ${d.label}.`);
   save();renderGame();
-  setTimeout(() => showCharacter('avatar', "Omo, I just landed in Lagos with ₦5,000. Time to hustle!", 5000), 1000);
+  setTimeout(() => showCharacter('avatar', "Omo, I just landed in Lagos with ₦12,000. Time to hustle!", 5000), 1000);
   setTimeout(()=>{if(S&&S.tut===0)tutSay();},7000);
 }
 
@@ -945,11 +945,11 @@ window.mgSkip=function(id){cancelAnimationFrame(_mg);window._perf=1;workGo(id);}
 const LOCBG={ojota:"linear-gradient(135deg,#1a1a0b,#4a3a12)",yaba:"linear-gradient(135deg,#0d1b2a,#1d4a7c)",ikeja:"linear-gradient(135deg,#2a1a0d,#6b3a12)",surulere:"linear-gradient(135deg,#2a0d2a,#6b1d6b)",vi:"linear-gradient(135deg,#10202a,#2a5a6b)",lekki:"linear-gradient(135deg,#0d2a1a,#1d6b3a)",ajah:"linear-gradient(135deg,#1d1d1d,#4a4a4a)"};
 const pr=(a,b)=>Math.min(1,a/b);
 const CHAPTERS=[
- {t:"Earn your first ₦20,000",k:"ada",say:"Income comes first. Work, learn, stack your first ₦20,000.",p:s=>pr(s.cash+(s.vault||0),20000),r:3000},
- {t:"Pay yourself first: ₦10,000 in your Vault",k:"ada",say:"Before spending, save. Open the Freedom Plan and fill your Emergency Vault.",p:s=>pr(s.vault||0,10000),r:6000},
+ {t:"Earn your first ₦60,000",k:"ada",say:"Income comes first. Work, learn, stack your first ₦60,000.",p:s=>pr(s.cash+(s.vault||0),60000),r:3000},
+ {t:"Pay yourself first: ₦30,000 in your Vault",k:"ada",say:"Before spending, save. Open the Freedom Plan and fill your Emergency Vault.",p:s=>pr(s.vault||0,30000),r:6000},
  {t:"Learn a skill that raises your pay",k:"tunde",say:"Skills are the best investment. Take a course in your Freedom Plan.",p:s=>Object.keys(s.edu||{}).length?1:0,r:8000},
  {t:"Vault covers 7 days of expenses",k:"ada",say:"One week of safety. Now a bad day will not break you.",p:s=>pr(s.vault||0,7*dailyCost()),r:10000},
- {t:"Invest ₦25,000 in stocks",k:"chief",say:"Own pieces of great companies. Your money works while you work.",p:s=>pr(window.STK_VAL||0,25000),r:20000},
+ {t:"Invest ₦75,000 in stocks",k:"chief",say:"Own pieces of great companies. Your money works while you work.",p:s=>pr(window.STK_VAL||0,75000),r:20000},
  {t:"Own your first income asset",k:"chief",say:"A rent-paying property or a business: assets pay while you sleep.",p:s=>(s.assets.some(i=>(ASSETS.find(a=>a.id===i)||{}).rent)||Object.values(s.biz||{}).some(v=>v>0))?1:0,r:15000},
  {t:"Reach 25% Freedom",k:"tunde",say:"A quarter of your lifestyle is paid by passive income.",p:s=>pr(freedomPct(),25),r:25000},
  {t:"Debt-free with a 30-day Vault",k:"ada",say:"No debt and a month of safety. That is real discipline.",p:s=>(s.debt||0)>0?0:pr(s.vault||0,30*dailyCost()),r:40000},
@@ -961,9 +961,9 @@ function chapCard(){const i=S.chap||0,c=CHAPTERS[i];if(!c)return `<div class="ri
 const BIZ=[{id:"pepper",n:"Pepper Stall",e:"🌶️",c:15000,i:900},{id:"shop",n:"Provision Shop",e:"🏪",c:60000,i:3800},{id:"pos",n:"POS Network",e:"💳",c:200000,i:14000},{id:"haul",n:"Logistics Fleet",e:"🚚",c:800000,i:62000}];
 function bizRate(){return BIZ.reduce((s,b)=>s+b.i*((S.biz||{})[b.id]||0),0);}
 function bizPending(){return Math.floor(bizRate()*Math.min(8,(Date.now()-(S.bizT||Date.now()))/HOUR));}
-window.openBiz=function(){S.biz=S.biz||{};const p=bizPending();openModal(`<h3>🏭 Your Empire</h3><div class="opt" style="border-color:var(--green)">₦${fmtMoney(bizRate())}/hr · ready <b>₦${fmtMoney(p)}</b><span class="sub">Earns even when you're offline (8h cap). Upgrades compound.</span></div><button class="btn primary" style="width:100%;margin-bottom:8px" onclick="bizCollect()" ${p?"":"disabled"}>💰 Collect ₦${fmtMoney(p)}</button>`+BIZ.map(b=>{const l=S.biz[b.id]||0,c=Math.floor(b.c*Math.pow(1.7,l));return `<button class="opt ${S.cash>=c?"":"locked"}" onclick="bizBuy('${b.id}')">${b.e} ${b.n} · Lv ${l}<span class="sub">${l?"Upgrade":"Open"} ₦${fmtMoney(c)} · +₦${fmtMoney(b.i)}/hr · pays back in ${(c/b.i).toFixed(0)}h</span></button>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openBiz=function(){S.biz=S.biz||{};const p=bizPending();openModal(`<h3>🏭 Your Empire</h3><div class="opt" style="border-color:var(--green)">₦${fmtMoney(bizRate())}/hr · ready <b>₦${fmtMoney(p)}</b><span class="sub">Earns even when you're offline (8h cap). Upgrades compound.</span></div><button class="btn primary" style="width:100%;margin-bottom:8px" onclick="bizCollect()" ${p?"":"disabled"}>💰 Collect ₦${fmtMoney(p)}</button>`+BIZ.map(b=>{const l=S.biz[b.id]||0,c=Math.floor(b.c*Math.pow(1.5,l));return `<button class="opt ${S.cash>=c?"":"locked"}" onclick="bizBuy('${b.id}')">${b.e} ${b.n} · Lv ${l}<span class="sub">${l?"Upgrade":"Open"} ₦${fmtMoney(c)} · +₦${fmtMoney(b.i)}/hr · pays back in ${(c/b.i).toFixed(0)}h</span></button>`}).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 window.bizCollect=function(){const p=bizPending();if(!p)return;S.cash+=p;S.bizT=Date.now();addLog(`🏭 Collected ₦${fmtMoney(p)} from your empire.`);floatText("+₦"+fmtMoney(p));burst();sfx(2);save();closeModal();renderGame();};
-window.bizBuy=function(id){S.biz=S.biz||{};const b=BIZ.find(x=>x.id===id),l=S.biz[id]||0,c=Math.floor(b.c*Math.pow(1.7,l));if(S.cash<c)return toast("Not enough cash");S.cash+=bizPending();S.bizT=Date.now();S.cash-=c;S.biz[id]=l+1;track('biz_buy',{id:id,lv:l+1});addXp(40);addLog(`🏭 ${b.n} is now Lv ${l+1}. -₦${fmtMoney(c)}`);postToFeed('biz', b.n+'|'+(l+1));sfx(2);save();openBiz();renderGame();};
+window.bizBuy=function(id){S.biz=S.biz||{};const b=BIZ.find(x=>x.id===id),l=S.biz[id]||0,c=Math.floor(b.c*Math.pow(1.5,l));if(S.cash<c)return toast("Not enough cash");S.cash+=bizPending();S.bizT=Date.now();S.cash-=c;S.biz[id]=l+1;track('biz_buy',{id:id,lv:l+1});addXp(40);addLog(`🏭 ${b.n} is now Lv ${l+1}. -₦${fmtMoney(c)}`);postToFeed('biz', b.n+'|'+(l+1));sfx(2);save();openBiz();renderGame();};
 
 const MK=[{id:"usd",n:"Dollar",e:"💵",b:1500,v:.035},{id:"coin",n:"Okada Coin",e:"🪙",b:2000,v:.12},{id:"land",n:"Ajah Land",e:"🏞️",b:50000,v:.015}];
 function mv(i,n){const R=rng(n*977+i*131+7);R();R();return(R()-.5)*2*MK[i].v;}
@@ -975,10 +975,10 @@ window.mkBuy=function(i,a){if(S.cash<a)return toast("Not enough cash");const m=M
 window.mkSell=function(i){const m=MK[i],u=S.inv[m.id]||0;if(!u)return;const v=Math.floor(u*mkPrice(i)*.98),c=S.invC[m.id]||0;S.cash+=v;S.inv[m.id]=0;S.invC[m.id]=0;addXp(Math.max(10,Math.min(80,Math.round((v-c)/500))));addLog(`💹 Sold ${m.n}: ₦${fmtMoney(v)} (${v>=c?"+":"-"}₦${fmtMoney(Math.abs(v-c))}).`);if(v>c*1.25){burst();sfx(3);postToFeed('none');showCharacter('chief',"Ah! You read the market well. That is how big men think.",5000);}else if(v<c*.8)showCharacter('chinedu',"Haha, you lost money? Rookie mistake.",5000);save();openMarket();renderGame();};
 
 function heat(){return Math.max(0,(S.heat||0)-(Date.now()-(S.heatT||Date.now()))/DAY*15);}
-function shadyBtn(){const h=Math.round(heat()),r=Math.min(85,Math.round(20+h*.6));return `<button class="opt" onclick="shady()">🕶️ Shady deal<span class="sub">₦6k–15k • 25 energy • ${r}% bust risk • heat ${h}</span></button>`;}
+function shadyBtn(){const h=Math.round(heat()),r=Math.min(85,Math.round(20+h*.6));return `<button class="opt" onclick="shady()">🕶️ Shady deal<span class="sub">₦17k–42k • 25 energy • ${r}% bust risk • heat ${h}</span></button>`;}
 window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const h=heat(),r=Math.min(85,20+h*.6)/100;S.energy-=25;S.heat=h+(Math.random()<r?10:20);S.heatT=Date.now();closeModal();
-  if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+2000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
-  else{const p=Math.floor(rand(6000,15000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
+  if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+6000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
+  else{const p=Math.floor(rand(17000,42000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
 window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFriends()">🤝 Friends & gifts${(FR.d&&FR.d.unseen)?" ("+FR.d.unseen+" new)":""}</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
@@ -994,7 +994,7 @@ function hustleCombo(){const n=Date.now();S.combo=(n-(S.lastWork||0)<120000)?Mat
 const RIVALS=[{n:"Chinedu",e:"🚗",b:30000,d:6000},{n:"Chief Obi",e:"🧥",b:200000,d:30000},{n:"Madam Folake",e:"👩🏾‍💼",b:1000000,d:120000},{n:"Dangote Jr",e:"👑",b:5000000,d:600000}];
 function worth(){return S.cash+(S.assets||[]).reduce((s,id)=>s+((ASSETS.find(a=>a.id===id)||{}).cost||0),0)+S.reputation*200;}
 function rival(){const t=Math.min(S.rivalTier||0,RIVALS.length-1),r=RIVALS[t];return{r,t,w:r.b+r.d*((Date.now()-(S.rivalStart||S.createdAt))/DAY)};}
-function rivalCheck(){const v=rival();if((S.rivalTier||0)>=RIVALS.length||worth()<v.w)return;const b=10000*(v.t+1);S.cash+=b;S.rivalTier=v.t+1;S.rivalStart=Date.now();addLog(`🔥 You overtook ${v.r.n}! +₦${fmtMoney(b)}`);burst();sfx(3);buzz([60,40,120]);const nx=RIVALS[S.rivalTier];
+function rivalCheck(){const v=rival();if((S.rivalTier||0)>=RIVALS.length||worth()<v.w)return;const b=16000*(v.t+1);S.cash+=b;S.rivalTier=v.t+1;S.rivalStart=Date.now();addLog(`🔥 You overtook ${v.r.n}! +₦${fmtMoney(b)}`);burst();sfx(3);buzz([60,40,120]);const nx=RIVALS[S.rivalTier];
   showCharacter('chinedu', `What?! You overtook me? This isn't over. I'll be back.`, 6000);
   setTimeout(()=>openModal(`<h3 style="text-align:center">🔥 You overtook ${esc(v.r.n)}!</h3><p class="rw">+₦${fmtMoney(b)} bonus.<br>${nx?`New rival: ${nx.e} <b>${nx.n}</b>. They're richer. Go get them.`:"You are the biggest hustler in Lagos. 👑"}</p><button class="btn primary" style="width:100%" onclick="closeModal();renderGame()">Keep hustling</button>`),600);
 }
@@ -1005,8 +1005,8 @@ const ACH=[
  {id:"w1",n:"First Hustle",e:"💼",t:s=>s.flags.workCount>=1,r:500},
  {id:"w25",n:"25 Jobs Done",e:"🔨",t:s=>s.flags.workCount>=25,r:3000},
  {id:"w100",n:"Street Veteran",e:"🏋🏾",t:s=>s.flags.workCount>=100,r:15000},
- {id:"c50",n:"₦50k Club",e:"💵",t:s=>s.cash>=50000,r:2000},
- {id:"c500",n:"Half a Million",e:"💰",t:s=>s.cash>=500000,r:25000},
+ {id:"c50",n:"₦150k Club",e:"💵",t:s=>s.cash>=150000,r:2000},
+ {id:"c500",n:"Two Million",e:"💰",t:s=>s.cash>=2000000,r:25000},
  {id:"a1",n:"First Asset",e:"🛺",t:s=>s.assets.length>=1,r:2000},
  {id:"a3",n:"Property Mogul",e:"🏡",t:s=>s.assets.length>=3,r:20000},
  {id:"l5",n:"Level 5",e:"⭐",t:s=>s.level>=5,r:5000},
@@ -1027,7 +1027,7 @@ const STREAK=[1000,1500,2500,3500,5000,7500,20000];
 function track(n,p){try{if(sb&&session&&session.user)sb.rpc('track_event',{p_name:n,p_props:p||{}});}catch(e){}}
 function startSession(){track('session');fxQuiet();
   const now=Date.now(),today=new Date().toDateString(),away=window._awayMs||0;
-  let rate=100+S.level*50;(S.assets||[]).forEach(id=>{const a=ASSETS.find(x=>x.id===id);if(a)rate+=a.cost*0.002;});
+  let rate=300+S.level*150;(S.assets||[]).forEach(id=>{const a=ASSETS.find(x=>x.id===id);if(a)rate+=a.cost*0.00012;});
   const idle=away>=600000?Math.floor(rate*Math.min(away,8*HOUR)/HOUR):0;
   const fresh=S.lastLoginDate!==today;let sb="",bonus=0;
   if(fresh){const y=new Date(now-DAY).toDateString();
@@ -1036,14 +1036,14 @@ function startSession(){track('session');fxQuiet();
     else{if((S.streak||0)>2)sb=`💔 Your ${S.streak}-day streak ended. Start a new one today.`;S.streak=1;}
     S.lastLoginDate=today;bonus=STREAK[(S.streak-1)%7];S.energy=S.maxEnergy;
     if(S.streak%7===0){S.shield=(S.shield||0)+1;S.skillPoints=(S.skillPoints||0)+1;}
-  }else if(idle)S.energy=Math.min(S.maxEnergy,S.energy+Math.floor(away/30000));
+  }else if(idle)S.energy=Math.min(S.maxEnergy,S.energy+Math.floor(away/90000));
   if(!fresh&&!idle)return;
   S.cash+=idle+bonus;addLog(`${fresh?`🔥 Day ${S.streak} streak +₦${fmtMoney(bonus)}. `:""}${idle?`💤 Offline earnings +₦${fmtMoney(idle)}.`:""}`);
   save();renderGame();
   const d=((S.streak||1)-1)%7,cells=STREAK.map((v,i)=>`<div class="sd ${i<d?"got":i==d?"now":""}">D${i+1}<b>₦${v>=1000?v/1000+"k":v}</b></div>`).join("");
   setTimeout(()=>{openModal(`<h3 style="text-align:center">${fresh?`🔥 Day ${S.streak} Streak!`:"👋 Welcome back!"}</h3>`+(fresh?`<div class="sgrid">${cells}</div><p class="rw">+₦${fmtMoney(bonus)} + full energy${S.streak%7===0?" + Skill Point + Streak Freeze 🛡️":""}</p>${sb?`<p class="rw">${sb}</p>`:""}`:"")+(idle?`<div class="opt">💤 Away ${fmtDur(Math.min(away,8*HOUR))}: your hustle earned <b>₦${fmtMoney(idle)}</b><span class="sub">Buy assets to earn more while offline (8h max).</span></div>`:"")+`<p class="rw" style="color:var(--muted)">Tomorrow: ₦${fmtMoney(STREAK[(S.streak||1)%7])}${(S.streak||1)%7===6?" + a big surprise":""}</p><button class="btn primary" style="width:100%" onclick="closeModal()">Collect & Hustle</button>`);burst();sfx(2);buzz(40);},500);
 }
-function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor((n-r)/30000);if(k>0){S.lastRegen=r+k*30000;if(S.energy<S.maxEnergy){S.energy=Math.min(S.maxEnergy,S.energy+k);if(!$modal.firstChild)renderGame();}}}
+function regen(){const n=Date.now(),r=S.lastRegen||(S.lastRegen=n),k=Math.floor((n-r)/90000);if(k>0){S.lastRegen=r+k*90000;if(S.energy<S.maxEnergy){S.energy=Math.min(S.maxEnergy,S.energy+k);if(!$modal.firstChild)renderGame();}}}
 
 /* ---------------- V8: SERVER-SIDE FOREX ---------------- */
 const FXN=["USD/NGN","GBP/NGN","EUR/NGN"];
@@ -1083,8 +1083,8 @@ window.openMarket=function(){track('fx_view');
 /* ---------------- V9: FINANCIAL FREEDOM CORE ---------------- */
 const LIFE=[{n:"Modest",c:0,h:0},{n:"Comfortable",c:1200,h:2},{n:"Flashy",c:3500,h:5},{n:"Luxury",c:9000,h:9}];
 const COURSES=[{id:"lit",n:"Financial Literacy",e:"📘",c:3000,b:.05},{id:"book",n:"Bookkeeping",e:"🧮",c:8000,b:.08},{id:"sales",n:"Sales & Negotiation",e:"🤝",c:25000,b:.12},{id:"mkt",n:"Digital Marketing",e:"📣",c:40000,b:.15},{id:"code",n:"Coding & Data",e:"💻",c:60000,b:.2}];
-const dailyCost=()=>1500+LIFE[(S&&S.life)||0].c;
-const freedomNeed=()=>300000+LIFE[(S&&S.life)||0].c*30;
+const dailyCost=()=>8000+LIFE[(S&&S.life)||0].c;
+const freedomNeed=()=>170000+LIFE[(S&&S.life)||0].c*20;
 function rentDay(){return(S.assets||[]).reduce((t,id)=>t+((ASSETS.find(a=>a.id===id)||{}).rent||0),0);}
 function passiveDay(){return bizRate()*8+rentDay()+(window.STK_DIV!=null?window.STK_DIV:(S.stkDiv||0));}
 function freedomPct(){return passiveDay()/freedomNeed()*100;}
@@ -1095,7 +1095,7 @@ const FM=[[25,"Financially Aware",10000,"A quarter of your lifestyle now runs on
 function freedomCheck(){if(!S||!S.assets)return;S.fm=S.fm||{};const p=freedomPct();FM.forEach(m=>{if(p>=m[0]&&!S.fm[m[0]]){S.fm[m[0]]=1;S.cash+=m[2];addLog(`🕊️ ${m[1]}! +₦${fmtMoney(m[2])}`);track('freedom_'+m[0]);if(m[0]===100)postToFeed('free');setTimeout(()=>celebrate(m[1],m[3],"chief",m[2]),600);}});}
 function freedomCard(){const p=Math.round(Math.min(100,freedomPct())),dc=dailyCost();return `<div class="rival" onclick="openFreedom()" style="border-color:#3a3115;cursor:pointer"><div class="rv-top"><span>🕊️ Freedom <b>${p}%</b></span><span>${S.debt>0?"⚠️ debt":"🛡️ "+((S.vault||0)/dc).toFixed(0)+"d"}</span></div><div class="bar"><i style="width:${p}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div><div class="rv-sub">₦${fmtMoney(passiveDay())} of ₦${fmtMoney(freedomNeed())}/day</div></div>`;}
 const SHOCKS=[["🏥 Hospital bill","Malaria and a night in hospital.",1],["📱 Phone stolen","Area boys took your phone.",.6],["🏠 Rent hike","Your landlord raised the rent.",1.4],["👨🏾‍👩🏾‍👧🏾 Family emergency","A relative needs urgent help.",1.2],["🔧 Repairs","Your generator packed up.",.8]];
-function lifeShock(){if(!S||!S.shockDue)return;if($modal.firstChild)return setTimeout(lifeShock,4000);S.shockDue=false;const sh=SHOCKS[rand(0,SHOCKS.length-1)],cost=Math.round(dailyCost()*rand(4,8)*sh[2]+S.level*400);let msg,good=false;
+function lifeShock(){if(!S||!S.shockDue)return;if($modal.firstChild)return setTimeout(lifeShock,4000);S.shockDue=false;const sh=SHOCKS[rand(0,SHOCKS.length-1)],cost=Math.round(dailyCost()*rand(4,8)*sh[2]+S.level*1000);let msg,good=false;
   if((S.vault||0)>=cost){S.vault-=cost;good=true;S.happiness=clamp(S.happiness+3);addXp(40);msg=`Your Emergency Vault paid ₦${fmtMoney(cost)}. No stress, no debt. <b>Discipline paid off.</b>`;}
   else{const rest=cost-(S.vault||0);S.vault=0;if(S.cash>=rest){S.cash-=rest;S.happiness=clamp(S.happiness-6);msg=`Your vault was too small. ₦${fmtMoney(rest)} came out of the cash you needed for growth.`;}else{const loan=rest-S.cash;S.cash=0;S.debt=(S.debt||0)+loan;S.happiness=clamp(S.happiness-15);S.health=clamp(S.health-8);msg=`No savings, no cash. You took a ₦${fmtMoney(loan)} quick loan at <b>10% interest per day</b>. Stress is high.`;}}
   addLog(`${sh[0]}: -₦${fmtMoney(cost)}${good?" (vault)":""}`);track('life_shock',{ok:good});if(good){burst();sfx(3);}else buzz([100,60,100]);save();renderGame();
@@ -1107,10 +1107,10 @@ window.setLife=function(i){S.life=i;toast(`Lifestyle: ${LIFE[i].n}`);save();rend
 window.openFreedom=function(){S.sawF=1;tutCheck();const need=freedomNeed(),pas=passiveDay(),pct=Math.min(100,Math.round(pas/need*100)),dc=dailyCost();
   openModal(`<h3>🕊️ Road to Financial Freedom</h3>
   <div class="opt" style="border-color:var(--gold)"><b>Freedom Number: ₦${fmtMoney(need)}/day</b><span class="sub">Passive income ₦${fmtMoney(pas)}/day (${pct}%) from businesses and rent. When assets pay for your lifestyle, work becomes a choice.</span><div class="bar"><i style="width:${pct}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div></div>
-  <div class="opt"><b>🛡️ Emergency Vault: ₦${fmtMoney(S.vault||0)}</b> · covers ${((S.vault||0)/dc).toFixed(1)} days<span class="sub">Goal: 30 days. Earns 0.3% a day. Saving streak: ${S.habit||0} days. Pay yourself first.</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(2000)">+₦2k</button><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(10000)">+₦10k</button><button class="btn" style="flex:1;padding:8px" onclick="vaultMove(-(S.vault||0))">Withdraw</button></div></div>
+  <div class="opt"><b>🛡️ Emergency Vault: ₦${fmtMoney(S.vault||0)}</b> · covers ${((S.vault||0)/dc).toFixed(1)} days<span class="sub">Goal: 30 days. Earns 0.3% a day. Saving streak: ${S.habit||0} days. Pay yourself first.</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(3000)">+₦3k</button><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(15000)">+₦15k</button><button class="btn" style="flex:1;padding:8px" onclick="vaultMove(-(S.vault||0))">Withdraw</button></div></div>
   ${S.debt>0?`<div class="opt" style="border-color:var(--red)"><b>⚠️ Debt: ₦${fmtMoney(S.debt)}</b><span class="sub">Growing 10% every day and hurting your happiness. Repay it first.</span><button class="btn warn" style="width:100%;margin-top:8px;padding:8px" onclick="repayDebt()">Repay what I can</button></div>`:""}
   <div class="section-title">🎓 Skills that raise your pay (now +${Math.round((eduMult()-1)*100)}%)</div>${COURSES.map(c=>{const d=(S.edu||{})[c.id];return `<button class="opt ${d?"locked":""}" onclick="buyCourse('${c.id}')">${c.e} ${c.n} ${d?"✅":""}<span class="sub">${d?"Completed":`₦${fmtMoney(c.c)} · 20 energy · +${Math.round(c.b*100)}% on every job`}</span></button>`}).join("")}
-  <div class="section-title">🏠 Lifestyle (higher lifestyle raises your Freedom Number)</div>${LIFE.map((l,i)=>`<button class="opt" style="${(S.life||0)===i?"border-color:var(--green)":""}" onclick="setLife(${i})">${l.n}${(S.life||0)===i?" ✅":""}<span class="sub">₦${fmtMoney(1500+l.c)}/day cost · Freedom Number ₦${fmtMoney(300000+l.c*30)} · happiness +${l.h}/day</span></button>`).join("")}
+  <div class="section-title">🏠 Lifestyle (higher lifestyle raises your Freedom Number)</div>${LIFE.map((l,i)=>`<button class="opt" style="${(S.life||0)===i?"border-color:var(--green)":""}" onclick="setLife(${i})">${l.n}${(S.life||0)===i?" ✅":""}<span class="sub">₦${fmtMoney(8000+l.c)}/day cost · Freedom Number ₦${fmtMoney(170000+l.c*20)} · happiness +${l.h}/day</span></button>`).join("")}
   <div class="section-title">Rival</div>${rivalCard()}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
 
 /* ---------------- V10: STOCK MARKET (server-side) ---------------- */
@@ -1201,13 +1201,14 @@ async function render(){
   if(!S.skills) S.skills = { hustle: 0, business: 0, charisma: 0 };
   if(!S.ach) S.ach = {};
   if(!S.look) S.look = "m";
+  if((S.econ||1)<2) econReset();
   if(S.tut===undefined) S.tut = (((S.flags&&S.flags.workCount)||0)>0||S.day>1||S.level>1)?3:0;
   if(!S.streak) S.streak = 1;
   if(!S.shield) S.shield = 0;
   
   window._awayMs=Date.now()-(S.lastSaved||Date.now());checkReset();checkAppts();renderGame();
   
-  startSession();setTimeout(lifeShock,3500);setTimeout(rcNudge,9000);
+  startSession();setTimeout(lifeShock,3500);if(window._econMsg){window._econMsg=false;const sh=()=>{if($modal.firstChild)return setTimeout(sh,2500);openModal(`<h3 style="text-align:center">🔄 Season 2: a realistic economy</h3><p class="rw">Prices, pay and living costs now match real Lagos life, so progress takes real effort. To keep it fair, everyone starts Season 2 fresh. Your name, look and friends are kept.</p><p class="rw" style="color:var(--gold)">Plan your first ₦60,000, build your Vault, and grind your way up.</p><button class="btn primary" style="width:100%" onclick="closeModal()">Start the grind</button>`);};setTimeout(sh,1500);}setTimeout(rcNudge,9000);
 }
 
 function renderOnboarding(){document.body.classList.remove("in-game");
@@ -1215,7 +1216,7 @@ function renderOnboarding(){document.body.classList.remove("in-game");
   $app.innerHTML=`
     <div class="onb">
       <div class="hero">Eko <span>Hustle</span></div>
-      <div class="sub">You land in Lagos with ₦5,000. No connection. No house. Build a life.</div>
+      <div class="sub">You land in Lagos with ₦12,000. No connection. No house. Build a life.</div>
       <div class="field"><label>Your name</label>
         <input id="pname" placeholder="e.g. Tunde" maxlength="20" autocomplete="off"/></div>
       <div class="field"><label>Where you come from</label>
@@ -1337,7 +1338,7 @@ window.openMissions = function() {
   
   openModal(`
     <h3>📋 Daily Hustler Quests</h3>
-    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Complete all 3 missions to earn ₦5,000, Full Energy, and +100 XP. Resets at midnight.</p>
+    <p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">Complete all 3 missions to earn ₦8,000, Full Energy, and +100 XP. Resets at midnight.</p>
     
     <div class="mission ${workDone ? 'done' : ''}">
       <div><div class="m-title">Work 3 Times</div><div class="m-desc">${m.work}/3 completed</div></div>
@@ -1435,7 +1436,7 @@ window.openProfile = function() {
 
   const inviteBaseUrl = window.location.origin + window.location.pathname;
   const myRefLink = session?.user ? `${inviteBaseUrl}?ref=${session.user.id}` : inviteBaseUrl;
-  const inviteText = encodeURIComponent(`Join me in Eko Hustle! Let's see who becomes the biggest Hustler in Lagos.\n\nClick my link to get a ₦2,000 welcome bonus: ${myRefLink}`);
+  const inviteText = encodeURIComponent(`Join me in Eko Hustle! Let's see who becomes the biggest Hustler in Lagos.\n\nClick my link to get a ₦6,000 welcome bonus: ${myRefLink}`);
   const inviteWaLink = `https://wa.me/?text=${inviteText}`;
 
   openModal(`
@@ -1453,7 +1454,7 @@ window.openProfile = function() {
     ${assetHtml}
     
     <div class="section-title">Invite & Earn</div>
-    <p style="color:#8fa39a;font-size:12px;margin-bottom:8px;text-align:center">You get ₦10,000 in your trading wallet when a friend joins with your link (up to 20 friends). They get ₦2,000.</p>
+    <p style="color:#8fa39a;font-size:12px;margin-bottom:8px;text-align:center">You get ₦10,000 in your trading wallet when a friend joins with your link (up to 20 friends). They get ₦6,000.</p>
     <a href="${inviteWaLink}" target="_blank" class="btn invite">🎁 Invite Friends (+₦10k)</a>
     
     <div class="section-title">Flex</div>
@@ -1515,7 +1516,7 @@ window.doWorkCore=function(jobId){
     scheduleAppt({id:"mystery_"+Date.now(),title:"Unknown caller",
       desc:"Someone says they have news for you. They'll reach out soon.",loc:S.location,
       unlockAt:Date.now()+4*HOUR,expiresAt:Date.now()+4*HOUR+DAY,
-      reward:{cash:rand(2000,6000)},penalty:{happiness:-5},status:"pending"});
+      reward:{cash:rand(6000,18000)},penalty:{happiness:-5},status:"pending"});
     addLog("📞 A mystery caller will reach you soon.");
   }
   save();closeModal();
@@ -1583,9 +1584,9 @@ window.openOwambe = function() {
   if(hoursSince < 24) return toast(`Owambe is resting. Come back in ${Math.ceil(24 - hoursSince)} hours.`);
   
   const html = `
-    <button class="opt" onclick="attendOwambe(2000, 'Corporate', 5, 2)">👔 Corporate <span class="sub">₦2,000 • +5 Rep, +2 Net</span></button>
-    <button class="opt" onclick="attendOwambe(5000, 'Aso Ebi', 15, 5)">👗 Aso Ebi <span class="sub">₦5,000 • +15 Rep, +5 Net</span></button>
-    <button class="opt" onclick="attendOwambe(15000, 'Agbada', 30, 10)">🧥 Agbada <span class="sub">₦15,000 • +30 Rep, +10 Net, +10 Happy</span></button>
+    <button class="opt" onclick="attendOwambe(6000, 'Corporate', 5, 2)">👔 Corporate <span class="sub">₦6,000 • +5 Rep, +2 Net</span></button>
+    <button class="opt" onclick="attendOwambe(15000, 'Aso Ebi', 15, 5)">👗 Aso Ebi <span class="sub">₦15,000 • +15 Rep, +5 Net</span></button>
+    <button class="opt" onclick="attendOwambe(45000, 'Agbada', 30, 10)">🧥 Agbada <span class="sub">₦45,000 • +30 Rep, +10 Net, +10 Happy</span></button>
   `;
   openModal(`<h3>🎉 Weekend Owambe</h3><p style="color:#c8d6ce;font-size:13px;margin-bottom:12px">A big Lagos party. Spend money to rub minds with the elites. Choose your outfit carefully.</p>${html}<button class="opt" onclick="closeModal()">Close</button>`);
 };
@@ -1667,14 +1668,14 @@ window.doTravelCore=function(id){
 window.doAjo=function(){
   const today=new Date().toDateString();
   if(S.ajo.lastPaid===today)return toast("Ajo already paid today.");
-  if(S.cash<500)return toast("Ajo is ₦500.");
-  S.cash-=500;S.ajo.total+=500;S.ajo.streak+=1;S.ajo.lastPaid=today;
+  if(S.cash<1500)return toast("Ajo is ₦1,500.");
+  S.cash-=1500;S.ajo.total+=1500;S.ajo.streak+=1;S.ajo.lastPaid=today;
   addLog(`Ajo paid. Streak: ${S.ajo.streak}.`);pose("av","save",1800);
   
   updateMission('social');
   
   if(S.ajo.streak%7===0){
-    const p=5000;S.cash+=p;S.ajo.payouts+=1;
+    const p=16000;S.cash+=p;S.ajo.payouts+=1;
     addXp(50);
     addLog(`🎉 Ajo payout! +₦${fmtMoney(p)}. +50 XP.`);toast(`Ajo payout: ₦${fmtMoney(p)}!`);
     postToFeed('ajo');
@@ -1818,20 +1819,20 @@ function unlockCheck(){if(!S||!S.assets)return;if(!S.unl){S.unl={};Object.keys(U
 const tdy=()=>new Date().toDateString();
 function owReady(){return unl('owambe')&&(Date.now()-(S.lastOwambe||0))/HOUR>=24;}
 function dailyTodo(){const t=tdy();let n=0;if(S.spinDay!==t)n++;if(S.ajo.lastPaid!==t)n++;if(S.vaultDay!==t)n++;if(owReady())n++;if(S.appointments.some(a=>a.status==="ready"))n++;return n;}
-function dailyBonus(){const t=tdy();if(!S||!S.ajo||S.dbDay===t||S.vaultDay!==t||S.ajo.lastPaid!==t||S.spinDay!==t)return;S.dbDay=t;S.cash+=1500;addXp(30);addLog("🎯 Daily habits complete! +₦1,500");toast("🎯 Daily habits complete! +₦1,500");burst();sfx(3);track('daily_complete');}
+function dailyBonus(){const t=tdy();if(!S||!S.ajo||S.dbDay===t||S.vaultDay!==t||S.ajo.lastPaid!==t||S.spinDay!==t)return;S.dbDay=t;S.cash+=2500;addXp(30);addLog("🎯 Daily habits complete! +₦2,500");toast("🎯 Daily habits complete! +₦2,500");burst();sfx(3);track('daily_complete');}
 window.dyAjo=function(){doAjo();openDaily();};
-window.dySave=function(){vaultMove(2000);openDaily();};
+window.dySave=function(){vaultMove(3000);openDaily();};
 window.openDaily=function(){const t=tdy(),m=getMissions(),rd=S.appointments.filter(a=>a.status==="ready").length,pend=S.appointments.filter(a=>a.status==="pending").length;
   const vd=S.vaultDay===t,ad=S.ajo.lastPaid===t,sd=S.spinDay===t,done=[vd,ad,sd].filter(Boolean).length;
   const bt=(l,f,c)=>`<button class="btn ${c===undefined?"primary":c}" style="padding:8px 12px;font-size:12px;white-space:nowrap" onclick="${f}">${l}</button>`;
   const card=(ic,ti,sub,dn,btn)=>`<div class="opt" style="${dn?"border-color:var(--green);opacity:.75":""}"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div><b>${ic} ${ti}</b> ${dn?"✅":""}<span class="sub">${sub}</span></div>${dn?"":btn}</div></div>`;
   const hrs=Math.max(0,Math.ceil(24-(Date.now()-(S.lastOwambe||0))/HOUR));
-  openModal(`<h3>📅 Today</h3><div class="opt" style="border-color:var(--gold)"><b>🎯 Daily habits: ${done}/3</b><span class="sub">${S.dbDay===t?"Bonus claimed today ✅":"Do all 3 for a ₦1,500 bonus: save, Ajo, and spin."}</span><div class="bar"><i style="width:${Math.round(done/3*100)}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div></div>`+
-  card("🛡️","Pay yourself first",`Save ₦2,000 in your Vault. Saving streak: ${S.habit||0} days.`,vd,bt("Save ₦2k","dySave()"))+
-  card("🪙","Ajo savings",`₦500 today. Streak ${S.ajo.streak}/7, ₦5,000 payout on day 7.`,ad,bt("Pay ₦500","dyAjo()","warn"))+
+  openModal(`<h3>📅 Today</h3><div class="opt" style="border-color:var(--gold)"><b>🎯 Daily habits: ${done}/3</b><span class="sub">${S.dbDay===t?"Bonus claimed today ✅":"Do all 3 for a ₦2,500 bonus: save, Ajo, and spin."}</span><div class="bar"><i style="width:${Math.round(done/3*100)}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div></div>`+
+  card("🛡️","Pay yourself first",`Save ₦3,000 in your Vault. Saving streak: ${S.habit||0} days.`,vd,bt("Save ₦3k","dySave()"))+
+  card("🪙","Ajo savings",`₦1,500 today. Streak ${S.ajo.streak}/7, ₦16,000 payout on day 7.`,ad,bt("Pay ₦1,500","dyAjo()","warn"))+
   card("🎰","Lucky spin","One free reward every day.",sd,bt("Spin","openSpin()","warn"))+
   (unl("owambe")?card("🎉","Owambe",owReady()?"Meet big people and grow your network.":`Resting. Back in about ${hrs}h.`,!owReady(),bt("Attend","openOwambe()","")):`<div class="opt lck"><b>🎉 Owambe</b><span class="sub">${lockMsg("owambe")}</span></div>`)+
-  card("📋","Daily quests",`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1 (Ajo or Owambe). Reward ₦5,000 and full energy.`,!!m.claimed,"")+
+  card("📋","Daily quests",`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1 (Ajo or Owambe). Reward ₦8,000 and full energy.`,!!m.claimed,"")+
   card("🤝","Friends","Send a friend food or money. Generosity builds your network.",false,bt("Open","openFriends()",""))+(rd||pend?card("📅","Appointments",`${rd} ready · ${pend} waiting`,false,bt("View","openAppts()","")):"")+
   `<div class="rw" style="color:var(--muted)">🔥 Login streak: day ${S.streak||1}. Tomorrow: ₦${fmtMoney(STREAK[(S.streak||1)%7])}</div><button class="opt" onclick="closeModal();renderGame()" style="text-align:center">Close</button>`);};
 
@@ -1842,20 +1843,20 @@ function perfProbe(){if(!S||S.perfDay===tdy()||document.hidden||$modal.firstChil
 setTimeout(perfProbe,15000);
 
 /* ---------------- V18: FIRST-DAY TUTORIAL ---------------- */
-const TUT=[{b:"Step 1/3: Tap Work and finish your first job",say:"Welcome to Lagos. Income comes first. Tap Work, pick a job, and tap STOP in the gold zone."},{b:"Step 2/3: Pay yourself first. Open Daily, save ₦2k",say:"Before you spend, save. Open Daily and put ₦2,000 in your Emergency Vault."},{b:"Step 3/3: Tap Freedom to see your goal",say:"This is your destination. When your assets pay for your life, you are free. Tap Freedom."}];
+const TUT=[{b:"Step 1/3: Tap Work and finish your first job",say:"Welcome to Lagos. Income comes first. Tap Work, pick a job, and tap STOP in the gold zone."},{b:"Step 2/3: Pay yourself first. Open Daily, save ₦3k",say:"Before you spend, save. Open Daily and put ₦3,000 in your Emergency Vault."},{b:"Step 3/3: Tap Freedom to see your goal",say:"This is your destination. When your assets pay for your life, you are free. Tap Freedom."}];
 const tp=n=>(S&&S.tut===n)?" tutp":"";
 function tutBanner(){return(S&&S.tut!==undefined&&S.tut<3)?`<div class="tutb"><span>👉 ${TUT[S.tut].b}</span><button onclick="tutSkip()">Skip</button></div>`:"";}
 function tutSay(){if(S&&S.tut<3)showCharacter('ada',TUT[S.tut].say,6000);}
 window.tutSkip=function(){S.tut=3;track('tut_skip');save();renderGame();};
 function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=tdy();let ok=false;
-  if(S.tut===0)ok=(S.flags.workCount||0)>=1;else if(S.tut===1)ok=S.vaultDay===t||(S.vault||0)>=2000;else ok=!!S.sawF;
+  if(S.tut===0)ok=(S.flags.workCount||0)>=1;else if(S.tut===1)ok=S.vaultDay===t||(S.vault||0)>=3000;else ok=!!S.sawF;
   if(!ok)return;S.tut++;track('tut_step_'+S.tut);
-  if(S.tut>=3){S.cash+=2000;addLog("🎓 First day complete! +₦2,000");toast("🎓 First day complete! +₦2,000");burst();sfx(3);showCharacter('ada',"You earned, you saved, and you know your goal. Now build it one habit at a time.",7000);track('tut_done');}
+  if(S.tut>=3){S.cash+=5000;addLog("🎓 First day complete! +₦5,000");toast("🎓 First day complete! +₦5,000");burst();sfx(3);showCharacter('ada',"You earned, you saved, and you know your goal. Now build it one habit at a time.",7000);track('tut_done');}
   else setTimeout(tutSay,900);
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
 /* ---------------- V19: FOOD & TRANSPORT ---------------- */
-const BUILD="v19 · 24 Oct 2026";
+const BUILD="v23 · Season 2 economy";
 const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
 function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
 const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
@@ -1869,8 +1870,8 @@ const FOOD={
  lekki:[["🥤","Smoothie Bowl",4000,38,5,0],["🐟","Grilled Fish & Plantain",5000,55,2,0],["🥞","Brunch Special",7500,75,0,6]],
  ajah:[["💧","Gala & Pure Water",300,15,0,0],["🍲","Amala & Ewedu",800,35,1,0],["🍚","Fried Rice & Turkey",1500,45,0,3]]};
 window.openFood=function(){const t=tdy();if(S.foodDay!==t){S.foodDay=t;S.foodN=0;}
-  openModal(`<h3>🍴 Eat in ${LOCS[S.location].name}</h3><p class="rw">Energy ${S.energy}/${S.maxEnergy} · Meals today ${S.foodN}/6<br><span style="color:var(--muted)">Food and prices depend on the area.</span></p>`+FOOD[S.location].map((f,i)=>`<button class="opt ${S.cash>=f[2]?"":"locked"}" onclick="eat(${i})">${f[0]} ${f[1]}<span class="sub">₦${fmtMoney(f[2])} · +${f[3]} energy${f[4]?` · +${f[4]} health`:""}${f[5]?` · +${f[5]} mood`:""}</span></button>`).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
-window.eat=function(i){const f=FOOD[S.location][i],t=tdy();if(S.foodDay!==t){S.foodDay=t;S.foodN=0;}if(S.foodN>=6)return toast("You're full for today. Come back tomorrow.");if(S.energy>=S.maxEnergy)return toast("Your energy is already full.");if(S.cash<f[2])return toast("Not enough cash");
+  openModal(`<h3>🍴 Eat in ${LOCS[S.location].name}</h3><p class="rw">Energy ${S.energy}/${S.maxEnergy} · Meals today ${S.foodN}/3<br><span style="color:var(--muted)">Food and prices depend on the area.</span></p>`+FOOD[S.location].map((f,i)=>`<button class="opt ${S.cash>=f[2]?"":"locked"}" onclick="eat(${i})">${f[0]} ${f[1]}<span class="sub">₦${fmtMoney(f[2])} · +${f[3]} energy${f[4]?` · +${f[4]} health`:""}${f[5]?` · +${f[5]} mood`:""}</span></button>`).join("")+`<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.eat=function(i){const f=FOOD[S.location][i],t=tdy();if(S.foodDay!==t){S.foodDay=t;S.foodN=0;}if(S.foodN>=3)return toast("You've had enough food today. Come back tomorrow.");if(S.energy>=S.maxEnergy)return toast("Your energy is already full.");if(S.cash<f[2])return toast("Not enough cash");
   S.cash-=f[2];S.energy=clamp(S.energy+f[3],0,S.maxEnergy);S.health=clamp(S.health+f[4]);S.happiness=clamp(S.happiness+f[5]);S.foodN++;sfx(1);addLog(`🍴 ${f[1]}: -₦${fmtMoney(f[2])}, +${f[3]} energy.`);track('eat');save();renderGame();pose("av","eat",2400);openFood();toast(`${f[0]} ${f[1]}: +${f[3]} energy`);};
 
 /* ---------------- V20: FRIENDS & GIFTS ---------------- */
@@ -1895,6 +1896,33 @@ window.frSend=async function(kind,amt){const d=kind==="money"?await frCall("fr_s
 /* ---------------- V22: SAFETY ---------------- */
 function badName(n){const t=String(n).toLowerCase().replace(/[0@]/g,"o").replace(/[1!|]/g,"i").replace(/3/g,"e").replace(/[4]/g,"a").replace(/[5$]/g,"s").replace(/[^a-z]/g,"");return /(fuck|fvck|phuck|shit|bitch|asshole|dick|pussy|nigg|rape|porn|hitler|ashawo|oloshi|whore|slut|cunt|bastard|admin|support|eko ?hustle)/.test(t.replace(/ /g,""));}
 window.showTerms=function(){openModal(`<h3>Terms of use</h3><div style="color:#c8d6ce;font-size:13px;line-height:1.6"><p><b>What this is:</b> Eko Hustle is a game for learning about money. Everything in it, including markets, trading, stocks and prices, is a simulation with in-game currency. It is not financial advice.</p><p><b>Who can play:</b> you must be 18 or older.</p><p><b>No cash value:</b> in-game money cannot be bought, sold or withdrawn for real money.</p><p><b>VIP Pass:</b> a paid 24-hour boost to in-game rewards. It is delivered immediately after payment, so it is not refundable unless it failed to activate. If you paid and did not receive it, contact us with your payment reference and we will fix it or refund you.</p><p><b>Fair play:</b> do not cheat, exploit bugs, or use offensive names or messages. We may reset or remove accounts that do.</p><p><b>Gifts and friends:</b> gifts are in-game only and cannot be reversed.</p><p><b>Service:</b> the game is provided as is and may change or pause at any time.</p><p style="color:#8fa39a;font-size:12px">Contact: reply on our WhatsApp Channel.</p></div><button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+
+/* ---------------- V23: ECONOMY 2 (every price and reward lives here) ---------------- */
+(function(){
+  const r100=x=>Math.round(x/100)*100,r50=x=>Math.round(x/50)*50;
+  Object.values(JOBS).flat().forEach(j=>{j.pay=[r100(j.pay[0]*2.8),r100(j.pay[1]*2.8)];});
+  TRAVEL_COST[1]=600;TRAVEL_COST[2]=1500;
+  Object.values(FOOD).flat().forEach(f=>{f[2]=r50(f[2]*3);});
+  COURSES.forEach(c=>{c.c*=3;});
+  const AS={keke:[450000],camry:[2000000],suv:[7500000],selfcon:[2800000,16900],duplex:[14000000,84700],shopunit:[4500000,30700],flats:[26000000,165900]};
+  ASSETS.forEach(a=>{const v=AS[a.id];if(!v)return;a.cost=v[0];if(v[1])a.rent=v[1];});
+  const D={selfcon:"No landlord trouble. +20 Energy, +₦16,900/day rent.",duplex:"Ajah landlord. +50 Energy, +₦84,700/day rent.",shopunit:"Tenants pay you daily. +₦30,700/day passive income.",flats:"Six tenants. +₦165,900/day passive income."};
+  ASSETS.forEach(a=>{if(D[a.id])a.desc=D[a.id];});
+  const BZ={pepper:[100000,171],shop:[600000,808],pos:[2300000,2467],haul:[11000000,9075]};
+  BIZ.forEach(b=>{const v=BZ[b.id];if(v){b.c=v[0];b.i=v[1];}});
+  [1600,2400,4000,5600,8000,12000,32000].forEach((v,i)=>{STREAK[i]=v;});
+  SPIN[0].l="₦800";SPIN[0].f={cash:800};SPIN[1].l="₦3,000";SPIN[1].f={cash:3000};SPIN[4].l="₦12,000";SPIN[4].f={cash:12000};SPIN[6].l="💎 ₦80,000 JACKPOT";SPIN[6].f={cash:80000};
+  [0,4000,12000,30000].forEach((v,i)=>{LIFE[i].c=v;});
+  [[300000,25000],[3000000,120000],[15000000,400000],[80000000,1500000]].forEach((v,i)=>{RIVALS[i].b=v[0];RIVALS[i].d=v[1];});RIVALS[3].n="Baron Eko";
+  const sc=t=>String(t).replace(/₦([\d,]+)/g,(m,n)=>"₦"+r50(parseInt(n.replace(/,/g,""),10)*3).toLocaleString("en-NG"));
+  EVENTS.forEach(e=>{e.text=sc(e.text);e.choices.forEach(c=>{c.label=sc(c.label);c.res=sc(c.res);if(c.fx&&c.fx.cash)c.fx.cash=r50(c.fx.cash*3);});});
+  ACH.forEach(a=>{a.r=Math.round(a.r*1.6/100)*100;});
+  CHAPTERS.forEach(c=>{c.r=Math.round(c.r*1.6/500)*500;});
+  FM.forEach(m=>{m[2]=Math.round(m[2]*1.6/1000)*1000;});
+})();
+function econReset(){const k={name:S.name,look:S.look,streak:S.streak,shield:S.shield,uid:S.uid,spinDay:S.spinDay,mute:S.mute,amb:S.amb,vo:S.vo,lite:S.lite,cstyle:S.cstyle,origin:S.origin,dream:S.dream,createdAt:S.createdAt,lastLoginDate:S.lastLoginDate,perfDay:S.perfDay,nudged:S.nudged};
+  S=Object.assign({day:1,lastReset:Date.now(),cash:12000,energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,level:1,xp:0,skillPoints:0,skills:{hustle:0,business:0,charisma:0},location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},assets:[],vipUntil:0,missions:null,appointments:[],flags:{firstGigDone:true,workCount:0,mysteryScheduled:false},log:[],lastSaved:Date.now(),ach:{},chap:0,fm:{},vault:0,debt:0,habit:0,edu:{},biz:{},life:0,tut:3,econ:2,rivalTier:0,rivalStart:Date.now(),combo:0,foodN:0,bizT:Date.now()},k);
+  addLog("🔄 Season 2: realistic economy. Progress reset for fairness.");window._econMsg=true;}
 
 render();
 
