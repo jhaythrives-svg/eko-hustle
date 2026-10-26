@@ -429,6 +429,11 @@
   .p-hit .ua-l{transform:rotate(55deg)}.p-hit .ua-r{transform:rotate(-55deg)}.p-hit .eye{animation:none;transform:scaleY(.35)}
   .p-talk .mouth{animation:mth .22s ease-in-out infinite alternate}@keyframes mth{to{transform:scaleY(2.4)}}
   .p-talk .ua-r{transform:rotate(-30deg)}.p-talk .fa-r{animation:gs .6s ease-in-out infinite alternate}@keyframes gs{from{transform:rotate(40deg)}to{transform:rotate(80deg)}}.p-talk .hd{animation:nod .8s ease-in-out infinite alternate}
+  .sprf{height:100%;width:auto;display:block;object-fit:contain}
+  body.in-game .scene .av .sprf,body.in-game .scene .npc .sprf{height:100%;width:auto}
+  .scene.sprmode .av:after,.scene.sprmode .npc:after{bottom:3%;left:18%;right:18%}
+  .scene.sprmode .av,.scene.sprmode .npc{animation:none!important}
+  .scene.sprmode.arrive .av{animation:runin 1s ease-out!important}
 </style>
 </head>
 <body>
@@ -658,7 +663,7 @@ function addXp(amount) {
     S.skillPoints = (S.skillPoints || 0) + 1;burst();sfx(3);buzz([40,30,80]);
     toast(`⭐ LEVEL UP! You are now Level ${S.level}! +1 Skill Point.`);
     addLog(`⭐ Leveled up to Level ${S.level}! Got 1 Skill Point.`);
-    showCharacter('avatar', `Level Up! You are now Level ${S.level}. You feel stronger.`, 4000);
+    showCharacter('ada', `Level up! You are now level ${S.level}. Keep building.`, 4500);
   }
 }
 
@@ -851,7 +856,7 @@ function skyline(key,lo,hi,fill,lit){const R=rng([...key].reduce((a,c)=>a+c.char
 const SCN={ojota:{h:[22,48],p:"🚏",v:["🚌","🚐","🛺"]},yaba:{h:[35,72],p:"📡",v:["🛵","🚕","🚌"]},ikeja:{h:[30,64],p:"🏪",v:["🚚","🛺","🚕"]},surulere:{h:[25,55],p:"🏟️",v:["🚕","🛵","🚌"]},vi:{h:[60,98],p:"🌆",v:["🚗","🚙","🚕"]},lekki:{h:[40,85],p:"🌴",v:["🚙","🚗","🛺"]},ajah:{h:[18,40],p:"🏘️",v:["🛺","🛵","🚐"]}};
 function charSrc(k){return k==="avatar"?`avatar_${(S&&S.look)||"m"}.png`:CHAR_IMAGES[k];}
 function charEm(k){return k==="avatar"?((S&&S.look)==="f"?"🏃🏾‍♀️":"🏃🏾‍♂️"):(CHAR_META[k]||CHAR_META.avatar).e;}
-function charImg(k){const lk=(S&&S.look)||"m";if(SPM&&SPM[sprKey(k)+":idle"])return `<div class="spr" style="${sprCss(sprKey(k),"idle")}"></div>`;return `<img src="${charSrc(k)}" alt="" onerror="if(!this.dataset.f&&'${k}'==='avatar'&&'${lk}'==='m'){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';this.nextSibling.style.display='block'"><b style="display:none">${charEm(k)}</b>`;}
+function charImg(k){const lk=(S&&S.look)||"m";if(sprHas(k))return sprEl(sprKey(k),"idle");return `<img src="${charSrc(k)}" alt="" onerror="if(!this.dataset.f&&'${k}'==='avatar'&&'${lk}'==='m'){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';this.nextSibling.style.display='block'"><b style="display:none">${charEm(k)}</b>`;}
 function npcKey(){if(DLG.k&&DLG.k!=="avatar")return DLG.k;const a=(S.appointments||[]).find(x=>x.status==="ready"&&x.loc===S.location);return a?(a.id.startsWith("chief")?"chief":a.id.startsWith("tunde")?"tunde":null):null;}
 function npcInner(){const k=npcKey();return k?`<div class="bubble">${DLG.k===k?"…":"!"}</div>${charScene(k)}`:"";}
 const CAR=`<svg width="50" height="18" viewBox="0 0 50 18"><path d="M2 14 L7 7 Q9 4 15 4 H31 Q37 4 40 8 L47 11 V15 H2Z" fill="#05080b"/><path d="M12 6 H30 L36 9 H10Z" fill="#1d2a36"/><circle cx="12" cy="15" r="3" fill="#000"/><circle cx="38" cy="15" r="3" fill="#000"/><rect x="46" y="10" width="4" height="2" fill="#ffd9a0"/><rect x="0" y="10" width="3" height="2" fill="#ff3b3b"/></svg>`;
@@ -897,7 +902,9 @@ function rig(key){const c=RIGC[key]||RIGC.m,K=c.skin,H=c.hair,T=c.top,P=c.pants;
   <g class="pr pr-box"><rect x="31" y="84" width="38" height="28" rx="2" fill="#b98a55"/><rect x="31" y="84" width="38" height="6" fill="#a2763f"/><rect x="47" y="84" width="6" height="28" fill="#d8b98a"/></g></g>
   <g class="pr pr-safe"><rect x="72" y="166" width="26" height="30" rx="3" fill="#3a4650"/><circle cx="85" cy="182" r="5" fill="#e9b949"/></g><circle class="pr pr-coin" cx="85" cy="150" r="4" fill="#e9b949"/></g></svg>`;}
 function charScene(k){if((SPM&&SPM[sprKey(k)+":idle"])||S.cstyle==="png")return charImg(k);return rig(k==="avatar"?(S.look==="f"?"f":"m"):k);}
-function pose(who,p,ms){const e=document.querySelector((who==="npc"?"#npc":".av")+" .rig");if(!e)return;e.setAttribute("class","rig p-"+p);clearTimeout(e._t);if(ms)e._t=setTimeout(()=>e.setAttribute("class","rig p-idle"),ms);}
+function pose(who,p,ms){const root=who==="npc"?"#npc":".av",e=document.querySelector(root+" .rig");
+  if(e){e.setAttribute("class","rig p-"+p);clearTimeout(e._t);if(ms)e._t=setTimeout(()=>e.setAttribute("class","rig p-idle"),ms);return;}
+  const sp=document.querySelector(root+" .spr");if(!sp)return;const k=who==="npc"?(npcKey()||"tunde"):"avatar";sprState(root,k,p);clearTimeout(sp._t);if(ms)sp._t=setTimeout(()=>sprState(root,k,"idle"),ms);}
 const JOBPOSE={gig:"lift",jdev:"type",pos:"tap",market:"wave",content:"phone",usher:"wave",office:"tap",intern:"tap",driver:"lift",pa:"tap",landl:"tap",tutor:"type",load:"lift",hawk:"lift"};
 setInterval(()=>{if(!S||document.hidden||$modal.firstChild)return;const e=document.querySelector(".av .rig");if(e&&e.getAttribute("class")==="rig p-idle"&&Math.random()<.5)pose("av",Math.random()<.5?"phone":"wave",2200);},11000);
 const CAR2=`<svg width="26" height="9" viewBox="0 0 26 9"><path d="M1 7L3 3.5Q4 1.5 7 1.5H15Q18 1.5 19.5 3.5L24 5V8H1Z" fill="#05080b"/><rect x="7" y="2.4" width="9" height="2.2" fill="#223140"/><circle cx="6" cy="8" r="1.6" fill="#000"/><circle cx="20" cy="8" r="1.6" fill="#000"/><rect x="23.5" y="5.2" width="2.5" height="1.3" fill="#ffd9a0"/><rect x="0" y="4.8" width="1.6" height="1.3" fill="#ff3b3b"/></svg>`;
@@ -922,9 +929,9 @@ function sceneHtml(){
   const ants=[0,1,2].map(i=>`<div class="ant" style="bottom:48.3%;animation:${i%2?"driveL":"drive"} ${38+i*14}s linear infinite -${i*13}s">${ANT}</div>`).join("");
   const pole=[40,200,360].map(x=>`<rect x="${x}" y="14" width="2" height="46" fill="#0a0f14"/><rect x="${x}" y="14" width="14" height="2" fill="#0a0f14"/><circle class="gl" cx="${x+14}" cy="19" r="10" fill="#ffd9a0"/><circle class="gl2" cx="${x+14}" cy="17" r="2" fill="#ffe9c0"/>`).join("");
   const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`,tag=rainy?" · Rain":night?" · Night":dusk?" · Dusk":"";
-  return `<div id="scene" data-k="${sceneKey()}" class="scene${rainy?" rainy":""}${rm?" rigmode":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",Math.min(c.h[0]*1.5,60),Math.min(c.h[1]*1.6,96),far,true)}${skyline(S.location+"a",Math.min(c.h[0]*1.5,60),Math.min(c.h[1]*1.6,96),far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="own"><svg viewBox="0 0 480 60" preserveAspectRatio="xMinYMax meet">${ownedSky()}</svg></div><div class="sk sk2">${skyline(S.location+"b",Math.min(c.h[0]*.9,40),Math.min(c.h[1]*1.05,64),near,true)}${skyline(S.location+"b",Math.min(c.h[0]*.9,40),Math.min(c.h[1]*1.05,64),near,true)}</div><div class="road"></div><div class="lamps">${lamps}${lamps}</div>${veh}${ants}<div class="floor"></div>${rideSvg(lit)}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charScene("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div id="nsh" class="nsh" style="opacity:${(f.ni*.4).toFixed(3)}"></div><div class="vig"></div></div>`;
+  return `<div id="scene" data-k="${sceneKey()}" class="scene${rainy?" rainy":""}${rm?" rigmode":""}${sprHas("avatar")?" sprmode":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",Math.min(c.h[0]*1.5,60),Math.min(c.h[1]*1.6,96),far,true)}${skyline(S.location+"a",Math.min(c.h[0]*1.5,60),Math.min(c.h[1]*1.6,96),far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="own"><svg viewBox="0 0 480 60" preserveAspectRatio="xMinYMax meet">${ownedSky()}</svg></div><div class="sk sk2">${skyline(S.location+"b",Math.min(c.h[0]*.9,40),Math.min(c.h[1]*1.05,64),near,true)}${skyline(S.location+"b",Math.min(c.h[0]*.9,40),Math.min(c.h[1]*1.05,64),near,true)}</div><div class="road"></div><div class="lamps">${lamps}${lamps}</div>${veh}${ants}<div class="floor"></div>${rideSvg(lit)}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charScene("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div id="nsh" class="nsh" style="opacity:${(f.ni*.4).toFixed(3)}"></div><div class="vig"></div></div>`;
 }
-function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);{const pz={work:JOBPOSE[window._jobId]||"lift",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(pz)pose("av",pz,t==="arrive"?1000:t==="cheer"?1300:t==="hit"?800:1500);}if(t==="arrive"){snd("whoosh");setTimeout(()=>snd("horn"),350);}{const stt={work:"work",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(stt){sprState(".av","avatar",stt);setTimeout(()=>sprState(".av","avatar","idle"),1400);}}if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
+function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);{const pz={work:JOBPOSE[window._jobId]||"lift",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(pz)pose("av",pz,t==="arrive"?1000:t==="cheer"?1300:t==="hit"?800:1500);}if(t==="arrive"){snd("whoosh");setTimeout(()=>snd("horn"),350);}if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
 function workGo(id){window._jobId=id;const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
 window.doTravel=function(id){const p=S.location;doTravelCore(id);if(S.location!==p)setTimeout(()=>sceneFx("arrive"),30);};
 
@@ -1089,16 +1096,16 @@ function rentDay(){return(S.assets||[]).reduce((t,id)=>t+((ASSETS.find(a=>a.id==
 function passiveDay(){return bizRate()*8+rentDay()+(window.STK_DIV!=null?window.STK_DIV:(S.stkDiv||0));}
 function freedomPct(){return passiveDay()/freedomNeed()*100;}
 function eduMult(){return 1+COURSES.reduce((t,c)=>t+((S.edu||{})[c.id]?c.b:0),0);}
-function ffDaily(d){S.vault=Math.floor((S.vault||0)*Math.pow(1.003,d));if(S.debt>0){S.debt=Math.ceil(S.debt*Math.pow(1.1,d));S.happiness=clamp(S.happiness-4*d);addLog(`⚠️ Debt interest: you now owe ₦${fmtMoney(S.debt)}.`);}S.happiness=clamp(S.happiness+LIFE[S.life||0].h*d);if(S.vaultT&&Date.now()-S.vaultT>2*DAY&&S.habit>0){addLog(`💔 Your ${S.habit}-day saving habit broke.`);S.habit=0;}S.shockDue=S.day>=3&&Math.random()<.55;}
+function ffDaily(d){S.vault=Math.floor((S.vault||0)*Math.pow(1.003,d));if(S.debt>0){S.debt=Math.ceil(S.debt*Math.pow(1.02,d));S.happiness=clamp(S.happiness-2*d);addLog(`⚠️ Debt interest: you now owe ₦${fmtMoney(S.debt)}.`);}S.happiness=clamp(S.happiness+LIFE[S.life||0].h*d);if(S.vaultT&&Date.now()-S.vaultT>2*DAY&&S.habit>0){addLog(`💔 Your ${S.habit}-day saving habit broke.`);S.habit=0;}S.shockDue=S.day>=3&&Math.random()<.3&&(S.day-(S.lastShockDay||0))>=3;}
 function celebrate(t,msg,k,rw){burst();setTimeout(burst,350);sfx(3);buzz([60,40,60,40,150]);showCharacter(k||"ada",msg,7000);openModal(`<h3 style="text-align:center;font-size:20px;color:var(--gold)">🎉 ${t}</h3><p class="rw" style="font-size:14px">${msg}</p>${rw?`<p class="rw" style="color:var(--green);font-weight:800">+₦${fmtMoney(rw)}</p>`:""}<button class="btn primary" style="width:100%" onclick="closeModal();renderGame()">Keep building</button>`);}
 const FM=[[25,"Financially Aware",10000,"A quarter of your lifestyle now runs on passive income."],[50,"Financially Stable",30000,"Half your life is paid for by your assets. Keep going."],[100,"FINANCIALLY FREE 🕊️",150000,"Your assets pay for your lifestyle. Work is now a choice."],[200,"Wealthy",500000,"Double your freedom number. Time to give back and think legacy."]];
 function freedomCheck(){if(!S||!S.assets)return;S.fm=S.fm||{};const p=freedomPct();FM.forEach(m=>{if(p>=m[0]&&!S.fm[m[0]]){S.fm[m[0]]=1;S.cash+=m[2];addLog(`🕊️ ${m[1]}! +₦${fmtMoney(m[2])}`);track('freedom_'+m[0]);if(m[0]===100)postToFeed('free');setTimeout(()=>celebrate(m[1],m[3],"chief",m[2]),600);}});}
 function freedomCard(){const p=Math.round(Math.min(100,freedomPct())),dc=dailyCost();return `<div class="rival" onclick="openFreedom()" style="border-color:#3a3115;cursor:pointer"><div class="rv-top"><span>🕊️ Freedom <b>${p}%</b></span><span>${S.debt>0?"⚠️ debt":"🛡️ "+((S.vault||0)/dc).toFixed(0)+"d"}</span></div><div class="bar"><i style="width:${p}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div><div class="rv-sub">₦${fmtMoney(passiveDay())} of ₦${fmtMoney(freedomNeed())}/day</div></div>`;}
 const SHOCKS=[["🏥 Hospital bill","Malaria and a night in hospital.",1],["📱 Phone stolen","Area boys took your phone.",.6],["🏠 Rent hike","Your landlord raised the rent.",1.4],["👨🏾‍👩🏾‍👧🏾 Family emergency","A relative needs urgent help.",1.2],["🔧 Repairs","Your generator packed up.",.8]];
-function lifeShock(){if(!S||!S.shockDue)return;if($modal.firstChild)return setTimeout(lifeShock,4000);S.shockDue=false;const sh=SHOCKS[rand(0,SHOCKS.length-1)],cost=Math.round(dailyCost()*rand(4,8)*sh[2]+S.level*1000);let msg,good=false;
+function lifeShock(){if(!S||!S.shockDue)return;if($modal.firstChild)return setTimeout(lifeShock,4000);S.shockDue=false;S.lastShockDay=S.day;const sh=SHOCKS[rand(0,SHOCKS.length-1)],cost=Math.round(dailyCost()*rand(4,8)*sh[2]+S.level*1000);let msg,good=false;
   if((S.vault||0)>=cost){S.vault-=cost;good=true;S.happiness=clamp(S.happiness+3);addXp(40);msg=`Your Emergency Vault paid ₦${fmtMoney(cost)}. No stress, no debt. <b>Discipline paid off.</b>`;}
-  else{const rest=cost-(S.vault||0);S.vault=0;if(S.cash>=rest){S.cash-=rest;S.happiness=clamp(S.happiness-6);msg=`Your vault was too small. ₦${fmtMoney(rest)} came out of the cash you needed for growth.`;}else{const loan=rest-S.cash;S.cash=0;S.debt=(S.debt||0)+loan;S.happiness=clamp(S.happiness-15);S.health=clamp(S.health-8);msg=`No savings, no cash. You took a ₦${fmtMoney(loan)} quick loan at <b>10% interest per day</b>. Stress is high.`;}}
-  addLog(`${sh[0]}: -₦${fmtMoney(cost)}${good?" (vault)":""}`);track('life_shock',{ok:good});if(good){burst();sfx(3);}else buzz([100,60,100]);save();renderGame();
+  else{const rest=cost-(S.vault||0);S.vault=0;if(S.cash>=rest){S.cash-=rest;S.happiness=clamp(S.happiness-6);msg=`Your vault was too small. ₦${fmtMoney(rest)} came out of the cash you needed for growth.`;}else{const loan=rest-S.cash;S.cash=0;S.debt=(S.debt||0)+loan;S.happiness=clamp(S.happiness-15);S.health=clamp(S.health-8);msg=`No savings, no cash. You took a ₦${fmtMoney(loan)} quick loan at <b>2% interest per day</b>. Stress is high.`;}}
+  addLog(`${sh[0]}: -₦${fmtMoney(cost)}${good?" (vault)":""}`);track('life_shock',{ok:good});if(good){burst();sfx(3);}else buzz([100,60,100]);showCharacter(good?'ada':'chinedu',good?'Your vault paid for that. This is what discipline looks like.':'No savings means debt, and debt grows. Build your vault first.',6000);save();renderGame();
   openModal(`<h3>${sh[0]}</h3><p class="rw">${sh[1]} Cost: <b>₦${fmtMoney(cost)}</b></p><p class="rw" style="font-size:14px">${msg}</p><p class="rw" style="color:var(--gold)">💡 Keep 3 to 6 months of expenses in an emergency fund.</p><button class="btn primary" style="width:100%" onclick="closeModal();openFreedom()">Open my Freedom Plan</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button>`);}
 window.vaultMove=function(d){const t=new Date().toDateString();if(d>0){if(S.cash<d)return toast("Not enough cash");S.cash-=d;S.vault=(S.vault||0)+d;S.vaultT=Date.now();pose("av","save",1800);if(S.vaultDay!==t){S.vaultDay=t;S.habit=(S.habit||0)+1;if([3,7,14,30].includes(S.habit)){S.cash+=S.habit*1000;toast(`🔥 ${S.habit}-day saving habit! +₦${fmtMoney(S.habit*1000)}`);burst();}}track('vault_deposit');sfx(1);}else{d=Math.min(-d,S.vault||0);if(!d)return;S.vault-=d;S.cash+=d;}save();renderGame();openFreedom();};
 window.repayDebt=function(){const a=Math.min(S.cash,S.debt||0);if(!a)return toast("No cash to repay");S.cash-=a;S.debt-=a;if(S.debt<=0){S.debt=0;burst();sfx(3);toast("🎉 Debt-free!");}save();renderGame();openFreedom();};
@@ -1108,7 +1115,7 @@ window.openFreedom=function(){S.sawF=1;tutCheck();const need=freedomNeed(),pas=p
   openModal(`<h3>🕊️ Road to Financial Freedom</h3>
   <div class="opt" style="border-color:var(--gold)"><b>Freedom Number: ₦${fmtMoney(need)}/day</b><span class="sub">Passive income ₦${fmtMoney(pas)}/day (${pct}%) from businesses and rent. When assets pay for your lifestyle, work becomes a choice.</span><div class="bar"><i style="width:${pct}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div></div>
   <div class="opt"><b>🛡️ Emergency Vault: ₦${fmtMoney(S.vault||0)}</b> · covers ${((S.vault||0)/dc).toFixed(1)} days<span class="sub">Goal: 30 days. Earns 0.3% a day. Saving streak: ${S.habit||0} days. Pay yourself first.</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(3000)">+₦3k</button><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(15000)">+₦15k</button><button class="btn" style="flex:1;padding:8px" onclick="vaultMove(-(S.vault||0))">Withdraw</button></div></div>
-  ${S.debt>0?`<div class="opt" style="border-color:var(--red)"><b>⚠️ Debt: ₦${fmtMoney(S.debt)}</b><span class="sub">Growing 10% every day and hurting your happiness. Repay it first.</span><button class="btn warn" style="width:100%;margin-top:8px;padding:8px" onclick="repayDebt()">Repay what I can</button></div>`:""}
+  ${S.debt>0?`<div class="opt" style="border-color:var(--red)"><b>⚠️ Debt: ₦${fmtMoney(S.debt)}</b><span class="sub">Growing 2% every day and hurting your happiness. A good week of work clears it. Repay it first.</span><button class="btn warn" style="width:100%;margin-top:8px;padding:8px" onclick="repayDebt()">Repay what I can</button></div>`:""}
   <div class="section-title">🎓 Skills that raise your pay (now +${Math.round((eduMult()-1)*100)}%)</div>${COURSES.map(c=>{const d=(S.edu||{})[c.id];return `<button class="opt ${d?"locked":""}" onclick="buyCourse('${c.id}')">${c.e} ${c.n} ${d?"✅":""}<span class="sub">${d?"Completed":`₦${fmtMoney(c.c)} · 20 energy · +${Math.round(c.b*100)}% on every job`}</span></button>`}).join("")}
   <div class="section-title">🏠 Lifestyle (higher lifestyle raises your Freedom Number)</div>${LIFE.map((l,i)=>`<button class="opt" style="${(S.life||0)===i?"border-color:var(--green)":""}" onclick="setLife(${i})">${l.n}${(S.life||0)===i?" ✅":""}<span class="sub">₦${fmtMoney(8000+l.c)}/day cost · Freedom Number ₦${fmtMoney(170000+l.c*20)} · happiness +${l.h}/day</span></button>`).join("")}
   <div class="section-title">Rival</div>${rivalCard()}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
@@ -1152,12 +1159,17 @@ const VM={tunde:[.95,1.02,"m"],chinedu:[.8,1.12,"m"],chief:[.6,.9,"m"],ada:[1.2,
 let VZ=[];function vzLoad(){try{VZ=speechSynthesis.getVoices();}catch(e){}}
 try{vzLoad();speechSynthesis.onvoiceschanged=vzLoad;}catch(e){}
 function vzPick(g){const fe=/female|zira|samantha|susan|hazel|karen|moira|tessa|fiona|victoria|amy|emma|libby|sonia/i,ma=/male|david|mark|daniel|george|alex|ryan|guy|james|thomas/i,rank=v=>(/NG/i.test(v.lang)?4:/ZA|GB|IN/i.test(v.lang)?2:0)+((g==="f"&&fe.test(v.name))||(g==="m"&&ma.test(v.name)&&!/female/i.test(v.name))?3:0);return VZ.filter(v=>/^en/i.test(v.lang)).sort((a,b)=>rank(b)-rank(a))[0]||null;}
-function speak(k,text){if(!S||S.vo===false||S.mute||!VM[k]||!window.speechSynthesis)return;try{speechSynthesis.cancel();const m=VM[k],u=new SpeechSynthesisUtterance(String(text).replace(/₦/g,"naira ").replace(/[^\w\s.,!?'%:;-]/g,"").replace(/\s+/g," ")),v=vzPick(m[2]);if(v){u.voice=v;u.lang=v.lang;}u.pitch=m[0];u.rate=m[1];u.volume=.95;speechSynthesis.speak(u);}catch(e){}}
+function speak(k,text){if(!S||S.vo===false||S.mute||!VM[k]||!window.speechSynthesis)return;try{try{speechSynthesis.resume();}catch(e){}speechSynthesis.cancel();const m=VM[k],u=new SpeechSynthesisUtterance(String(text).replace(/₦/g,"naira ").replace(/[^\w\s.,!?'%:;-]/g,"").replace(/\s+/g," ")),v=vzPick(m[2]);if(v){u.voice=v;u.lang=v.lang;}u.pitch=m[0];u.rate=m[1];u.volume=.95;setTimeout(()=>{try{speechSynthesis.speak(u);}catch(e){}},90);}catch(e){}}
 let SPM=null;
-fetch("sprites/sprites.json").then(r=>r.ok?r.json():null).then(j=>{if(j){SPM=j;if(S)renderGame();}}).catch(()=>{});
+fetch("sprites/sprites.json").then(r=>r.ok?r.json():null).then(j=>{if(j){SPM=j;sprPre();if(S)renderGame();}}).catch(()=>{});
 function sprKey(k){return k==="avatar"?"avatar_"+((S&&S.look)||"m"):k;}
 function sprCss(key,st){const m=SPM&&(SPM[key+":"+st]||SPM[key+":idle"]);return m?`aspect-ratio:${m.ar};background:url(sprites/${m.f}) 0 0/${m.n*100}% 100% no-repeat;animation:spr ${((m.n-1)/m.fps).toFixed(2)}s steps(${m.n-1}) infinite`:"";}
-function sprState(sel,k,st){const e=document.querySelector(sel+" .spr");if(e&&SPM&&SPM[sprKey(k)+":"+st])e.style.cssText=sprCss(sprKey(k),st);}
+function sprM(key,st){return SPM&&(SPM[key+":"+st]||SPM[key+":idle"]);}
+function sprHas(k){return !!(SPM&&SPM[sprKey(k)+":idle"]);}
+function sprEl(key,st){const m=sprM(key,st);if(!m)return"";if(m.frames)return `<img class="spr sprf" alt="" data-k="${key}" data-st="${st}" src="sprites/${m.frames[0]}">`;return `<div class="spr" style="${sprCss(key,st)}"></div>`;}
+function sprState(sel,k,st){if(!SPM)return;const key=sprKey(k),e=document.querySelector(sel+" .spr");if(!e)return;const m=sprM(key,st);if(!m)return;if(e.classList.contains("sprf")){if(m.frames)e.dataset.st=st;}else if(!m.frames){e.style.cssText=sprCss(key,st);}}
+const _pre={};function sprPre(){if(!SPM)return;Object.values(SPM).forEach(m=>(m.frames||[]).forEach(f=>{if(!_pre[f]){const i=new Image();i.src="sprites/"+f;_pre[f]=i;}}));}
+setInterval(()=>{if(!SPM||document.hidden)return;document.querySelectorAll(".sprf").forEach(e=>{const m=sprM(e.dataset.k,e.dataset.st);if(!m||!m.frames)return;const i=Math.floor(performance.now()/1000*(m.fps||6))%m.frames.length,src="sprites/"+m.frames[i];if(!e.src.endsWith(src))e.src=src;});},70);
 
 /* ---------------- V14: ACCOUNT RECOVERY ---------------- */
 const isAnon=()=>!!(session&&session.user&&session.user.is_anonymous);
@@ -1201,14 +1213,14 @@ async function render(){
   if(!S.skills) S.skills = { hustle: 0, business: 0, charisma: 0 };
   if(!S.ach) S.ach = {};
   if(!S.look) S.look = "m";
-  if((S.econ||1)<2) econReset();
+  if((S.econ||1)<2) econConvert();
   if(S.tut===undefined) S.tut = (((S.flags&&S.flags.workCount)||0)>0||S.day>1||S.level>1)?3:0;
   if(!S.streak) S.streak = 1;
   if(!S.shield) S.shield = 0;
   
   window._awayMs=Date.now()-(S.lastSaved||Date.now());checkReset();checkAppts();renderGame();
   
-  startSession();setTimeout(lifeShock,3500);if(window._econMsg){window._econMsg=false;const sh=()=>{if($modal.firstChild)return setTimeout(sh,2500);openModal(`<h3 style="text-align:center">🔄 Season 2: a realistic economy</h3><p class="rw">Prices, pay and living costs now match real Lagos life, so progress takes real effort. To keep it fair, everyone starts Season 2 fresh. Your name, look and friends are kept.</p><p class="rw" style="color:var(--gold)">Plan your first ₦60,000, build your Vault, and grind your way up.</p><button class="btn primary" style="width:100%" onclick="closeModal()">Start the grind</button>`);};setTimeout(sh,1500);}setTimeout(rcNudge,9000);
+  startSession();setTimeout(lifeShock,3500);setTimeout(compCheck,5000);if(window._econMsg){window._econMsg=false;const sh=()=>{if($modal.firstChild)return setTimeout(sh,2500);showCharacter("ada","Season 2 begins. Prices are real now. Save first, then build.",6000);openModal(`<h3 style="text-align:center">🔄 Season 2: a realistic economy</h3><p class="rw">Prices, pay and living costs now match real Lagos life, so progress takes real effort. Nothing you earned was removed: your level, assets, businesses, skills and streak are all kept. Your cash and Vault were multiplied by 3 to match the new prices, and any debt was cleared.</p><p class="rw" style="color:var(--gold)">Prices are bigger now, so every naira has to work harder.</p><button class="btn primary" style="width:100%" onclick="closeModal()">Start the grind</button>`);};setTimeout(sh,1500);}setTimeout(rcNudge,9000);
 }
 
 function renderOnboarding(){document.body.classList.remove("in-game");
@@ -1726,6 +1738,7 @@ window.openSettings=function(){
     <button class="opt" onclick="S.cstyle=S.cstyle==='png'?'d':'png';save();renderGame();openSettings()">🎨 Characters: ${S.cstyle==='png'?'Photo':'Drawn (animated)'}</button>
     <button class="opt" onclick="cycleLite()">⚡ Battery saver: ${S.lite===undefined?"Auto":S.lite?"On":"Off"}</button>
     <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
+    <button class="opt" onclick="openVoiceTest()">🗣️ Test voices</button>
     <button class="opt" onclick="showTerms()">Terms of use</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
@@ -1819,7 +1832,7 @@ function unlockCheck(){if(!S||!S.assets)return;if(!S.unl){S.unl={};Object.keys(U
 const tdy=()=>new Date().toDateString();
 function owReady(){return unl('owambe')&&(Date.now()-(S.lastOwambe||0))/HOUR>=24;}
 function dailyTodo(){const t=tdy();let n=0;if(S.spinDay!==t)n++;if(S.ajo.lastPaid!==t)n++;if(S.vaultDay!==t)n++;if(owReady())n++;if(S.appointments.some(a=>a.status==="ready"))n++;return n;}
-function dailyBonus(){const t=tdy();if(!S||!S.ajo||S.dbDay===t||S.vaultDay!==t||S.ajo.lastPaid!==t||S.spinDay!==t)return;S.dbDay=t;S.cash+=2500;addXp(30);addLog("🎯 Daily habits complete! +₦2,500");toast("🎯 Daily habits complete! +₦2,500");burst();sfx(3);track('daily_complete');}
+function dailyBonus(){const t=tdy();if(!S||!S.ajo||S.dbDay===t||S.vaultDay!==t||S.ajo.lastPaid!==t||S.spinDay!==t)return;S.dbDay=t;S.cash+=2500;addXp(30);addLog("🎯 Daily habits complete! +₦2,500");toast("🎯 Daily habits complete! +₦2,500");burst();sfx(3);track('daily_complete');showCharacter('ada','All three daily habits done. Small habits, big freedom.',5000);}
 window.dyAjo=function(){doAjo();openDaily();};
 window.dySave=function(){vaultMove(3000);openDaily();};
 window.openDaily=function(){const t=tdy(),m=getMissions(),rd=S.appointments.filter(a=>a.status==="ready").length,pend=S.appointments.filter(a=>a.status==="pending").length;
@@ -1856,7 +1869,7 @@ function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
 /* ---------------- V19: FOOD & TRANSPORT ---------------- */
-const BUILD="v23 · Season 2 economy";
+const BUILD="v24 · Season 2";
 const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
 function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
 const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
@@ -1920,9 +1933,20 @@ window.showTerms=function(){openModal(`<h3>Terms of use</h3><div style="color:#c
   CHAPTERS.forEach(c=>{c.r=Math.round(c.r*1.6/500)*500;});
   FM.forEach(m=>{m[2]=Math.round(m[2]*1.6/1000)*1000;});
 })();
-function econReset(){const k={name:S.name,look:S.look,streak:S.streak,shield:S.shield,uid:S.uid,spinDay:S.spinDay,mute:S.mute,amb:S.amb,vo:S.vo,lite:S.lite,cstyle:S.cstyle,origin:S.origin,dream:S.dream,createdAt:S.createdAt,lastLoginDate:S.lastLoginDate,perfDay:S.perfDay,nudged:S.nudged};
-  S=Object.assign({day:1,lastReset:Date.now(),cash:12000,energy:100,maxEnergy:100,health:100,happiness:70,reputation:10,network:5,level:1,xp:0,skillPoints:0,skills:{hustle:0,business:0,charisma:0},location:"ojota",ajo:{streak:0,lastPaid:null,total:0,payouts:0},assets:[],vipUntil:0,missions:null,appointments:[],flags:{firstGigDone:true,workCount:0,mysteryScheduled:false},log:[],lastSaved:Date.now(),ach:{},chap:0,fm:{},vault:0,debt:0,habit:0,edu:{},biz:{},life:0,tut:3,econ:2,rivalTier:0,rivalStart:Date.now(),combo:0,foodN:0,bizT:Date.now()},k);
-  addLog("🔄 Season 2: realistic economy. Progress reset for fairness.");window._econMsg=true;}
+function econConvert(){S.econ=2;S.cash=Math.round((S.cash||0)*3);S.vault=Math.round((S.vault||0)*3);S.debt=0;S.lastReset=Date.now();addLog("🔄 Season 2: prices are now realistic. Your level, assets, businesses, skills and savings were kept and converted.");window._econMsg=true;}
+
+/* ---------------- V24: VOICE TEST ---------------- */
+window.openVoiceTest=function(){const n=VZ.length,vf=vzPick("f"),vm=vzPick("m");
+  openModal(`<h3>🗣️ Voices</h3><div class="opt"><b>${n} voice${n===1?"":"s"} found on this phone</b><span class="sub">Female (Ada): ${vf?esc(vf.name+" · "+vf.lang):"phone default"}<br>Male (Tunde, Chinedu, Chief): ${vm?esc(vm.name+" · "+vm.lang):"phone default"}</span></div>${n?"":'<p class="rw" style="color:var(--gold)">No voices installed. On Android: Settings, then System, then Languages, then Text-to-speech, and install a voice.</p>'}<p class="rw">${S.vo===false?"Voices are switched OFF in Settings.":S.mute?"Sound is switched OFF in Settings.":"Tap a character to hear them."}</p>${[["ada","Ada"],["tunde","Tunde"],["chinedu","Chinedu"],["chief","The Chief"]].map(x=>`<button class="opt" onclick="speak('${x[0]}','Hello, I am ${x[1]}. Let us build your freedom together.')">▶ ${x[1]}</button>`).join("")}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+
+/* ---------------- V25: RESTORATION ---------------- */
+function compApply(g){const oldL=S.level;if(g.cash)S.cash+=Number(g.cash);if(g.level&&g.level>S.level){S.level=Number(g.level);S.xp=0;S.skillPoints=(S.skillPoints||0)+(S.level-oldL);}
+  if(g.chap&&Number(g.chap)>(S.chap||0))S.chap=Number(g.chap);if(g.edu)S.edu=Object.assign(S.edu||{},g.edu);
+  if(g.biz){S.biz=S.biz||{};Object.keys(g.biz).forEach(k=>{S.biz[k]=Math.max(S.biz[k]||0,Number(g.biz[k]));});S.bizT=Date.now();}}
+function compCheck(){if(!sb||!session||!session.user||!S)return;sb.rpc("comp_state").then(r=>{const d=r&&r.data;if(!d||!d.grant)return;const g=d.grant;const show=()=>{if($modal.firstChild)return setTimeout(show,3000);
+  const bits=[];if(g.level>S.level)bits.push("Level "+g.level);if(g.chap>(S.chap||0))bits.push(g.chap+" story chapters");const ne=Object.keys(g.edu||{}).length;if(ne)bits.push(ne+" course"+(ne>1?"s":""));const nb=Object.keys(g.biz||{}).length;if(nb)bits.push(nb+" business"+(nb>1?"es":""));
+  openModal(`<h3 style="text-align:center">💛 We owe you an apology</h3><p class="rw">In the Season 2 update we reset some players' progress. That was our mistake, and we are sorry. We rebuilt what we could from our records.</p><div class="opt" style="border-color:var(--gold)"><b>Restored for you</b><span class="sub">${bits.length?esc(bits.join(" · ")):"Your progress is already up to date"}<br><b style="color:var(--green)">+₦${fmtMoney(g.cash||0)}</b> to help you rebuild</span></div><p class="rw" style="color:var(--muted)">We could not recover your exact cash and assets from before the update, so the cash above is our way of making up for it.</p><button class="btn primary" style="width:100%" onclick="compClaim()">Claim and keep playing</button>`);};setTimeout(show,800);}).catch(()=>{});}
+window.compClaim=async function(){const{data,error}=await sb.rpc("comp_claim");if(error||!data||!data.grant)return toast("Nothing to claim");compApply(data.grant);addLog("💛 Season 2 restoration claimed: +₦"+fmtMoney(data.grant.cash||0));track("comp_claim");burst();sfx(3);save();renderGame();closeModal();toast("💛 Restored. Welcome back!");};
 
 render();
 
