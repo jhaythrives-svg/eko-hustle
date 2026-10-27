@@ -1,0 +1,98 @@
+{
+ "avatar_m:cheer": {
+  "frames": [
+   "avatar_m_cheer_1.png",
+   "avatar_m_cheer_2.png",
+   "avatar_m_cheer_3.png"
+  ],
+  "fps": 8
+ },
+ "avatar_m:eat": {
+  "frames": [
+   "avatar_m_eat_1.png",
+   "avatar_m_eat_2.png",
+   "avatar_m_eat_3.png"
+  ],
+  "fps": 4
+ },
+ "avatar_m:hit": {
+  "frames": [
+   "avatar_m_hit_1.png",
+   "avatar_m_hit_2.png"
+  ],
+  "fps": 8
+ },
+ "avatar_m:idle": {
+  "frames": [
+   "avatar_m_idle_1.png",
+   "avatar_m_idle_2.png",
+   "avatar_m_idle_3.png"
+  ],
+  "fps": 3
+ },
+ "avatar_m:lift": {
+  "frames": [
+   "avatar_m_lift_1.png",
+   "avatar_m_lift_2.png",
+   "avatar_m_lift_3.png"
+  ],
+  "fps": 5
+ },
+ "avatar_m:phone": {
+  "frames": [
+   "avatar_m_phone_1.png",
+   "avatar_m_phone_2.png",
+   "avatar_m_phone_3.png"
+  ],
+  "fps": 3
+ },
+ "avatar_m:save": {
+  "frames": [
+   "avatar_m_save_1.png",
+   "avatar_m_save_2.png",
+   "avatar_m_save_3.png"
+  ],
+  "fps": 5
+ },
+ "avatar_m:talk": {
+  "frames": [
+   "avatar_m_talk_1.png",
+   "avatar_m_talk_2.png",
+   "avatar_m_talk_3.png"
+  ],
+  "fps": 6
+ },
+ "avatar_m:tap": {
+  "frames": [
+   "avatar_m_tap_1.png",
+   "avatar_m_tap_2.png",
+   "avatar_m_tap_3.png"
+  ],
+  "fps": 5
+ },
+ "avatar_m:type": {
+  "frames": [
+   "avatar_m_type_1.png",
+   "avatar_m_type_2.png",
+   "avatar_m_type_3.png"
+  ],
+  "fps": 6
+ },
+ "avatar_m:walk": {
+  "frames": [
+   "avatar_m_walk_1.png",
+   "avatar_m_walk_2.png",
+   "avatar_m_walk_3.png",
+   "avatar_m_walk_4.png"
+  ],
+  "fps": 8
+ },
+ "avatar_m:wave": {
+  "frames": [
+   "avatar_m_wave_1.png",
+   "avatar_m_wave_2.png",
+   "avatar_m_wave_3.png"
+  ],
+  "fps": 6
+ }
+}
