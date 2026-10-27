@@ -987,7 +987,7 @@ window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const
   if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+6000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
   else{const p=Math.floor(rand(17000,42000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
-window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openFriends()">🤝 Friends & gifts${(FR.d&&FR.d.unseen)?" ("+FR.d.unseen+" new)":""}</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openMore=function(){openModal(`<h3>More</h3><button class="opt ${unl('friends')?'':'lck'}" onclick="openFriends()">${unl('friends')?'🤝':'🔒'} Friends & gifts${(FR.d&&FR.d.unseen)?" ("+FR.d.unseen+" new)":""}</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
@@ -1821,17 +1821,17 @@ setInterval(()=>{
 
 /* ---------------- V15: PROGRESSIVE UNLOCKS ---------------- */
 const needCh=n=>()=>(S.chap||0)>=n;
-const UNL={assets:{ok:()=>S.level>=2,t:()=>"Reach Level 2"},owambe:{ok:()=>S.level>=3,t:()=>"Reach Level 3"},biz:{ok:needCh(4),n:4},stocks:{ok:needCh(4),n:4},forex:{ok:needCh(6),n:6}};
+const UNL={assets:{ok:()=>S.level>=2,t:()=>"Reach Level 2"},owambe:{ok:()=>S.level>=3,t:()=>"Reach Level 3"},biz:{ok:needCh(4),n:4},stocks:{ok:needCh(4),n:4},forex:{ok:needCh(6),n:6},friends:{ok:needCh(2),n:2}};
 const unl=k=>{try{return UNL[k].ok();}catch(e){return true;}};
 const lockMsg=k=>{const u=UNL[k];return "🔒 Locked. "+(u.t?u.t():"Finish the chapter: "+(CHAPTERS[u.n-1]||{t:""}).t);};
-const UNAME={assets:"Assets",owambe:"Owambe",biz:"Empire",stocks:"Stock Market",forex:"Forex"};
+const UNAME={assets:"Assets",owambe:"Owambe",biz:"Empire",stocks:"Stock Market",forex:"Forex",friends:"Friends"};
 function unlockCheck(){if(!S||!S.assets)return;if(!S.unl){S.unl={};Object.keys(UNL).forEach(k=>{if(unl(k))S.unl[k]=1;});return;}Object.keys(UNL).forEach(k=>{if(unl(k)&&!S.unl[k]){S.unl[k]=1;addLog("🔓 Unlocked: "+UNAME[k]);toast("🔓 Unlocked: "+UNAME[k]+"!");burst();sfx(2);track('unlock_'+k);}});}
 [["openAssets","assets"],["openOwambe","owambe"],["openBiz","biz"],["openStocks","stocks"],["openMarket","forex"]].forEach(([n,k])=>{const f=window[n];window[n]=function(){if(!unl(k))return toast(lockMsg(k));return f.apply(this,arguments);};});
 
 /* ---------------- V16: DAILY HUB ---------------- */
 const tdy=()=>new Date().toDateString();
 function owReady(){return unl('owambe')&&(Date.now()-(S.lastOwambe||0))/HOUR>=24;}
-function dailyTodo(){const t=tdy();let n=0;if(S.spinDay!==t)n++;if(S.ajo.lastPaid!==t)n++;if(S.vaultDay!==t)n++;if(owReady())n++;if(S.appointments.some(a=>a.status==="ready"))n++;return n;}
+function dailyTodo(){const t=tdy();let n=0;if(S.spinDay!==t)n++;if(S.ajo.lastPaid!==t)n++;if(S.vaultDay!==t)n++;if(owReady())n++;if(unl("friends")&&FR.d&&FR.d.unseen>0)n++;if(S.appointments.some(a=>a.status==="ready"))n++;return n;}
 function dailyBonus(){const t=tdy();if(!S||!S.ajo||S.dbDay===t||S.vaultDay!==t||S.ajo.lastPaid!==t||S.spinDay!==t)return;S.dbDay=t;S.cash+=2500;addXp(30);addLog("🎯 Daily habits complete! +₦2,500");toast("🎯 Daily habits complete! +₦2,500");burst();sfx(3);track('daily_complete');showCharacter('ada','All three daily habits done. Small habits, big freedom.',5000);}
 window.dyAjo=function(){doAjo();openDaily();};
 window.dySave=function(){vaultMove(3000);openDaily();};
@@ -1845,8 +1845,8 @@ window.openDaily=function(){const t=tdy(),m=getMissions(),rd=S.appointments.filt
   card("🪙","Ajo savings",`₦1,500 today. Streak ${S.ajo.streak}/7, ₦16,000 payout on day 7.`,ad,bt("Pay ₦1,500","dyAjo()","warn"))+
   card("🎰","Lucky spin","One free reward every day.",sd,bt("Spin","openSpin()","warn"))+
   (unl("owambe")?card("🎉","Owambe",owReady()?"Meet big people and grow your network.":`Resting. Back in about ${hrs}h.`,!owReady(),bt("Attend","openOwambe()","")):`<div class="opt lck"><b>🎉 Owambe</b><span class="sub">${lockMsg("owambe")}</span></div>`)+
-  card("📋","Daily quests",`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1 (Ajo or Owambe). Reward ₦8,000 and full energy.`,!!m.claimed,"")+
-  card("🤝","Friends","Send a friend food or money. Generosity builds your network.",false,bt("Open","openFriends()",""))+(rd||pend?card("📅","Appointments",`${rd} ready · ${pend} waiting`,false,bt("View","openAppts()","")):"")+
+  card("📋","Daily quests",`Work ${Math.min(m.work,3)}/3 · Travel ${Math.min(m.travel,2)}/2 · Social ${Math.min(m.social,1)}/1 (Ajo, Owambe or a gift). Reward ₦8,000 and full energy.`,!!m.claimed,"")+
+  (unl("friends")?card("🤝","Friends",(FR.d&&FR.d.unseen>0)?`🎁 ${FR.d.unseen} gift${FR.d.unseen>1?"s":""} waiting for you!`:"Buy a friend a meal. Generosity grows your network.",false,bt("Open","openFriends()",""))+(""):"")+(rd||pend?card("📅","Appointments",`${rd} ready · ${pend} waiting`,false,bt("View","openAppts()","")):"")+
   `<div class="rw" style="color:var(--muted)">🔥 Login streak: day ${S.streak||1}. Tomorrow: ₦${fmtMoney(STREAK[(S.streak||1)%7])}</div><button class="opt" onclick="closeModal();renderGame()" style="text-align:center">Close</button>`);};
 
 /* ---------------- V17: PERFORMANCE ---------------- */
@@ -1869,7 +1869,7 @@ function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
 /* ---------------- V19: FOOD & TRANSPORT ---------------- */
-const BUILD="v24 · Season 2";
+const BUILD="v25 · Season 2";
 const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
 function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
 const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
@@ -1890,11 +1890,11 @@ window.eat=function(i){const f=FOOD[S.location][i],t=tdy();if(S.foodDay!==t){S.f
 /* ---------------- V20: FRIENDS & GIFTS ---------------- */
 const FR={d:null,msg:0,to:null};
 const FRMSG=["Thanks! 🙏","Keep hustling! 💪","Good luck today!","This one is on me.","Congrats on your progress! 🎉","For your Vault. Save it!"];
-const FRFOOD=[["snack","🥤","Gala & Coke",500,20],["meal","🍛","Jollof & Chicken",1500,45],["feast","🎉","Owambe Feast",4000,90]];
+const FRFOOD=[["snack","🥤","Gala & Coke",1200,20],["meal","🍛","Jollof & Chicken",3600,45],["feast","🎉","Owambe Feast",9000,90]];
 async function frCall(fn,args){if(!sb||!session||!session.user){toast("Friends need an online connection");return null;}const{data,error}=await sb.rpc(fn,args||{});if(error){toast(String(error.message).slice(0,100));return null;}FR.d=data;return data;}
 window.openFriends=function(){openModal(`<h3>🤝 Friends & gifts</h3><div id="frbody"><div class="fxsub">Loading…</div></div><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button>`);frCall("fr_state").then(d=>{frPaint();if(d&&sb)sb.rpc("fr_seen");});};
 function frPaint(){const el=document.getElementById("frbody"),d=FR.d;if(!el||!d)return;const link=location.origin+location.pathname;
-  el.innerHTML=`<div class="opt" style="border-color:var(--gold)"><b>Your friend code: <span style="letter-spacing:3px;color:var(--gold)">${d.code}</span></b><span class="sub">Share it so friends can send you gifts. Trading wallet: ₦${fmtMoney(d.balance)}</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="flex:1;padding:8px" onclick="navigator.clipboard&&navigator.clipboard.writeText('${d.code}');toast('Code copied')">Copy</button><a class="btn share" style="flex:1;padding:8px;margin:0;font-size:13px" target="_blank" href="https://wa.me/?text=${encodeURIComponent("Add me on Eko Hustle! My friend code is "+d.code+". Play free: "+link)}">WhatsApp</a></div><div class="fxrow"><button class="fxc" onclick="frFund(5000)">Fund wallet +₦5k</button><button class="fxc" onclick="frFund(25000)">+₦25k</button></div></div>
+  el.innerHTML=`<div class="opt" style="border-color:var(--gold)"><b>Your friend code: <span style="letter-spacing:3px;color:var(--gold)">${d.code}</span></b><span class="sub">Share it so friends can buy you a meal. A gift of food gives you energy.</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn" style="flex:1;padding:8px" onclick="navigator.clipboard&&navigator.clipboard.writeText('${d.code}');toast('Code copied')">Copy</button><a class="btn share" style="flex:1;padding:8px;margin:0;font-size:13px" target="_blank" href="https://wa.me/?text=${encodeURIComponent("Add me on Eko Hustle! My friend code is "+d.code+". Play free: "+link)}">WhatsApp</a></div></div>
   <div style="display:flex;gap:6px;margin:8px 0"><input id="frCode" placeholder="Friend's code" maxlength="8" style="text-transform:uppercase;flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--text);font-size:15px"/><button class="btn primary" style="padding:8px 14px" onclick="frAdd()">Add</button></div>`+
   (d.inbox.length?`<div class="section-title">Gifts for you</div>`+d.inbox.map(g=>`<div class="opt"><b>${g.kind==="money"?"💸 ₦"+fmtMoney(g.amount):"🍴 "+esc(g.item)}</b> from ${esc(g.from_handle)}<span class="sub">${esc(g.msg||"")}${g.kind==="food"?" · +"+g.energy+" energy":" · added to your trading wallet"}</span>${g.kind==="food"&&!g.claimed?`<button class="btn primary" style="margin-top:6px;padding:6px 12px;font-size:12px" onclick="frClaim('${g.id}')">Eat it</button>`:""}</div>`).join(""):"")+
   `<div class="section-title">Your friends (${d.friends.length})</div>`+(d.friends.map(f=>`<div class="opt"><div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><b>${esc(f.handle)}</b><span><button class="fxc" onclick="openGift('${f.code}')">🎁 Gift</button> <button class="fxc" onclick="frBlock('${f.code}')">🚫</button></span></div></div>`).join("")||`<div class="rw" style="color:var(--muted)">No friends yet. Share your code, or add a friend's code above.</div>`);}
@@ -1903,8 +1903,8 @@ window.frBlock=async function(c){if(!confirm("Block this player? They will not b
 window.frClaim=async function(id){const{data,error}=await sb.rpc("fr_claim",{p_id:id});if(error)return toast(String(error.message).slice(0,90));S.energy=clamp(S.energy+Number(data),0,S.maxEnergy);sfx(2);toast("🍴 +"+data+" energy. Enjoy!");save();renderGame();await frCall("fr_state");frPaint();};
 window.frFund=async function(a){await fxMove(a);await frCall("fr_state");frPaint();};
 window.openGift=function(code){const f=((FR.d||{}).friends||[]).find(x=>x.code===code);if(!f)return;FR.to=code;
-  openModal(`<h3>🎁 Gift to ${esc(f.handle)}</h3><div class="fxsub">Your trading wallet: ₦${fmtMoney(FR.d.balance)}. Limits: 5 gifts a day, ₦50,000 of money a day.</div><div class="section-title">Message</div><div class="fxrow" style="flex-wrap:wrap">${FRMSG.map((m,i)=>`<button class="fxc ${FR.msg===i?"on":""}" onclick="FR.msg=${i};openGift('${code}')">${m}</button>`).join("")}</div><div class="section-title">Send money</div><div class="fxrow">${[500,2000,5000,10000].map(a=>`<button class="fxc" onclick="frSend('money',${a})">₦${fmtMoney(a)}</button>`).join("")}</div><div class="section-title">Buy them food</div>${FRFOOD.map(x=>`<button class="opt" onclick="frSend('${x[0]}')">${x[1]} ${x[2]}<span class="sub">₦${fmtMoney(x[3])} · gives them +${x[4]} energy</span></button>`).join("")}<button class="opt" onclick="openFriends()" style="text-align:center">Back</button>`);};
-window.frSend=async function(kind,amt){const d=kind==="money"?await frCall("fr_send_money",{p_code:FR.to,p_amount:amt,p_msg:FR.msg}):await frCall("fr_send_food",{p_code:FR.to,p_kind:kind,p_msg:FR.msg});if(d){sfx(2);burst();toast("🎁 Gift sent!");track('gift_send',{k:kind});openGift(FR.to);}};
+  openModal(`<h3>🍛 Buy ${esc(f.handle)} a meal</h3><div class="fxsub">Paid from your cash: ₦${fmtMoney(S.cash)}. Limit: 5 gifts a day.</div><div class="section-title">Message</div><div class="fxrow" style="flex-wrap:wrap">${FRMSG.map((m,i)=>`<button class="fxc ${FR.msg===i?"on":""}" onclick="FR.msg=${i};openGift('${code}')">${m}</button>`).join("")}</div><div class="section-title">Pick a meal</div>${FRFOOD.map(x=>`<button class="opt ${S.cash>=x[3]?"":"locked"}" onclick="frSend('${x[0]}')">${x[1]} ${x[2]}<span class="sub">₦${fmtMoney(x[3])} · gives ${esc(f.handle)} +${x[4]} energy</span></button>`).join("")}<button class="opt" onclick="openFriends()" style="text-align:center">Back</button>`);};
+window.frSend=async function(kind){const x=FRFOOD.find(z=>z[0]===kind);if(!x||S.cash<x[3])return toast("Not enough cash");const d=await frCall("fr_send_food",{p_code:FR.to,p_kind:kind,p_msg:FR.msg});if(d){S.cash-=x[3];S.reputation+=1;addXp(20);updateMission('social');addLog("🎁 You bought a friend "+x[2]+": -₦"+fmtMoney(x[3]));sfx(2);burst();toast("🎁 Meal sent!");track('gift_send',{k:kind});save();renderGame();openGift(FR.to);}};
 
 /* ---------------- V22: SAFETY ---------------- */
 function badName(n){const t=String(n).toLowerCase().replace(/[0@]/g,"o").replace(/[1!|]/g,"i").replace(/3/g,"e").replace(/[4]/g,"a").replace(/[5$]/g,"s").replace(/[^a-z]/g,"");return /(fuck|fvck|phuck|shit|bitch|asshole|dick|pussy|nigg|rape|porn|hitler|ashawo|oloshi|whore|slut|cunt|bastard|admin|support|eko ?hustle)/.test(t.replace(/ /g,""));}
@@ -1947,6 +1947,9 @@ function compCheck(){if(!sb||!session||!session.user||!S)return;sb.rpc("comp_sta
   const bits=[];if(g.level>S.level)bits.push("Level "+g.level);if(g.chap>(S.chap||0))bits.push(g.chap+" story chapters");const ne=Object.keys(g.edu||{}).length;if(ne)bits.push(ne+" course"+(ne>1?"s":""));const nb=Object.keys(g.biz||{}).length;if(nb)bits.push(nb+" business"+(nb>1?"es":""));
   openModal(`<h3 style="text-align:center">💛 We owe you an apology</h3><p class="rw">In the Season 2 update we reset some players' progress. That was our mistake, and we are sorry. We rebuilt what we could from our records.</p><div class="opt" style="border-color:var(--gold)"><b>Restored for you</b><span class="sub">${bits.length?esc(bits.join(" · ")):"Your progress is already up to date"}<br><b style="color:var(--green)">+₦${fmtMoney(g.cash||0)}</b> to help you rebuild</span></div><p class="rw" style="color:var(--muted)">We could not recover your exact cash and assets from before the update, so the cash above is our way of making up for it.</p><button class="btn primary" style="width:100%" onclick="compClaim()">Claim and keep playing</button>`);};setTimeout(show,800);}).catch(()=>{});}
 window.compClaim=async function(){const{data,error}=await sb.rpc("comp_claim");if(error||!data||!data.grant)return toast("Nothing to claim");compApply(data.grant);addLog("💛 Season 2 restoration claimed: +₦"+fmtMoney(data.grant.cash||0));track("comp_claim");burst();sfx(3);save();renderGame();closeModal();toast("💛 Restored. Welcome back!");};
+
+/* ---------------- V26: FRIENDS GATE ---------------- */
+(function(){const f=window.openFriends;window.openFriends=function(){if(!unl("friends"))return toast(lockMsg("friends"));return f.apply(this,arguments);};})();
 
 render();
 
