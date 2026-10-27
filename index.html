@@ -434,6 +434,19 @@
   .scene.sprmode .av:after,.scene.sprmode .npc:after{bottom:3%;left:18%;right:18%}
   .scene.sprmode .av,.scene.sprmode .npc{animation:none!important}
   .scene.sprmode.arrive .av{animation:runin 1s ease-out!important}
+  /* V27 THREE VERBS */
+  body.in-game #app>.scwrap{flex:1 1 0;min-height:110px;flex-shrink:1;position:relative}
+  .scwrap .scene{position:absolute;inset:0;height:auto!important;margin:0}
+  .chk{position:absolute;top:8px;right:8px;z-index:10;display:flex;gap:5px;background:rgba(0,0,0,.5);padding:4px 6px;border-radius:999px;cursor:pointer}
+  .ck{font-size:14px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.08);font-style:normal;font-weight:700;color:#e9b949}
+  .ck.ok{opacity:.55}.ck.now{background:#2a2010;animation:pl .9s infinite alternate}
+  .dk3{display:grid;grid-template-columns:1.25fr 1fr 1.25fr;gap:8px}
+  .dk3 .btn{flex-direction:column;min-height:62px;font-size:26px;line-height:1.1;padding:8px 4px;gap:2px}
+  .dk3 .btn span{font-size:13px;font-weight:800}
+  .hubbar{display:flex;gap:5px;overflow-x:auto;margin:-4px 0 10px;position:sticky;top:-18px;background:var(--card);padding:6px 0;z-index:3}
+  .hubbar button{flex:0 0 auto;background:#0d1317;border:1px solid var(--line);color:#8fa3ad;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;position:relative}
+  .hubbar button.on{border-color:var(--green);color:#e8f0ec;background:#0f2019}
+  .hubbar .dot{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;border-radius:999px;font-size:9px;padding:1px 5px}
 </style>
 </head>
 <body>
@@ -987,7 +1000,7 @@ window.shady=function(){if(S.energy<25)return toast("Too tired for this.");const
   if(Math.random()<r){const l=Math.min(S.cash,Math.floor(S.cash*.25)+6000);S.cash-=l;S.health=clamp(S.health-15);S.happiness=clamp(S.happiness-10);addLog(`🚨 Busted! Lost ₦${fmtMoney(l)}.`);showCharacter('chinedu',`Police don catch you? I warned you about shortcuts.`,6000);buzz([100,50,100]);toast(`🚨 BUSTED! -₦${fmtMoney(l)}`);}
   else{const p=Math.floor(rand(17000,42000)*(1+S.level*.05));S.cash+=p;S.reputation=Math.max(0,S.reputation-2);addXp(30);addLog(`🕶️ Shady deal paid +₦${fmtMoney(p)}.`);burst();sfx(2);toast(`🕶️ Clean getaway! +₦${fmtMoney(p)}`);}
   save();renderGame();};
-window.openMore=function(){openModal(`<h3>More</h3><button class="opt ${unl('friends')?'':'lck'}" onclick="openFriends()">${unl('friends')?'🤝':'🔒'} Friends & gifts${(FR.d&&FR.d.unseen)?" ("+FR.d.unseen+" new)":""}</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openMore=function(){openModal(`<h3>More</h3><button class="opt" onclick="openProfile()">👤 Profile</button><button class="opt" onclick="openLeaderboard()">🏆 Leaderboard</button><button class="opt" onclick="openSettings()">⚙️ Settings</button><button class="opt ${unl('friends')?'':'lck'}" onclick="openFriends()">${unl('friends')?'🤝':'🔒'} Friends & gifts${(FR.d&&FR.d.unseen)?" ("+FR.d.unseen+" new)":""}</button><button class="opt" onclick="openAch()">🏅 Badges (${Object.keys(S.ach||{}).length}/${ACH.length})</button><button class="opt" onclick="openSkills()">💡 Skills (${S.skillPoints||0} points)</button><button class="opt" onclick="openLog()">📜 Activity log</button>${vipOn()?"":`<button class="opt" onclick="openVipStore()">👑 VIP Pass</button>`}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
 
 /* ---------------- RETENTION ENGINE ---------------- */
 let _ac=null;
@@ -1109,16 +1122,16 @@ function lifeShock(){if(!S||!S.shockDue)return;if($modal.firstChild)return setTi
   openModal(`<h3>${sh[0]}</h3><p class="rw">${sh[1]} Cost: <b>₦${fmtMoney(cost)}</b></p><p class="rw" style="font-size:14px">${msg}</p><p class="rw" style="color:var(--gold)">💡 Keep 3 to 6 months of expenses in an emergency fund.</p><button class="btn primary" style="width:100%" onclick="closeModal();openFreedom()">Open my Freedom Plan</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:8px">Close</button>`);}
 window.vaultMove=function(d){const t=new Date().toDateString();if(d>0){if(S.cash<d)return toast("Not enough cash");S.cash-=d;S.vault=(S.vault||0)+d;S.vaultT=Date.now();pose("av","save",1800);if(S.vaultDay!==t){S.vaultDay=t;S.habit=(S.habit||0)+1;if([3,7,14,30].includes(S.habit)){S.cash+=S.habit*1000;toast(`🔥 ${S.habit}-day saving habit! +₦${fmtMoney(S.habit*1000)}`);burst();}}track('vault_deposit');sfx(1);}else{d=Math.min(-d,S.vault||0);if(!d)return;S.vault-=d;S.cash+=d;}save();renderGame();openFreedom();};
 window.repayDebt=function(){const a=Math.min(S.cash,S.debt||0);if(!a)return toast("No cash to repay");S.cash-=a;S.debt-=a;if(S.debt<=0){S.debt=0;burst();sfx(3);toast("🎉 Debt-free!");}save();renderGame();openFreedom();};
-window.buyCourse=function(id){const c=COURSES.find(x=>x.id===id);S.edu=S.edu||{};if(S.edu[id])return;if(S.cash<c.c)return toast("Not enough cash");if(S.energy<20)return toast("Too tired to study (20 energy)");S.cash-=c.c;S.energy-=20;S.edu[id]=1;addXp(60);addLog(`🎓 Finished ${c.n}. Job pay +${Math.round(c.b*100)}%.`);track('course',{id});burst();sfx(2);save();renderGame();openFreedom();};
+window.buyCourse=function(id){const c=COURSES.find(x=>x.id===id);S.edu=S.edu||{};if(S.edu[id])return;if(S.cash<c.c)return toast("Not enough cash");if(S.energy<20)return toast("Too tired to study (20 energy)");S.cash-=c.c;S.energy-=20;S.edu[id]=1;addXp(60);addLog(`🎓 Finished ${c.n}. Job pay +${Math.round(c.b*100)}%.`);track('course',{id});burst();sfx(2);save();renderGame();openWork('learn');};
 window.setLife=function(i){S.life=i;toast(`Lifestyle: ${LIFE[i].n}`);save();renderGame();openFreedom();};
 window.openFreedom=function(){S.sawF=1;tutCheck();const need=freedomNeed(),pas=passiveDay(),pct=Math.min(100,Math.round(pas/need*100)),dc=dailyCost();
   openModal(`<h3>🕊️ Road to Financial Freedom</h3>
   <div class="opt" style="border-color:var(--gold)"><b>Freedom Number: ₦${fmtMoney(need)}/day</b><span class="sub">Passive income ₦${fmtMoney(pas)}/day (${pct}%) from businesses and rent. When assets pay for your lifestyle, work becomes a choice.</span><div class="bar"><i style="width:${pct}%;background:linear-gradient(90deg,#2fbf86,#e9b949)"></i></div></div>
   <div class="opt"><b>🛡️ Emergency Vault: ₦${fmtMoney(S.vault||0)}</b> · covers ${((S.vault||0)/dc).toFixed(1)} days<span class="sub">Goal: 30 days. Earns 0.3% a day. Saving streak: ${S.habit||0} days. Pay yourself first.</span><div style="display:flex;gap:6px;margin-top:8px"><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(3000)">+₦3k</button><button class="btn primary" style="flex:1;padding:8px" onclick="vaultMove(15000)">+₦15k</button><button class="btn" style="flex:1;padding:8px" onclick="vaultMove(-(S.vault||0))">Withdraw</button></div></div>
   ${S.debt>0?`<div class="opt" style="border-color:var(--red)"><b>⚠️ Debt: ₦${fmtMoney(S.debt)}</b><span class="sub">Growing 2% every day and hurting your happiness. A good week of work clears it. Repay it first.</span><button class="btn warn" style="width:100%;margin-top:8px;padding:8px" onclick="repayDebt()">Repay what I can</button></div>`:""}
-  <div class="section-title">🎓 Skills that raise your pay (now +${Math.round((eduMult()-1)*100)}%)</div>${COURSES.map(c=>{const d=(S.edu||{})[c.id];return `<button class="opt ${d?"locked":""}" onclick="buyCourse('${c.id}')">${c.e} ${c.n} ${d?"✅":""}<span class="sub">${d?"Completed":`₦${fmtMoney(c.c)} · 20 energy · +${Math.round(c.b*100)}% on every job`}</span></button>`}).join("")}
+  <div class="opt" onclick="openWork('learn')" style="cursor:pointer"><b>🎓 Courses raise your pay (now +${Math.round((eduMult()-1)*100)}%)</b><span class="sub">Open Work, then Learn</span></div>
   <div class="section-title">🏠 Lifestyle (higher lifestyle raises your Freedom Number)</div>${LIFE.map((l,i)=>`<button class="opt" style="${(S.life||0)===i?"border-color:var(--green)":""}" onclick="setLife(${i})">${l.n}${(S.life||0)===i?" ✅":""}<span class="sub">₦${fmtMoney(8000+l.c)}/day cost · Freedom Number ₦${fmtMoney(170000+l.c*20)} · happiness +${l.h}/day</span></button>`).join("")}
-  <div class="section-title">Rival</div>${rivalCard()}<button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
+  <div class="section-title">Rival</div>${rivalCard()}<button class="opt" onclick="openLeaderboard()">🏆 Leaderboard</button><button class="opt" onclick="closeModal()" style="text-align:center;margin-top:10px">Close</button>`);};
 
 /* ---------------- V10: STOCK MARKET (server-side) ---------------- */
 const STK=[{p:4,s:"TSLA",n:"Tesla",e:"🚗"},{p:5,s:"NVDA",n:"Nvidia",e:"🧠"},{p:6,s:"AAPL",n:"Apple",e:"🍎"},{p:7,s:"MTNN",n:"MTN Nigeria",e:"📶"},{p:8,s:"DANGCEM",n:"Dangote Cement",e:"🏗️"}];
@@ -1288,9 +1301,9 @@ function renderGame(){
   $app.innerHTML=`
     <div class="topbar"><div class="brand">Eko <span>Hustle</span> ${isVip?'👑':''}</div><div class="topbar-right"><div class="day">Day ${S.day} <small>${sy}</small></div>
       
-      <button class="icon-btn" onclick="openLeaderboard()">🏆</button><button class="icon-btn" onclick="openProfile()">👤</button><button class="icon-btn" onclick="openSettings()">⚙️</button></div></div>
+      <button class="icon-btn" onclick="openProfile()">👤</button><button class="icon-btn" onclick="openMore()">⋯</button></div></div>
     <div class="feed" id="live-feed"><span style="flex-shrink:0">📡</span><div class="feed-text" id="feed-text">Loading feed...</div></div>
-    ${keep?'<div id="scene-slot"></div>':sceneHtml()}
+    <div class="scwrap">${keep?'<div id="scene-slot"></div>':sceneHtml()}${chkHtml()}</div>
     ${dlgHtml()}
     <div class="hud">
       <div class="hud-top"><span class="lv">Lv ${S.level}</span><div class="xp-bar"><i style="width:${xpPct}%"></i></div><span>${S.xp}/${nextLevelXp}</span>${S.skillPoints>0?`<button class="mini" onclick="openSkills()">💡${S.skillPoints}</button>`:""}</div>
@@ -1299,10 +1312,7 @@ function renderGame(){
     </div>
     <div class="cards">${chapCard()}${freedomCard()}</div>
     ${tutBanner()}
-    <div class="dock">
-      <div class="dk1"><button class="btn primary${tp(0)}" onclick="openWork()">💼<span>Work${isVip?' 2x':''}</span></button><button class="btn" onclick="openTravel()">🚌<span>Travel</span></button><button class="btn asset ${unl('assets')?'':'lck'}" onclick="openAssets()">${unl('assets')?'🏠':'🔒'}<span>Assets</span></button><button class="btn warn ${dailyTodo()?'pulse':''}${tp(1)}" onclick="openDaily()">📅<span>Daily${dailyTodo()?' '+dailyTodo():''}</span></button></div>
-      <div class="dk2"><button class="${!unl('biz')?'lck':bizPending()>bizRate()*2&&bizRate()>0?'pulse':''}" onclick="openBiz()">${unl('biz')?'🏭':'🔒'}<span>Empire</span></button><button class="${unl('forex')?'':'lck'}" onclick="openMarket()">${unl('forex')?'💹':'🔒'}<span>Forex</span></button><button class="${unl('stocks')?'':'lck'}" onclick="openStocks()">${unl('stocks')?'📈':'🔒'}<span>Stocks</span></button><button class="${tp(2).trim()}" onclick="openFreedom()">🕊️<span>Freedom</span></button><button onclick="openMore()">⋯<span>More</span></button></div>
-    </div>`;
+    <div class="dock"><div class="dk3"><button class="btn primary${tp(0)}" onclick="openWork()">💼<span>Work</span></button><button class="btn${S.appointments.some(a=>a.status==="ready")?" pulse":""}" onclick="openMove()">🧭<span>Move</span></button><button class="btn asset${tp(2)}" onclick="openFreedom()">🕊️<span>Freedom</span></button></div></div>`;
     
   if(keep){const sl=document.getElementById("scene-slot");if(sl)sl.replaceWith(keep);const nn=document.getElementById("npc");if(nn)nn.innerHTML=npcInner();}
   fetchFeed();ambUpdate();applyLite();
@@ -1802,9 +1812,9 @@ window.pickChoice=function(i){
 
 /* ---------------- MODAL ---------------- */
 function openModal(html){document.body.classList.add("mo");
-  $modal.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+  $modal.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${window._hub?hubBar(window._hub):""}${html}</div></div>`;
 }
-window.closeModal=function(){$modal.innerHTML="";document.body.classList.remove("mo");};
+window.closeModal=function(){$modal.innerHTML="";window._hub=null;document.body.classList.remove("mo");};
 
 /* ---------------- TICK ---------------- */
 setInterval(()=>{
@@ -1856,7 +1866,7 @@ function perfProbe(){if(!S||S.perfDay===tdy()||document.hidden||$modal.firstChil
 setTimeout(perfProbe,15000);
 
 /* ---------------- V18: FIRST-DAY TUTORIAL ---------------- */
-const TUT=[{b:"Step 1/3: Tap Work and finish your first job",say:"Welcome to Lagos. Income comes first. Tap Work, pick a job, and tap STOP in the gold zone."},{b:"Step 2/3: Pay yourself first. Open Daily, save ₦3k",say:"Before you spend, save. Open Daily and put ₦3,000 in your Emergency Vault."},{b:"Step 3/3: Tap Freedom to see your goal",say:"This is your destination. When your assets pay for your life, you are free. Tap Freedom."}];
+const TUT=[{b:"Step 1/3: Tap Work and finish your first job",say:"Welcome to Lagos. Income comes first. Tap Work, pick a job, and tap STOP in the gold zone."},{b:"Step 2/3: Pay yourself first. Tap the glowing 🛡️ above the scene and save ₦3k",say:"Before you spend, save. Tap the glowing shield above the scene and put ₦3,000 in your Emergency Vault."},{b:"Step 3/3: Tap Freedom to see your goal",say:"This is your destination. When your assets pay for your life, you are free. Tap Freedom."}];
 const tp=n=>(S&&S.tut===n)?" tutp":"";
 function tutBanner(){return(S&&S.tut!==undefined&&S.tut<3)?`<div class="tutb"><span>👉 ${TUT[S.tut].b}</span><button onclick="tutSkip()">Skip</button></div>`:"";}
 function tutSay(){if(S&&S.tut<3)showCharacter('ada',TUT[S.tut].say,6000);}
@@ -1869,7 +1879,7 @@ function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
 /* ---------------- V19: FOOD & TRANSPORT ---------------- */
-const BUILD="v25 · Season 2";
+const BUILD="v26 · Season 2";
 const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
 function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
 const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
@@ -1950,6 +1960,34 @@ window.compClaim=async function(){const{data,error}=await sb.rpc("comp_claim");i
 
 /* ---------------- V26: FRIENDS GATE ---------------- */
 (function(){const f=window.openFriends;window.openFriends=function(){if(!unl("friends"))return toast(lockMsg("friends"));return f.apply(this,arguments);};})();
+
+/* ---------------- V27: THREE VERBS (Work, Move, Freedom) ---------------- */
+const fmtK=n=>n>=1000?(n/1000).toFixed(n>=10000?0:1).replace(".0","")+"k":String(n);
+function tabBar(items,cur,fn){return `<div class="hubbar">${items.map(t=>`<button class="${t[0]===cur?"on":""}" onclick="${fn}('${t[0]}')">${t[1]}${t[2]?`<span class="dot">${t[2]}</span>`:""}</button>`).join("")}</div>`;}
+function jobsHtml(){const jobs=JOBS[S.location]||[];return `<div class="fxsub">Energy ${S.energy}/${S.maxEnergy} · Pay boost from courses +${Math.round((eduMult()-1)*100)}%</div>`+(jobs.map(j=>{const locked=j.req&&!Object.entries(j.req).every(([k,v])=>S[k]>=v),req=j.req?Object.entries(j.req).map(([k,v])=>`${v} ${k}`).join(", "):"";return `<button class="opt ${locked?"locked":""}" ${locked?"":`onclick="doWork('${j.id}')"`}>${j.emoji} ${j.name}<span class="sub">₦${fmtMoney(j.pay[0])}–₦${fmtMoney(j.pay[1])} • ${j.energy} energy ${locked?`• needs ${req}`:""}</span></button>`;}).join("")||"<p class='rw'>No jobs here.</p>")+shadyBtn();}
+function foodHtml(){const t=tdy();if(S.foodDay!==t){S.foodDay=t;S.foodN=0;}return `<div class="fxsub">Energy ${S.energy}/${S.maxEnergy} · Meals today ${S.foodN}/3 · Food and prices depend on the area.</div>`+FOOD[S.location].map((f,i)=>`<button class="opt ${S.cash>=f[2]?"":"locked"}" onclick="eat(${i})">${f[0]} ${f[1]}<span class="sub">₦${fmtMoney(f[2])} · +${f[3]} energy${f[4]?` · +${f[4]} health`:""}${f[5]?` · +${f[5]} mood`:""}</span></button>`).join("");}
+function learnHtml(){return `<div class="fxsub">Every course raises the pay of every job, for good. Studying costs 20 energy.${S.skillPoints?` · 💡 ${S.skillPoints} skill point${S.skillPoints>1?"s":""}`:""}</div>`+COURSES.map(c=>{const d=(S.edu||{})[c.id];return `<button class="opt ${d?"locked":""}" onclick="buyCourse('${c.id}')">${c.e} ${c.n} ${d?"✅":""}<span class="sub">${d?"Completed":`₦${fmtMoney(c.c)} · 20 energy · +${Math.round(c.b*100)}% on every job`}</span></button>`;}).join("")+(S.skillPoints?`<button class="opt" onclick="openSkills()">💡 Spend skill points</button>`:"");}
+window.openWork=function(tab){window._hub=null;tab=tab||"jobs";const body=tab==="eat"?foodHtml():tab==="learn"?learnHtml():jobsHtml();
+  openModal(`<h3>💼 Work in ${LOCS[S.location].name}</h3>${tabBar([["jobs","💼 Jobs"],["eat","🍴 Eat"],["learn","🎓 Learn"]],tab,"openWork")}${body}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openFood=function(){openWork("eat");};
+function travelHtml(){return (tPerk().c?`<div class="rw" style="color:var(--green)">🚗 Your vehicle: fares -${Math.round(tPerk().c*100)}%, energy -${Math.round(tPerk().e*100)}%</div>`:"")+Object.entries(LOCS).map(([id,l])=>{if(id===S.location)return `<button class="opt locked">📍 ${l.emoji} ${l.name} (you are here)</button>`;const jb=JOBS[id]||[],lo=Math.min(...jb.map(j=>j.pay[0])),hi=Math.max(...jb.map(j=>j.pay[1])),fd=FOOD[id][0];return `<button class="opt" onclick="doTravel('${id}')">${l.emoji} ${l.name}<span class="sub">₦${fmtMoney(travelCost(l))} · ${travelEnergy()} energy · ${l.desc}<br>Jobs ₦${fmtK(lo)}–₦${fmtK(hi)} · ${fd[1]} ₦${fmtMoney(fd[2])}</span></button>`;}).join("");}
+function owambeHtml(){if(!unl("owambe"))return `<div class="opt lck"><b>🎉 Owambe</b><span class="sub">${lockMsg("owambe")}</span></div>`;if(!owReady())return `<div class="rw">Owambe is resting. Come back in about ${Math.max(1,Math.ceil(24-(Date.now()-(S.lastOwambe||0))/HOUR))}h.</div>`;
+  return `<p class="rw">A big Lagos party. Spend money to rub minds with the elites. Choose your outfit carefully.</p><button class="opt" onclick="attendOwambe(6000, 'Corporate', 5, 2)">👔 Corporate <span class="sub">₦6,000 • +5 Rep, +2 Net</span></button><button class="opt" onclick="attendOwambe(15000, 'Aso Ebi', 15, 5)">👗 Aso Ebi <span class="sub">₦15,000 • +15 Rep, +5 Net</span></button><button class="opt" onclick="attendOwambe(45000, 'Agbada', 30, 10)">🧥 Agbada <span class="sub">₦45,000 • +30 Rep, +10 Net, +10 Happy</span></button>`;}
+function apptsHtml(){const now=Date.now(),a=S.appointments.filter(x=>x.status!=="done");return a.length?a.map(x=>apptCard(x,now)).join(""):`<p class="rw">No appointments yet. Work, travel and network to unlock them.</p>`;}
+window.openMove=function(tab){window._hub=null;const rd=S.appointments.filter(a=>a.status==="ready").length;tab=tab||(rd?"appts":"travel");
+  const body=tab==="owambe"?owambeHtml():tab==="appts"?apptsHtml():travelHtml();
+  openModal(`<h3>🧭 Move around Lagos</h3>${tabBar([["travel","🚌 Travel"],["owambe","🎉 Owambe",owReady()?"!":""],["appts","📅 Appointments",rd||""]],tab,"openMove")}${body}<button class="opt" onclick="closeModal()" style="text-align:center">Close</button>`);};
+window.openTravel=function(){openMove("travel");};
+window.openOwambe=function(){openMove("owambe");};
+window.openAppts=function(){openMove("appts");};
+
+const HUBT=[["plan","🕊️ Plan",null],["assets","🏠 Assets","assets"],["biz","🏭 Empire","biz"],["forex","💹 Forex","forex"],["stocks","📈 Stocks","stocks"]];
+function hubBar(cur){return `<div class="hubbar">${HUBT.filter(t=>!t[2]||unl(t[2])).map(t=>`<button class="${t[0]===cur?"on":""}" onclick="hubGo('${t[0]}')">${t[1]}</button>`).join("")}</div>`;}
+window.hubGo=function(k){({plan:openFreedom,assets:openAssets,biz:openBiz,forex:openMarket,stocks:openStocks})[k]();};
+[["openFreedom","plan"],["openAssets","assets"],["openBiz","biz"],["openMarket","forex"],["openStocks","stocks"]].forEach(([n,t])=>{const f=window[n];window[n]=function(){window._hub=t;const r=f.apply(this,arguments);if(!document.querySelector(".modal"))window._hub=null;return r;};});
+
+function chkHtml(){const t=tdy(),a=[[S.vaultDay===t,"🛡️"],[S.ajo.lastPaid===t,"🪙"],[S.spinDay===t,"🎰"]],first=a.findIndex(x=>!x[0]),extra=dailyTodo()-a.filter(x=>!x[0]).length;
+  return `<div class="chk" onclick="openDaily()">${a.map((x,i)=>`<i class="ck ${x[0]?"ok":i===first?"now"+tp(1):""}">${x[0]?"✅":x[1]}</i>`).join("")}${extra>0?`<i class="ck now">+${extra}</i>`:""}</div>`;}
 
 render();
 
