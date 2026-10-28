@@ -447,6 +447,14 @@
   .hubbar button{flex:0 0 auto;background:#0d1317;border:1px solid var(--line);color:#8fa3ad;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;position:relative}
   .hubbar button.on{border-color:var(--green);color:#e8f0ec;background:#0f2019}
   .hubbar .dot{position:absolute;top:-3px;right:-3px;background:var(--red);color:#fff;border-radius:999px;font-size:9px;padding:1px 5px}
+  /* V28 SCENE STAYS VISIBLE + AVATAR ACTS */
+  #app{transition:padding-bottom .22s ease}
+  body.mo.sheetc .modal{max-height:50dvh}
+  body.mo.sheetc .modal-bg{background:rgba(0,0,0,.12)}
+  body.mo.sheetc #app{padding-bottom:50dvh}
+  body.mo.sheetc .dock,body.mo.sheetc .hud,body.mo.sheetc .cards,body.mo.sheetc .visual-area,body.mo.sheetc .feed,body.mo.sheetc .tutb{display:none}
+  body.mo.sheetc .av *,body.mo.sheetc .npc *{animation-play-state:running!important}
+  .av .sprf,.av .rig,.av>img{transform:scaleX(var(--fx,1))}
 </style>
 </head>
 <body>
@@ -505,7 +513,7 @@ const CHAR_META={tunde:{c:"var(--green)",e:"🧑🏾‍💼"},chinedu:{c:"var(--
 let DLG={k:null,t:"Welcome to Lagos. What will you do today?"},dlgTimer=null,typeTimer=null;
 function dlgHtml(){const m=DLG.k&&CHAR_META[DLG.k],c=m?m.c:"var(--green)";return `<div class="visual-area"><img id="char-img" class="character-img" ${m?`src="${charSrc(DLG.k)}"`:""} style="display:${m?"block":"none"}" onerror="if(!this.dataset.f&&this.src.indexOf('avatar_m')>-1){this.dataset.f=1;this.src='avatar.png';return}this.style.display='none';document.getElementById('char-em').style.display='block'" alt=""><div id="char-em" class="char-em" style="display:none">${m?charEm(DLG.k):""}</div><div class="dialogue-box" style="border-left-color:${c}"><span class="dialogue-name" style="color:${c}">${DLG.k?DLG.k.toUpperCase():""}</span><div class="dialogue-text" id="char-text">${esc(DLG.t)}</div></div></div>`;}
 function paintDlg(type){const n=document.getElementById("npc");if(n)n.innerHTML=npcInner();if(type){const t=document.querySelector(DLG.k==="avatar"?".av":"#npc");if(t){t.classList.add("talk");sprState(DLG.k==="avatar"?".av":"#npc",DLG.k,"talk");pose(DLG.k==="avatar"?"av":"npc","talk",Math.min(5000,(DLG.t||"").length*18+300));setTimeout(()=>{t.classList.remove("talk");sprState(DLG.k==="avatar"?".av":"#npc",DLG.k,"idle");},Math.min(5000,(DLG.t||"").length*18+300));}}const a=document.querySelector(".visual-area");if(!a)return;a.outerHTML=dlgHtml();if(!type)return;const full=DLG.t;let i=0;clearInterval(typeTimer);const el=document.getElementById("char-text");if(el)el.textContent="";typeTimer=setInterval(()=>{const e=document.getElementById("char-text");if(!e||i>=full.length){clearInterval(typeTimer);return;}e.textContent=full.slice(0,++i);},18);}
-window.showCharacter=function(k,text,hideAfter=0){if(!CHAR_META[k])return;DLG={k,t:text};clearTimeout(dlgTimer);if(hideAfter>0)dlgTimer=setTimeout(()=>{DLG={k:null,t:"What will you do next?"};paintDlg(false);},hideAfter);speak(k,text);paintDlg(true);};
+window.showCharacter=function(k,text,hideAfter=0){if(!CHAR_META[k])return;DLG={k,t:text};clearTimeout(dlgTimer);if(hideAfter>0)dlgTimer=setTimeout(()=>{DLG={k:null,t:"What will you do next?"};paintDlg(false);},hideAfter);speak(k,text);paintDlg(true);if(k!=="avatar")actChat(Math.min(6500,String(text).length*38+1500));};
 
 /* ---------------- DATA ---------------- */
 const LOCS={
@@ -919,7 +927,6 @@ function pose(who,p,ms){const root=who==="npc"?"#npc":".av",e=document.querySele
   if(e){e.setAttribute("class","rig p-"+p);clearTimeout(e._t);if(ms)e._t=setTimeout(()=>e.setAttribute("class","rig p-idle"),ms);return;}
   const sp=document.querySelector(root+" .spr");if(!sp)return;const k=who==="npc"?(npcKey()||"tunde"):"avatar";sprState(root,k,p);clearTimeout(sp._t);if(ms)sp._t=setTimeout(()=>sprState(root,k,"idle"),ms);}
 const JOBPOSE={gig:"lift",jdev:"type",pos:"tap",market:"wave",content:"phone",usher:"wave",office:"tap",intern:"tap",driver:"lift",pa:"tap",landl:"tap",tutor:"type",load:"lift",hawk:"lift"};
-setInterval(()=>{if(!S||document.hidden||$modal.firstChild)return;const e=document.querySelector(".av .rig");if(e&&e.getAttribute("class")==="rig p-idle"&&Math.random()<.5)pose("av",Math.random()<.5?"phone":"wave",2200);},11000);
 const CAR2=`<svg width="26" height="9" viewBox="0 0 26 9"><path d="M1 7L3 3.5Q4 1.5 7 1.5H15Q18 1.5 19.5 3.5L24 5V8H1Z" fill="#05080b"/><rect x="7" y="2.4" width="9" height="2.2" fill="#223140"/><circle cx="6" cy="8" r="1.6" fill="#000"/><circle cx="20" cy="8" r="1.6" fill="#000"/><rect x="23.5" y="5.2" width="2.5" height="1.3" fill="#ffd9a0"/><rect x="0" y="4.8" width="1.6" height="1.3" fill="#ff3b3b"/></svg>`;
 const BUS2=`<svg width="42" height="12" viewBox="0 0 42 12"><rect x="1" y="1" width="40" height="9" rx="1.6" fill="#0b1118"/><rect x="3" y="2.5" width="33" height="3" fill="#2b3b4a" opacity=".8"/><rect x="3" y="6.2" width="35" height="1.1" fill="#e9b949" opacity=".7"/><circle cx="9" cy="10.5" r="1.7" fill="#000"/><circle cx="32" cy="10.5" r="1.7" fill="#000"/><rect x="40" y="6" width="2" height="1.6" fill="#ffd9a0"/></svg>`;
 const ANT=`<svg width="5" height="11" viewBox="0 0 5 11"><circle cx="2.5" cy="1.6" r="1.4" fill="#0b1118"/><rect x="1.2" y="3" width="2.6" height="4.5" fill="#0b1118"/><rect x="1.2" y="7.5" width="1.1" height="3.5" fill="#0b1118"/><rect x="2.7" y="7.5" width="1.1" height="3.5" fill="#0b1118"/></svg>`;
@@ -932,7 +939,7 @@ function ownedSky(){let o="",x=24;const AW={pepper:"#c0392b",shop:"#2de2c1",pos:
   Object.keys(S.biz||{}).forEach(id=>{if(!(S.biz[id]>0)||x>420||!AW[id])return;o+=`<rect x="${x}" y="44" width="26" height="16" fill="#0b1118"/><path d="M${x-2} 44h30l-4-9h-22z" fill="${AW[id]}"/><rect class="wn" x="${x+8}" y="49" width="10" height="7" fill="#ffd9a0"/>`;x+=40;});
   return o;}
 function sceneKey(){const li=Object.keys(LOCS).indexOf(S.location);return [S.location,band(phase(hourF())),(S.day*7+li)%5===0,S.look||"m",S.cstyle||"d",SPM?1:0,(S.assets||[]).join(","),Object.values(S.biz||{}).reduce((a,b)=>a+b,0)].join("|");}
-function sceneHtml(){
+function sceneHtml(){window._avx=14;
   const h=hourF(),f=phase(h),L=LOCS[S.location],c=SCN[S.location],ids=Object.keys(LOCS),li=ids.indexOf(S.location);
   const night=f.ni>.6,dusk=f.du>.5&&!night,lit=f.wl>.3,dawn=h>=4.5&&h<7,rainy=(S.day*7+li)%5===0,R=rng(S.day*13+li);window._band=band(f);
   const far=night?"#101c29":dusk?"#4a4458":"#7f9aae",near=night?"#060a10":dusk?"#1c1a24":"#3c4f5d";
@@ -944,9 +951,9 @@ function sceneHtml(){
   const lamps=`<svg viewBox="0 0 480 60">${pole}</svg>`,tag=rainy?" · Rain":night?" · Night":dusk?" · Dusk":"";
   return `<div id="scene" data-k="${sceneKey()}" class="scene${rainy?" rainy":""}${rm?" rigmode":""}${sprHas("avatar")?" sprmode":""}" style="background:${SKYD};--wl:${f.wl.toFixed(3)}"><div class="skyl" id="sk-u" style="background:${SKYU};opacity:${f.du.toFixed(3)}"></div><div class="skyl" id="sk-n" style="background:${SKYN};opacity:${f.ni.toFixed(3)}"></div><div class="locname">${L.name}${tag}</div><div id="sun" class="orb" style="left:${sp[0]}%;top:${sp[1]}px;opacity:${(1-f.ni).toFixed(3)}"></div><div id="moon" class="orb moon" style="left:${mp[0]}%;top:${mp[1]}px;opacity:${f.ni.toFixed(3)}"></div><div id="stars" style="position:absolute;inset:0;z-index:1;opacity:${Math.max(0,(f.ni-.3)/.7).toFixed(3)}">${stars}</div><div class="skyfx">${skyFx(S.location,night,dusk,rainy||dawn)}</div><video class="bgv" src="bg/${S.location}.mp4" autoplay muted loop playsinline onloadeddata="this.parentNode.classList.add('hasv')" onerror="this.remove()"></video><div class="sk sk1">${skyline(S.location+"a",Math.min(c.h[0]*1.5,60),Math.min(c.h[1]*1.6,96),far,true)}${skyline(S.location+"a",Math.min(c.h[0]*1.5,60),Math.min(c.h[1]*1.6,96),far,true)}</div><div class="haze"></div><div class="art">${ART[S.location](lit)}</div><div class="own"><svg viewBox="0 0 480 60" preserveAspectRatio="xMinYMax meet">${ownedSky()}</svg></div><div class="sk sk2">${skyline(S.location+"b",Math.min(c.h[0]*.9,40),Math.min(c.h[1]*1.05,64),near,true)}${skyline(S.location+"b",Math.min(c.h[0]*.9,40),Math.min(c.h[1]*1.05,64),near,true)}</div><div class="road"></div><div class="lamps">${lamps}${lamps}</div>${veh}${ants}<div class="floor"></div>${rideSvg(lit)}<div id="npc" class="npc">${npcInner()}</div><div class="av">${charScene("avatar")}</div>${rainy?'<div class="rain"></div>':""}<div id="nsh" class="nsh" style="opacity:${(f.ni*.4).toFixed(3)}"></div><div class="vig"></div></div>`;
 }
-function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);{const pz={work:JOBPOSE[window._jobId]||"lift",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(pz)pose("av",pz,t==="arrive"?1000:t==="cheer"?1300:t==="hit"?800:1500);}if(t==="arrive"){snd("whoosh");setTimeout(()=>snd("horn"),350);}if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=(14+Math.random()*16)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
-function workGo(id){window._jobId=id;const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)setTimeout(()=>sceneFx("work",j&&j.emoji),30);}
-window.doTravel=function(id){const p=S.location;doTravelCore(id);if(S.location!==p)setTimeout(()=>sceneFx("arrive"),30);};
+function sceneFx(t,e){const s=document.getElementById("scene");if(!s)return;s.classList.remove("work","arrive","cheer","hit");void s.offsetWidth;s.classList.add(t);{const pz={work:JOBPOSE[window._jobId]||"lift",arrive:"walk",cheer:"cheer",hit:"hit"}[t];if(pz)pose("av",pz,t==="arrive"?1000:t==="cheer"?1300:t==="hit"?800:1500);}if(t==="arrive"){snd("whoosh");setTimeout(()=>snd("horn"),350);}if(t==="work")for(let i=0;i<7;i++){const c=document.createElement("i");c.className="coin";c.textContent="";c.style.left=((window._avx==null?14:window._avx)+Math.random()*14)+"%";c.style.animationDelay=(i*.13)+"s";s.appendChild(c);setTimeout(()=>c.remove(),1900);}setTimeout(()=>s.classList.remove(t),1500);}
+function workGo(id){window._jobId=id;const c=S.cash,j=(JOBS[S.location]||[]).find(x=>x.id===id);doWorkCore(id);if(S.cash>c)actWork(id,j&&j.emoji);}
+window.doTravel=function(id){const l=LOCS[id];if(!l)return;if(S.cash<travelCost(l))return toast("Not enough cash.");if(S.energy<travelEnergy())return toast("Too tired to travel.");closeModal();window._travel=true;return act(async ok=>{try{await avGo(94,1000,ok);}finally{window._travel=false;}if(!ok())return;const p=S.location;doTravelCore(id);window._avx=14;if(S.location!==p)setTimeout(()=>sceneFx("arrive"),30);});};
 
 /* ---------------- V3: MINIGAME, STORY, BACKDROPS ---------------- */
 let _mg=null;
@@ -1746,6 +1753,7 @@ window.openSettings=function(){
     <button class="opt" onclick="S.look=S.look==='f'?'m':'f';save();renderGame();openSettings()">🎭 Switch look (${S.look==='f'?'Female':'Male'})</button>
     <button class="opt" onclick="openRecover()">${accEmail()?"☁️ Progress saved to your email ✅":"☁️ Save my progress ⚠️"}</button>
     <button class="opt" onclick="S.cstyle=S.cstyle==='png'?'d':'png';save();renderGame();openSettings()">🎨 Characters: ${S.cstyle==='png'?'Photo':'Drawn (animated)'}</button>
+    <div class="fxsub" style="text-align:center">${SPM?"✅ Your character art is loaded ("+Object.keys(SPM).length+" animations)":"No character art folder found (using the drawn characters)"}</div>
     <button class="opt" onclick="cycleLite()">⚡ Battery saver: ${S.lite===undefined?"Auto":S.lite?"On":"Off"}</button>
     <button class="opt" onclick="previewTime()">🌅 Preview day &amp; night</button>
     <button class="opt" onclick="openVoiceTest()">🗣️ Test voices</button>
@@ -1811,10 +1819,10 @@ window.pickChoice=function(i){
 };
 
 /* ---------------- MODAL ---------------- */
-function openModal(html){document.body.classList.add("mo");
+function openModal(html){document.body.classList.add("mo");const big=/id="fxc"|id="stkbody"|id="frbody"|<h3>(⚙️|Terms|Privacy|👤|🏆|More|📜|🏅|🗣️)/.test(html);document.body.classList.toggle("sheetb",big);document.body.classList.toggle("sheetc",!big);
   $modal.innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${window._hub?hubBar(window._hub):""}${html}</div></div>`;
 }
-window.closeModal=function(){$modal.innerHTML="";window._hub=null;document.body.classList.remove("mo");};
+window.closeModal=function(){$modal.innerHTML="";window._hub=null;document.body.classList.remove("mo","sheetc","sheetb");$app.style.paddingBottom="";};
 
 /* ---------------- TICK ---------------- */
 setInterval(()=>{
@@ -1879,7 +1887,7 @@ function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
 /* ---------------- V19: FOOD & TRANSPORT ---------------- */
-const BUILD="v26 · Season 2";
+const BUILD="v27 · Season 2";
 const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
 function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
 const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
@@ -1988,6 +1996,23 @@ window.hubGo=function(k){({plan:openFreedom,assets:openAssets,biz:openBiz,forex:
 
 function chkHtml(){const t=tdy(),a=[[S.vaultDay===t,"🛡️"],[S.ajo.lastPaid===t,"🪙"],[S.spinDay===t,"🎰"]],first=a.findIndex(x=>!x[0]),extra=dailyTodo()-a.filter(x=>!x[0]).length;
   return `<div class="chk" onclick="openDaily()">${a.map((x,i)=>`<i class="ck ${x[0]?"ok":i===first?"now"+tp(1):""}">${x[0]?"✅":x[1]}</i>`).join("")}${extra>0?`<i class="ck now">+${extra}</i>`:""}</div>`;}
+
+/* ---------------- V28: THE AVATAR ACTS ---------------- */
+{const _om=openModal;openModal=function(html){if(window._travel)return;_om(html);requestAnimationFrame(()=>{const m=document.querySelector(".modal");if(m&&document.body.classList.contains("sheetc"))$app.style.paddingBottom=Math.min(m.offsetHeight,Math.round(innerHeight*.5))+"px";else $app.style.paddingBottom="";});};}
+window._act=false;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+let ACT=0;
+async function act(fn){const id=++ACT;window._act=true;const ok=()=>id===ACT;try{await fn(ok);}catch(e){}finally{if(id===ACT)window._act=false;}}
+async function avGo(x,ms,ok){const e=document.querySelector(".av");if(!e)return;const cur=window._avx==null?14:window._avx;if(Math.abs(x-cur)<1)return;e.style.setProperty("--fx",x<cur?-1:1);pose("av","walk",0);e.style.transition="left "+ms+"ms linear";e.style.left=x+"%";window._avx=x;await sleep(ms);if(ok&&!ok())return;pose("av","idle",0);e.style.setProperty("--fx",1);}
+async function avDo(p,ms,ok){pose("av",p,ms);await sleep(ms);}
+function actWork(id,emoji){return act(async ok=>{await avGo(44,900,ok);if(!ok())return;sceneFx("work",emoji);await sleep(2000);if(!ok())return;await avGo(14,900,ok);});}
+function actChat(ms){if(window._act)return;return act(async ok=>{await avGo(40,1100,ok);if(!ok())return;await sleep(ms);if(!ok())return;await avGo(14,1000,ok);});}
+function idleAct(){if(!S||document.hidden||$modal.firstChild||window._act||!document.querySelector(".av"))return;const r=Math.random();
+  return act(async ok=>{if(r<.45){const x=18+Math.random()*34;await avGo(x,1300+Math.abs(x-(window._avx==null?14:window._avx))*35,ok);}
+    else if(r<.65)await avDo("phone",2600,ok);else if(r<.8)await avDo("wave",2000,ok);
+    else if(npcKey()){await avGo(40,1300,ok);if(!ok())return;await avDo("talk",2400,ok);if(!ok())return;await avGo(14,1100,ok);}
+    else await sleep(600);});}
+setInterval(idleAct,6500);
 
 render();
 
