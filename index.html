@@ -780,6 +780,8 @@ async function cloudPush(){
       state: S
     }, { onConflict: "user_id" });
     syncStatus = error ? (String(error.message).includes("Too many") ? "ratelimited" : "error") : "synced";
+    window._syncErr = error ? String(error.message || error) : null;
+    if (error && syncStatus === "error") syncReport(window._syncErr);
   }catch(e){syncStatus="offline";}
 }
 async function cloudPull(){
@@ -1760,6 +1762,7 @@ window.openSettings=function(){
     <button class="opt" onclick="showTerms()">Terms of use</button>
     <button class="opt" onclick="showPrivacy()">Privacy notice</button>
     <button class="opt" onclick="deleteMyData()" style="color:#fca5a5">Delete all my data</button>
+    ${syncLine()}
     <div class="fxsub" style="text-align:center;margin:6px 0">Version ${BUILD}</div>
     <button class="opt" onclick="closeModal()">Close</button>`);
 };
@@ -1887,7 +1890,7 @@ function tutCheck(){if(!S||S.tut===undefined||S.tut>=3||!S.flags)return;const t=
   setTimeout(()=>{if(!$modal.firstChild)renderGame();},60);}
 
 /* ---------------- V19: FOOD & TRANSPORT ---------------- */
-const BUILD="v27 · Season 2";
+const BUILD="v28 · Season 2";
 const TRANSPORT={keke:{e:.25,c:.15},camry:{e:.25,c:.5},suv:{e:.4,c:.7}};
 function tPerk(){return(S.assets||[]).filter(id=>TRANSPORT[id]).map(id=>TRANSPORT[id]).reduce((b,x)=>x.c+x.e>b.c+b.e?x:b,{e:0,c:0});}
 const travelCost=l=>Math.max(50,Math.round(TRAVEL_COST[l.tier]*(1-tPerk().c)));
@@ -2013,6 +2016,11 @@ function idleAct(){if(!S||document.hidden||$modal.firstChild||window._act||!docu
     else if(npcKey()){await avGo(40,1300,ok);if(!ok())return;await avDo("talk",2400,ok);if(!ok())return;await avGo(14,1100,ok);}
     else await sleep(600);});}
 setInterval(idleAct,6500);
+
+/* ---------------- V29: CLOUD SAVE HEALTH ---------------- */
+function syncReport(msg){if(window._lastSyncMsg!==msg){window._lastSyncMsg=msg;toast("☁️ Cloud save failed. Your progress is safe on this phone, but not backed up.");track("sync_error",{m:String(msg).slice(0,80)});}clearTimeout(window._syncRetry);window._syncRetry=setTimeout(()=>{if(syncStatus==="error")cloudPush();},45000);}
+window.syncNow=async function(){await cloudPush();toast(syncStatus==="synced"?"☁️ Saved to the cloud":"⚠️ Still failing: "+String(window._syncErr||syncStatus).slice(0,70));openSettings();};
+function syncLine(){const kb=(JSON.stringify(S).length/1024).toFixed(1);const ok=syncStatus==="synced"||syncStatus==="idle";return `<div class="opt" style="${ok?"":"border-color:var(--red)"}">☁️ Cloud save: ${ok?"✅ up to date":syncStatus==="error"?"⚠️ <b>not saving</b>":syncStatus==="offline"?"📴 offline":syncStatus==="syncing"?"↻ saving":"…"}<span class="sub">${syncStatus==="error"?"Reason: "+esc(String(window._syncErr||"unknown").slice(0,90))+"<br>":""}Save size ${kb} KB. Do not clear your browser data or use Delete until this says up to date.</span><button class="btn" style="margin-top:6px;padding:6px 12px;font-size:12px" onclick="syncNow()">Sync now</button></div>`;}
 
 render();
 
