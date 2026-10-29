@@ -16,7 +16,7 @@ css.textContent=
 "#w3ban b{display:block;font:800 26px sans-serif;letter-spacing:5px;text-transform:uppercase;text-shadow:0 3px 16px #000}"+
 "#w3ban span{display:block;font:600 12px sans-serif;margin-top:6px;color:#e9b949;letter-spacing:1px;text-shadow:0 2px 8px #000}"+
 "#w3ban.go{animation:w3b 3.4s ease-out}@keyframes w3b{0%{opacity:0;transform:translateY(14px)}15%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}"+
-"#w3map{position:absolute;right:8px;top:48px;z-index:3;width:92px;height:92px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55)}";
+"#c3d #w3map{position:absolute!important;inset:auto!important;right:8px!important;top:48px!important;z-index:3;width:92px!important;height:92px!important;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.55);pointer-events:none}";
 document.head.appendChild(css);
 
 /* ---------- Intro cinematic + title ---------- */
