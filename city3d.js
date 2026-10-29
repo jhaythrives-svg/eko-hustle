@@ -172,7 +172,7 @@ function scene_others(dt){const now=performance.now();
     if(Math.abs(al)<(o.big?3.2:2.4)&&la<1.5&&now>down){if(o.cv>2.5&&now>hitCool)runOver(o,fx,fz);else if(o.cv<=2.5){const d=Math.hypot(rx,rz)||1;P.position.x+=rx/d*dt*6;P.position.z+=rz/d*dt*6;}}});
   sc.children.forEach(c=>{if(c.userData&&c.userData.auto)anim(c,0,Math.sin(tt*.4+c.userData.o)>.9?"wave":null,tt,dt);});
   Object.keys(NP).forEach(k=>anim(NP[k].p,0,Math.sin(tt*.6+NP[k].p.userData.o)>.7?"wave":null,tt,dt));}
-function loop(now){requestAnimationFrame(loop);if(document.hidden||typeof S==="undefined"||!S||!box.isConnected)return;if(!built)build();const dt=Math.min(.05,(now-last)/1000);last=now;tt+=dt;step(dt);R.render(sc,cam);}
+function loop(now){requestAnimationFrame(loop);if(document.hidden||typeof S==="undefined"||!S||!box.isConnected)return;if(!built)build();const dt=Math.min(.05,(now-last)/1000);last=now;tt+=dt;step(dt);if(window.EH3D&&EH3D.tick)EH3D.tick(dt,tt);R.render(sc,cam);}
 /* area boys */
 const AB=[];let abCool=0;
 function mkAB(){["ojota","ikeja","surulere"].forEach(id=>{const[cx,cz]=Z[id];[[-4,2],[-2.8,3.4],[-5.2,3.6]].forEach((o,i)=>{const p=person({skin:[0x6e4530,0x8a5a3c,0x7a4d33][i],hair:0x14100e,top:[0x1d1d1d,0x7a2d2d,0x2a3b52][i],pants:0x3a3a3a,st:0});
@@ -217,5 +217,6 @@ function mount(){const w=document.querySelector(".scwrap");if(w&&box.parentNode!
 const _rg=window.renderGame;window.renderGame=function(){const r=_rg.apply(this,arguments);try{mount();}catch(e){}return r;};
 const _po=window.pose;window.pose=function(w,p,ms){try{if(w==="av")act(p,ms);}catch(e){}return _po.apply(this,arguments);};
 const _sc=window.showCharacter;window.showCharacter=function(k,t,h){try{say(k,t);}catch(e){}return _sc.apply(this,arguments);};
+window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,get P(){return P},get yaw(){return yaw},get ZONE(){return ZONE}}; 
 try{mount();}catch(e){}requestAnimationFrame(loop);
 })();
