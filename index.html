@@ -2036,7 +2036,55 @@ if ('serviceWorker' in navigator) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="city3d.js"></script>  
 <script src="wow3d.js"></script>  
-<script src="real3d.js"></script>  
+<script src="real3d.js"></script> 
+<script>
+// ==========================================
+// EKO HUSTLE ADDICTION ENGINE: DAILY BREAKTHROUGH
+// ==========================================
+(function(){
+  const lastClaim = localStorage.getItem('eko_lastBreakthrough');
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+  
+  if (!lastClaim || (now - lastClaim > oneDay)) {
+    const popup = document.createElement('div');
+    popup.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;backdrop-filter:blur(4px);";
+    popup.innerHTML = `
+      <h1 style="color:#fbbf24;font-size:28px;margin-bottom:10px;text-shadow:0 0 10px #fbbf24;text-align:center;">DAILY BREAKTHROUGH!</h1>
+      <p style="color:#cbd5e1;margin-bottom:20px;text-align:center;font-size:14px;max-width:80%;">Every day in Lagos is a new opportunity. Tap the box to see what today brings.</p>
+      <div id="mysteryBox" style="font-size:90px;cursor:pointer;animation:pulse 1s infinite alternate;user-select:none;">📦</div>
+    `;
+    document.body.appendChild(popup);
+    const style = document.createElement('style');
+    style.innerHTML = `@keyframes pulse { from { transform: scale(1) rotate(0deg); } to { transform: scale(1.15) rotate(5deg); text-shadow: 0 0 30px #fbbf24; } }`;
+    document.head.appendChild(style);
+
+    document.getElementById('mysteryBox').onclick = function() {
+      const rewards = [
+        { type: 'Cash', amt: 5000 + Math.floor(Math.random() * 15000), icon: '💵', text: "Street Hustle Profit" },
+        { type: 'Energy', amt: 25, icon: '⚡', text: "Mama Put Special" },
+        { type: 'Happiness', amt: 20, icon: '😊', text: "Good News from Home" }
+      ];
+      const r = rewards[Math.floor(Math.random() * rewards.length)];
+      
+      if (window.S) {
+        if (r.type === 'Cash') window.S.cash += r.amt;
+        if (r.type === 'Energy') window.S.energy = Math.min(window.S.maxEnergy, window.S.energy + r.amt);
+        if (r.type === 'Happiness') window.S.happiness += r.amt;
+        if (window.save) window.save();
+        if (window.renderGame) window.renderGame();
+      }
+      this.style.animation = 'none';
+      this.innerHTML = r.icon;
+      setTimeout(() => {
+        popup.innerHTML = `<h1 style="color:#4ade80;font-size:32px;text-shadow:0 0 15px #4ade80;text-align:center;">+${r.amt} ${r.type}!</h1><p style="color:#fbbf24;margin-top:10px;font-size:18px;">${r.text}</p>`;
+      }, 600);
+      setTimeout(() => { popup.remove(); }, 3000);
+      localStorage.setItem('eko_lastBreakthrough', Date.now().toString());
+    };
+  }
+})();
+</script>  
 </body>
 </html>
 
