@@ -140,7 +140,7 @@ function sec(){
 const NP={};let last=performance.now(),tt=0,acc=0;
 function step(dt){
   const now=performance.now(),busy=!!$modal.firstChild||now<down;let jx=J.x+(K.d?1:0)-(K.a?1:0),jy=J.y+(K.w?1:0)-(K.s?1:0);const l=Math.hypot(jx,jy);if(l>1){jx/=l;jy/=l;}if(busy)jx=jy=0;
-  const spd=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")?10:6.5)*(S.health<30?.7:1),vx=(-Math.sin(yaw)*jy+Math.cos(yaw)*jx)*spd,vz=(-Math.cos(yaw)*jy-Math.sin(yaw)*jx)*spd;
+  const spd=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false?10:6.5)*(S.health<30?.7:1),vx=(-Math.sin(yaw)*jy+Math.cos(yaw)*jx)*spd,vz=(-Math.cos(yaw)*jy-Math.sin(yaw)*jx)*spd;
   const px=P.position.x+vx*dt,pz=P.position.z+vz*dt;if(!hit(px,P.position.z))P.position.x=Math.max(-120,Math.min(120,px));if(!hit(P.position.x,pz))P.position.z=Math.max(-120,Math.min(120,pz));
   const v=Math.hypot(vx,vz);P.userData.v=v;if(v>.3){const d=((Math.atan2(vx,vz)-P.rotation.y+3*PI)%(2*PI))-PI;P.rotation.y+=d*Math.min(1,dt*10);}
   const pose=performance.now()<apT?ap:null;anim(P,v,pose,tt,dt);if(now<down){P.rotation.x=-1.45;P.position.y=.3;}else if(P.rotation.x){P.rotation.x=0;P.position.y=0;}
@@ -208,7 +208,7 @@ window.ambUpdate=function(){try{rdy();}catch(e){}};box.addEventListener("pointer
 function audioStep(){if(!AU.on||!AX)return;const a=AX,t=a.currentTime,off=S.mute||S.amb===false,ve=VH.map(o=>({o,d:Math.hypot(o.c.position.x-P.position.x,o.c.position.z-P.position.z)})).sort((x,y)=>x.d-y.d);
   AU.eng.forEach((e,i)=>{const v=ve[i];if(!v||off){e.g.gain.setTargetAtTime(0,t,.1);return;}const o=v.o,k=Math.max(0,1-v.d/38),f=o.big?44+o.cv*5:75+o.cv*9;
     e.g.gain.setTargetAtTime(.1*k*k*(.35+o.cv/12),t,.1);e.o.frequency.setTargetAtTime(f,t,.15);e.o2.frequency.setTargetAtTime(f*.5,t,.15);e.p.pan.setTargetAtTime(pan(o.c.position.x,o.c.position.z),t,.1);});
-  const st=Math.floor(P.userData.ph/PI);if(st!==AU.st){AU.st=st;if(P.userData.v>.5&&performance.now()>=down&&!off)noiseHit(.08,.1,500+Math.random()*500);}}
+  const st=Math.floor(P.userData.ph/PI);if(st!==AU.st){AU.st=st;if(P.userData.v>.5&&performance.now()>=down&&!off&&!(window.EH3D&&EH3D.driving))noiseHit(.08,.1,500+Math.random()*500);}}
 function audioSec(){if(!AU.on||!AX)return;const t=AX.currentTime,off=S.mute||S.amb===false,p=AP[ZONE]||AP.ojota,ni=phase(hourF()).ni,m=off?0:1;
   AU.traffic.gain.setTargetAtTime(m*.22*p[0]*(1-ni*.4),t,1.2);AU.crowd.gain.setTargetAtTime(m*.1*p[1]*(1-ni*.6),t,1.2);AU.wind.gain.setTargetAtTime(m*.18*p[2],t,1.2);AU.water.gain.setTargetAtTime(m*.1*p[3],t,1.2);AU.rain.gain.setTargetAtTime(rain.visible?m*.05:0,t,1);
   if(!off&&ni>.6&&(ZONE==="ajah"||ZONE==="lekki"))for(let i=0;i<3;i++)tn(4300+Math.random()*200,i*.09,.04,"sine",.008);}
@@ -217,6 +217,6 @@ function mount(){const w=document.querySelector(".scwrap");if(w&&box.parentNode!
 const _rg=window.renderGame;window.renderGame=function(){const r=_rg.apply(this,arguments);try{mount();}catch(e){}return r;};
 const _po=window.pose;window.pose=function(w,p,ms){try{if(w==="av")act(p,ms);}catch(e){}return _po.apply(this,arguments);};
 const _sc=window.showCharacter;window.showCharacter=function(k,t,h){try{say(k,t);}catch(e){}return _sc.apply(this,arguments);};
-window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,R,sun,amb,COL,get rain(){return rain},get P(){return P},get yaw(){return yaw},get ZONE(){return ZONE}}; 
+window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,R,sun,amb,WM,COL,PD,AB,get rain(){return rain},get hitCool(){return hitCool},set hitCool(v){hitCool=v},get P(){return P},get yaw(){return yaw},get ZONE(){return ZONE}}; 
 try{mount();}catch(e){}requestAnimationFrame(loop);
 })();
