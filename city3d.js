@@ -137,8 +137,8 @@ function sec(){if(!S)return;
   Object.keys(NP).forEach(k=>{if(!want[k]){sc.remove(NP[k].p);rmSpot(NP[k].s);delete NP[k];}});
   Object.keys(want).forEach(k=>{if(NP[k])return;const a=want[k],[cx,cz]=Z[a.loc],t=a.id.indexOf("tunde")===0?"tunde":a.id.indexOf("chief")===0?"chief":"x",p=person(LOOK[t]);p.position.set(cx+3,0,cz+10);p.userData.auto=1;sc.add(p);
     NP[k]={p,s:spot(cx+3,cz+10,"❗ "+(t==="x"?"Contact":t==="tunde"?"Tunde":"Chief"),()=>claimAppt(a.id),0x22c55e)};});
-  $("c3h").textContent="₦"+fmtMoney(S.cash)+" · ⚡"+S.energy+" · "+LOCS[ZONE].name+(f.ni>.6?" 🌙":"")+(S.health<30?" 🤕":"");}
   const hasCar=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv");const rb=$("c3ride");if(rb){if(hasCar){rb.style.display="block";rb.textContent=S.ride!==false?"🚶":"🚗";}else{rb.style.display="none";}} 
+  $("c3h").textContent="₦"+fmtMoney(S.cash)+" · ⚡"+S.energy+" · "+LOCS[ZONE].name+(f.ni>.6?" 🌙":"")+(S.health<30?" 🤕":"");}
 const NP={};let last=performance.now(),tt=0,acc=0;
 function step(dt){if(!S)return;
   const now=performance.now(),busy=!!$modal.firstChild||now<down;let jx=J.x+(K.d?1:0)-(K.a?1:0),jy=J.y+(K.w?1:0)-(K.s?1:0);const l=Math.hypot(jx,jy);if(l>1){jx/=l;jy/=l;}if(busy)jx=jy=0;
