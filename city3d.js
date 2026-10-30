@@ -160,7 +160,7 @@ function scene_others(dt){const now=performance.now();
     if(d<.6){o.tu=rnd();o.off=(rnd()-.5)*5;if(o.tu<.15&&rnd()<.5){o.id=ZN[Math.floor(rnd()*7)];}anim(p,0,null,tt,dt);return;}
     const sp=now<o.boost?5:o.sp;p.position.x+=dx/d*sp*dt;p.position.z+=dz/d*sp*dt;const a=((Math.atan2(dx,dz)-p.rotation.y+3*PI)%(2*PI))-PI;p.rotation.y+=a*Math.min(1,dt*8);anim(p,sp,null,tt,dt);});
   for(let i=0;i<PD.length;i++){const a=PD[i].p;let dx=a.position.x-P.position.x,dz=a.position.z-P.position.z,d=Math.hypot(dx,dz);
-    if(d<.9&&d>.001&&now>down){const k=(.9-d)/2/d;a.position.x+=dx*k;a.position.z+=dz*k;if(!hit(P.position.x-dx*k,P.position.z-dz*k)){P.position.x-=dx*k;P.position.z-=dz*k;}bump(PD[i]);}
+  const rad=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false)?2.8:0.9;if(d<rad&&d>.001&&now>down){const k=(rad-d)/2/d;a.position.x+=dx*k;a.position.z+=dz*k;if(!hit(P.position.x-dx*k,P.position.z-dz*k)){P.position.x-=dx*k;P.position.z-=dz*k;}bump(PD[i]);}
     for(let j=i+1;j<PD.length;j++){const b=PD[j].p;dx=a.position.x-b.position.x;dz=a.position.z-b.position.z;d=Math.hypot(dx,dz);if(d<.7&&d>.001){const k=(.7-d)/2/d;a.position.x+=dx*k;a.position.z+=dz*k;b.position.x-=dx*k;b.position.z-=dz*k;}}}
   VH.forEach((o,i)=>{const[cx,cz]=Z[o.id],fx=cx/o.L*o.dir,fz=cz/o.L*o.dir,px=o.c.position.x,pz=o.c.position.z;let blk=0,who="";
     const chk=(x,z,w)=>{const rx=x-px,rz=z-pz,al=rx*fx+rz*fz,la=Math.abs(-rx*fz+rz*fx);if(al>.5&&al<8&&la<2.2){blk=1;who=who||w;}};
