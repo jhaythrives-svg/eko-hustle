@@ -116,7 +116,7 @@ function runOver(o,fx,fz){const n=performance.now(),dmg=Math.round(5+o.cv),med=M
   js.onpointerdown=e=>{id=e.pointerId;js.setPointerCapture(id);mv(e);e.stopPropagation();};js.onpointermove=e=>{if(e.pointerId===id)mv(e);};js.onpointerup=js.onpointercancel=()=>{id=null;J.x=J.y=0;k.style.transform="";};
   let dx=null,did=null;R.domElement.onpointerdown=e=>{did=e.pointerId;dx=e.clientX;};R.domElement.onpointermove=e=>{if(e.pointerId===did&&dx!=null){yaw-=(e.clientX-dx)*.01;dx=e.clientX;}};R.domElement.onpointerup=()=>{dx=null;};
   const kk={w:"w",arrowup:"w",s:"s",arrowdown:"s",a:"a",arrowleft:"a",d:"d",arrowright:"d"};addEventListener("keydown",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=1;});addEventListener("keyup",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=0;});
-  $("c3f").onclick=()=>{box.classList.toggle("full");};
+  $("c3f").onclick=()=>{box.classList.toggle("full");};         
   $("c3ride").onclick=()=>{S.ride=S.ride===false?true:false;try{save();}catch(e){}};          
   $("c3a").onclick=()=>{if(P&&near)near.fn();};})();
 let near=null;
