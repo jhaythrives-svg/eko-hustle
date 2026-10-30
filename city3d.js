@@ -57,7 +57,7 @@ function car(col,big){const g=new T.Group(),b=new T.Mesh(new T.BoxGeometry(2,1.1
   if(big){const s=new T.Mesh(new T.BoxGeometry(2.02,.25,5.6),M(0x111111));s.position.y=1;g.add(s);}
   [[-1,1],[1,1],[-1,-1],[1,-1]].forEach(w=>{const t=new T.Mesh(new T.BoxGeometry(.3,.7,.7),M(0x050505));t.position.set(w[0],.35,w[1]*(big?1.8:1.2));g.add(t);});return g;}
 /* world */
-const spots=[],propG=new T.Group(),PD=[],VH=[];let P,ZONE,built=0;
+const spots=[],propG=new T.Group(),PD=[],VH=[];let P,ZONE,built=0,playerCar=null;
 function spot(x,z,txt,fn,col){const m=new T.Mesh(new T.CylinderGeometry(1.6,1.6,.15,20),new T.MeshBasicMaterial({color:col||0xe9b949,transparent:true,opacity:.6}));m.position.set(x,.2,z);sc.add(m);
   const l=lab(txt,"#fbbf24",1.1);l.position.set(x,3.4,z);sc.add(l);const s={x,z,txt,fn,m,l};spots.push(s);return s;}
 function rmSpot(s){sc.remove(s.m,s.l);spots.splice(spots.indexOf(s),1);}
@@ -85,7 +85,7 @@ function build(){
   const pl=lab("🏠 My Properties","#fbbf24",1.2);pl.position.set(17.6,9,-13.2);sc.add(pl);sc.add(propG);
   for(let i=0;i<ZN.length*3;i++)mkPed(i);for(let i=0;i<12;i++)mkVeh(i);mkAB();
   if(window.matchMedia&&0){}
-  P=person(LOOK[S.look==="f"?"f":"m"]);sc.add(P);P.rotation.order="YXZ";ZONE=S.location;const[cx,cz]=Z[ZONE];P.position.set(cx,0,cz+11);P.userData.v=0;
+  P=person(LOOK[S.look==="f"?"f":"m"]);sc.add(P);P.rotation.order="YXZ";playerCar=car(0xf2c200,1);playerCar.visible=false;sc.add(playerCar);ZONE=S.location;const[cx,cz]=Z[ZONE];P.position.set(cx,0,cz+11);P.userData.v=0;
   const rg=new T.BufferGeometry(),pos=new Float32Array(900);for(let i=0;i<300;i++){pos[i*3]=(rnd()-.5)*60;pos[i*3+1]=rnd()*30;pos[i*3+2]=(rnd()-.5)*60;}
   rg.setAttribute("position",new T.BufferAttribute(pos,3));rain=new T.Points(rg,new T.PointsMaterial({color:0xaec6e0,size:.25}));rain.visible=false;sc.add(rain);built=1;}
 let rain;
@@ -117,7 +117,7 @@ function runOver(o,fx,fz){const n=performance.now(),dmg=Math.round(5+o.cv),med=M
   let dx=null,did=null;R.domElement.onpointerdown=e=>{did=e.pointerId;dx=e.clientX;};R.domElement.onpointermove=e=>{if(e.pointerId===did&&dx!=null){yaw-=(e.clientX-dx)*.01;dx=e.clientX;}};R.domElement.onpointerup=()=>{dx=null;};
   const kk={w:"w",arrowup:"w",s:"s",arrowdown:"s",a:"a",arrowleft:"a",d:"d",arrowright:"d"};addEventListener("keydown",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=1;});addEventListener("keyup",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=0;});
   $("c3f").onclick=()=>{box.classList.toggle("full");};         
-  $("c3ride").onclick=()=>{if(S){const hasCar=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv");if(!hasCar){toast("You must buy a Keke, Camry or SUV in the Move menu first!");return;}S.ride=S.ride===false?true:false;toast(S.ride!==false?"🚶 Walk Mode":"🚗 Drive Mode");try{save();}catch(e){}}};     
+$("c3ride").onclick=()=>{if(S){const hasCar=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv");if(!hasCar){toast("You must buy a Keke, Camry or SUV in the Move menu first!");return;}S.ride=S.ride===false?true:false;toast(S.ride!==false?"🚶 Walk Mode":"🚗 Drive Mode");try{save();}catch(e){}}};   
   $("c3a").onclick=()=>{if(P&&near)near.fn();};})();
 let near=null;
 const hit=(x,z)=>{for(let i=0;i<COL.length;i++){const c=COL[i];if(Math.abs(x-c[0])<c[2]&&Math.abs(z-c[1])<c[3])return 1;}return 0;};
@@ -144,7 +144,7 @@ function step(dt){if(!S)return;
   const now=performance.now(),busy=!!$modal.firstChild||now<down;let jx=J.x+(K.d?1:0)-(K.a?1:0),jy=J.y+(K.w?1:0)-(K.s?1:0);const l=Math.hypot(jx,jy);if(l>1){jx/=l;jy/=l;}if(busy)jx=jy=0;
   const spd=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false?10:6.5)*(S.health<30?.7:1),vx=(-Math.sin(yaw)*jy+Math.cos(yaw)*jx)*spd,vz=(-Math.cos(yaw)*jy-Math.sin(yaw)*jx)*spd;
   const px=P.position.x+vx*dt,pz=P.position.z+vz*dt;if(!hit(px,P.position.z))P.position.x=Math.max(-120,Math.min(120,px));if(!hit(P.position.x,pz))P.position.z=Math.max(-120,Math.min(120,pz));
-  const v=Math.hypot(vx,vz);P.userData.v=v;if(v>.3){const d=((Math.atan2(vx,vz)-P.rotation.y+3*PI)%(2*PI))-PI;P.rotation.y+=d*Math.min(1,dt*10);}
+  const v=Math.hypot(vx,vz);P.userData.v=v;const bestCar=["suv","camry","keke"].find(k=>(S.assets||[]).includes(k));if(bestCar){const isBig=bestCar==="suv"||bestCar==="camry";const carColor={suv:0x1f4e7a,camry:0x8b1d2c,keke:0xe9b949}[bestCar];if(!playerCar||playerCar.userData.type!==bestCar){if(playerCar)sc.remove(playerCar);playerCar=car(carColor,isBig);playerCar.userData.type=bestCar;sc.add(playerCar);}}const isDriving=bestCar&&S.ride!==false;if(isDriving){P.visible=false;playerCar.visible=true;playerCar.position.copy(P.position);playerCar.rotation.y=P.rotation.y;}else{P.visible=true;if(playerCar)playerCar.visible=false;}if(v>.3){const d=((Math.atan2(vx,vz)-P.rotation.y+3*PI)%(2*PI))-PI;P.rotation.y+=d*Math.min(1,dt*10);}
   const pose=performance.now()<apT?ap:null;anim(P,v,pose,tt,dt);if(now<down){P.rotation.x=-1.45;P.position.y=.3;}else if(P.rotation.x){P.rotation.x=0;P.position.y=0;}
   scene_others(dt);
   near=null;let nd=3.4;spots.forEach(s=>{const d=Math.hypot(P.position.x-s.x,P.position.z-s.z);s.m.scale.setScalar(1+Math.sin(tt*4)*.08);if(d<nd){nd=d;near=s;}});
