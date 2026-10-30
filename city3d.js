@@ -16,7 +16,7 @@ const css=document.createElement("style");
 css.textContent="body.in-game .scwrap .scene{display:none}#c3d.full{position:fixed!important;inset:0;z-index:45!important;border-radius:0!important}#c3d canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.c3b{position:absolute;z-index:3;border:1px solid #2a4033;background:rgba(0,0,0,.6);color:#e8f0ec;border-radius:999px;padding:8px 12px;font:700 12px sans-serif}#c3js{position:absolute;z-index:3;left:14px;bottom:14px;width:104px;height:104px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);touch-action:none}#c3k{position:absolute;left:32px;top:32px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.4)}";
 document.head.appendChild(css);
 const box=document.createElement("div");box.id="c3d";box.style.cssText="position:absolute;inset:0;z-index:9;overflow:hidden;border-radius:12px;touch-action:none;background:#000";
-box.innerHTML='<div id="c3h" class="c3b" style="left:8px;top:8px;border-radius:10px"></div><button class="c3b" id="c3ride" style="right:50px;top:64px;display:none">🚗</button><button class="c3b" id="c3f" style="right:8px;top:64px">⛶</button><div id="c3js"><div id="c3k"></div></div><button class="c3b" id="c3a" style="right:12px;bottom:18px;display:none;padding:14px 18px;background:rgba(233,185,73,.95);color:#1a0f00;font-size:15px"></button><div id="c3t" class="c3b" style="left:8px;right:8px;top:44px;display:none;border-radius:10px;font-weight:600"></div>';
+box.innerHTML='<div id="c3h" class="c3b" style="left:8px;top:8px;border-radius:10px"></div><button class="c3b" id="c3ride" style="right:12px;top:150px;z-index:99;width:40px;height:40px">🚗</button><button class="c3b" id="c3f" style="right:12px;top:100px;z-index:99;width:40px;height:40px">⛶</button><div id="c3js"><div id="c3k"></div></div><button class="c3b" id="c3a" style="right:12px;bottom:18px;display:none;padding:14px 18px;background:rgba(233,185,73,.95);color:#1a0f00;font-size:15px"></button><div id="c3t" class="c3b" style="left:8px;right:8px;top:44px;display:none;border-radius:10px;font-weight:600"></div>';
 const $=id=>box.querySelector("#"+id);
 /* three */
 const lite=()=>document.body.classList.contains("lite");
@@ -117,7 +117,7 @@ function runOver(o,fx,fz){const n=performance.now(),dmg=Math.round(5+o.cv),med=M
   let dx=null,did=null;R.domElement.onpointerdown=e=>{did=e.pointerId;dx=e.clientX;};R.domElement.onpointermove=e=>{if(e.pointerId===did&&dx!=null){yaw-=(e.clientX-dx)*.01;dx=e.clientX;}};R.domElement.onpointerup=()=>{dx=null;};
   const kk={w:"w",arrowup:"w",s:"s",arrowdown:"s",a:"a",arrowleft:"a",d:"d",arrowright:"d"};addEventListener("keydown",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=1;});addEventListener("keyup",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=0;});
   $("c3f").onclick=()=>{box.classList.toggle("full");};         
-  $("c3ride").onclick=()=>{if(S){S.ride=S.ride===false?true:false;try{save();}catch(e){}}};      
+  $("c3ride").onclick=()=>{if(S){const hasCar=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv");if(!hasCar){toast("You must buy a Keke, Camry or SUV in the Move menu first!");return;}S.ride=S.ride===false?true:false;toast(S.ride!==false?"🚶 Walk Mode":"🚗 Drive Mode");try{save();}catch(e){}}};     
   $("c3a").onclick=()=>{if(P&&near)near.fn();};})();
 let near=null;
 const hit=(x,z)=>{for(let i=0;i<COL.length;i++){const c=COL[i];if(Math.abs(x-c[0])<c[2]&&Math.abs(z-c[1])<c[3])return 1;}return 0;};
@@ -137,7 +137,7 @@ function sec(){if(!S)return;
   Object.keys(NP).forEach(k=>{if(!want[k]){sc.remove(NP[k].p);rmSpot(NP[k].s);delete NP[k];}});
   Object.keys(want).forEach(k=>{if(NP[k])return;const a=want[k],[cx,cz]=Z[a.loc],t=a.id.indexOf("tunde")===0?"tunde":a.id.indexOf("chief")===0?"chief":"x",p=person(LOOK[t]);p.position.set(cx+3,0,cz+10);p.userData.auto=1;sc.add(p);
     NP[k]={p,s:spot(cx+3,cz+10,"❗ "+(t==="x"?"Contact":t==="tunde"?"Tunde":"Chief"),()=>claimAppt(a.id),0x22c55e)};});
-  const hasCar=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv");const rb=$("c3ride");if(rb){if(hasCar){rb.style.display="block";rb.textContent=S.ride!==false?"🚶":"🚗";}else{rb.style.display="none";}} 
+const rb=$("c3ride");if(rb){rb.textContent=S.ride!==false?"🚶":"🚗";}
   $("c3h").textContent="₦"+fmtMoney(S.cash)+" · ⚡"+S.energy+" · "+LOCS[ZONE].name+(f.ni>.6?" 🌙":"")+(S.health<30?" 🤕":"");}
 const NP={};let last=performance.now(),tt=0,acc=0;
 function step(dt){if(!S)return;
