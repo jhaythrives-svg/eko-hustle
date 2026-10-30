@@ -217,6 +217,6 @@ function mount(){const w=document.querySelector(".scwrap");if(w&&box.parentNode!
 const _rg=window.renderGame;window.renderGame=function(){const r=_rg.apply(this,arguments);try{mount();}catch(e){}return r;};
 const _po=window.pose;window.pose=function(w,p,ms){try{if(w==="av")act(p,ms);}catch(e){}return _po.apply(this,arguments);};
 const _sc=window.showCharacter;window.showCharacter=function(k,t,h){try{say(k,t);}catch(e){}return _sc.apply(this,arguments);};
-window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,get P(){return P},get yaw(){return yaw},get ZONE(){return ZONE}}; 
+window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,R,sun,amb,COL,get rain(){return rain},get P(){return P},get yaw(){return yaw},get ZONE(){return ZONE}}; 
 try{mount();}catch(e){}requestAnimationFrame(loop);
 })();
