@@ -117,7 +117,7 @@ function runOver(o,fx,fz){const n=performance.now(),dmg=Math.round(5+o.cv),med=M
   let dx=null,did=null;R.domElement.onpointerdown=e=>{did=e.pointerId;dx=e.clientX;};R.domElement.onpointermove=e=>{if(e.pointerId===did&&dx!=null){yaw-=(e.clientX-dx)*.01;dx=e.clientX;}};R.domElement.onpointerup=()=>{dx=null;};
   const kk={w:"w",arrowup:"w",s:"s",arrowdown:"s",a:"a",arrowleft:"a",d:"d",arrowright:"d"};addEventListener("keydown",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=1;});addEventListener("keyup",e=>{if(e.key&&kk[e.key.toLowerCase()])K[kk[e.key.toLowerCase()]]=0;});
   $("c3f").onclick=()=>{box.classList.toggle("full");};         
-  $("c3ride").onclick=()=>{S.ride=S.ride===false?true:false;try{save();}catch(e){}};          
+  $("c3ride").onclick=()=>{if(S){S.ride=S.ride===false?true:false;try{save();}catch(e){}}};      
   $("c3a").onclick=()=>{if(P&&near)near.fn();};})();
 let near=null;
 const hit=(x,z)=>{for(let i=0;i<COL.length;i++){const c=COL[i];if(Math.abs(x-c[0])<c[2]&&Math.abs(z-c[1])<c[3])return 1;}return 0;};
@@ -127,7 +127,7 @@ function enter(id){const l=LOCS[id],c=travelCost(l),e=travelEnergy(),[cx,cz]=Z[i
   if(S.cash<c||S.energy<e){cool=performance.now()+2500;toast(S.cash<c?"You need ₦"+fmtMoney(c)+" fare for "+l.name:"Too tired for "+l.name+". Eat first.");const d=Math.hypot(P.position.x-cx,P.position.z-cz)||1;P.position.x=cx+(P.position.x-cx)/d*24;P.position.z=cz+(P.position.z-cz)/d*24;return;}
   ZONE=id;cool=performance.now()+1500;doTravelCore(id);}
 const cD=new T.Color(0x7fb2d6),cU=new T.Color(0xc0714f),cN=new T.Color(0x060a14),cc=new T.Color();
-function sec(){
+function sec(){if(!S)return;
   const f=phase(hourF());cc.copy(cD).lerp(cN,f.ni);if(f.du>.3)cc.lerp(cU,(f.du-.3)*.9);sc.background.copy(cc);sc.fog.color.copy(cc);sun.intensity=1.05-f.ni*.9;amb.intensity=.75-f.ni*.5;WM.forEach(m=>m.emissive.setRGB(f.wl,f.wl*.85,f.wl*.5));
   const li=Object.keys(LOCS).indexOf(S.location);rain.visible=(S.day*7+li)%5===0;
   const key=(S.assets||[]).join()+JSON.stringify(S.biz||{});if(key!==pk){pk=key;props();}
@@ -140,7 +140,7 @@ function sec(){
   $("c3h").textContent="₦"+fmtMoney(S.cash)+" · ⚡"+S.energy+" · "+LOCS[ZONE].name+(f.ni>.6?" 🌙":"")+(S.health<30?" 🤕":"");}
   const hasCar=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv");const rb=$("c3ride");if(rb){if(hasCar){rb.style.display="block";rb.textContent=S.ride!==false?"🚶":"🚗";}else{rb.style.display="none";}} 
 const NP={};let last=performance.now(),tt=0,acc=0;
-function step(dt){
+function step(dt){if(!S)return;
   const now=performance.now(),busy=!!$modal.firstChild||now<down;let jx=J.x+(K.d?1:0)-(K.a?1:0),jy=J.y+(K.w?1:0)-(K.s?1:0);const l=Math.hypot(jx,jy);if(l>1){jx/=l;jy/=l;}if(busy)jx=jy=0;
   const spd=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false?10:6.5)*(S.health<30?.7:1),vx=(-Math.sin(yaw)*jy+Math.cos(yaw)*jx)*spd,vz=(-Math.cos(yaw)*jy-Math.sin(yaw)*jx)*spd;
   const px=P.position.x+vx*dt,pz=P.position.z+vz*dt;if(!hit(px,P.position.z))P.position.x=Math.max(-120,Math.min(120,px));if(!hit(P.position.x,pz))P.position.z=Math.max(-120,Math.min(120,pz));
