@@ -468,7 +468,7 @@ window.onerror = function(msg, url, line, col, error) {
     <h3 style="color:#ef4444">⚠ Game Crashed</h3>
     <p><b>Error:</b> ${msg}</p>
     <p><b>Line:</b> ${line}</p>
-    <button style="padding:10px; background:#22c55e; border:none; color:white; border-radius:8px; margin-top:10px;" onclick="localStorage.clear(); location.reload()">Reset Save & Reload</button>
+    <button style="padding:10px; background:#22c55e; border:none; color:white; border-radius:8px; margin-top:10px;" onclick="location.reload()">Reload</button>
   </div>`;
   return false;
 };
@@ -2041,7 +2041,7 @@ if ('serviceWorker' in navigator) {
 // ==========================================
 // EKO HUSTLE ADDICTION ENGINE: DAILY BREAKTHROUGH
 // ==========================================
-(function(){
+(function boot(){if(typeof S==="undefined"||!S){return setTimeout(boot,800);}
   const lastClaim = localStorage.getItem('eko_lastBreakthrough');
   const now = Date.now();
   const oneDay = 24 * 60 * 60 * 1000;
@@ -2067,12 +2067,11 @@ if ('serviceWorker' in navigator) {
       ];
       const r = rewards[Math.floor(Math.random() * rewards.length)];
       
-      if (window.S) {
-        if (r.type === 'Cash') window.S.cash += r.amt;
-        if (r.type === 'Energy') window.S.energy = Math.min(window.S.maxEnergy, window.S.energy + r.amt);
-        if (r.type === 'Happiness') window.S.happiness += r.amt;
-        if (window.save) window.save();
-        if (window.renderGame) window.renderGame();
+      if (typeof S !== "undefined" && S) {
+        if (r.type === 'Cash') S.cash += r.amt;
+        if (r.type === 'Energy') S.energy = Math.min(S.maxEnergy, S.energy + r.amt);
+        if (r.type === 'Happiness') S.happiness = Math.min(100, S.happiness + r.amt);
+        try { addLog("🎁 Daily Breakthrough: " + r.text + " (+" + r.amt + " " + r.type + ")"); save(); renderGame(); } catch (e) {}
       }
       this.style.animation = 'none';
       this.innerHTML = r.icon;
