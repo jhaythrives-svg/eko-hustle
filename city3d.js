@@ -171,7 +171,7 @@ function scene_others(dt){const now=performance.now();
     o.u+=o.dir*o.cv*dt/o.L;if(o.u>.97){o.u=.97;o.dir=-1;}if(o.u<.1){o.u=.1;o.dir=1;}
     const q=rp(o.id,o.u,o.dir>0?2:-2);o.c.position.set(q[0],0,q[1]);o.c.rotation.y=Math.atan2(cx*o.dir,cz*o.dir);
     const rx=P.position.x-q[0],rz=P.position.z-q[1],al=rx*fx+rz*fz,la=Math.abs(-rx*fz+rz*fx);
-    if(Math.abs(al)<(o.big?3.2:2.4)&&la<1.5&&now>down){if(o.cv>2.5&&now>hitCool)runOver(o,fx,fz);else if(o.cv<=2.5){const d=Math.hypot(rx,rz)||1;P.position.x+=rx/d*dt*6;P.position.z+=rz/d*dt*6;}}});
+    if(Math.abs(al)<(o.big?3.2:2.4)&&la<1.5&&now>down){const isDriving=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false);if(isDriving&&o.cv>2.5&&now>hitCool)runOver(o,fx,fz);else{const d=Math.hypot(rx,rz)||1;P.position.x+=rx/d*dt*6;P.position.z+=rz/d*dt*6;}})
   sc.children.forEach(c=>{if(c.userData&&c.userData.auto)anim(c,0,Math.sin(tt*.4+c.userData.o)>.9?"wave":null,tt,dt);});
   Object.keys(NP).forEach(k=>anim(NP[k].p,0,Math.sin(tt*.6+NP[k].p.userData.o)>.7?"wave":null,tt,dt));}
 let bad=0;function loop(now){requestAnimationFrame(loop);if(bad>2||document.hidden||typeof S==="undefined"||!S||!box.isConnected)return;try{if(!built)build();const dt=Math.min(.05,(now-last)/1000);last=now;tt+=dt;step(dt);if(window.EH3D&&EH3D.tick)EH3D.tick(dt,tt);R.render(sc,cam);}catch(e){bad++;console.error("3D error",e);if(bad>2){document.body.classList.remove("w3d");try{track("c3d_error",{m:String(e&&e.message).slice(0,60)});}catch(x){}}}}
