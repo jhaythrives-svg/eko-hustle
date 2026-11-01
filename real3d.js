@@ -220,6 +220,21 @@ function step(dt){
   if(S.location!==myLoc){myLoc=S.location;fade.style.transition="none";fade.style.opacity=.95;void fade.offsetWidth;setTimeout(()=>{fade.style.transition="opacity .9s ease";fade.style.opacity=0;},450);}
   governor();
 }
+/* ---------- random street events now match what the 3D world shows ---------- */
+const rainNow=()=>{try{return(S.day*7+Object.keys(LOCS).indexOf(S.location))%5===0;}catch(e){return false;}};
+const AREA={ojota:1,ikeja:1,surulere:1};let lastEv="";
+window.triggerEvent=function(){
+  renderGame();
+  const w3=document.body.classList.contains("w3d"),rn=rainNow();
+  /* rain event only when it is really raining; area boys only appear by walking up to them in 3D */
+  let pool=EVENTS.filter(e=>e.id==="rain"?rn:e.id==="alaye"?(!w3&&!!AREA[S.location]):true);
+  if(rn&&Math.random()<.45){const r=EVENTS.find(e=>e.id==="rain");if(r)pool=[r];}
+  const alt=pool.filter(e=>e.id!==lastEv);if(alt.length)pool=alt;
+  const ev=pool[Math.floor(Math.random()*pool.length)];lastEv=ev.id;currentEvent=ev;
+  showCharacter('avatar',ev.text,0);
+  openModal('<h3>'+esc(ev.title)+'</h3><p style="color:#c8d6ce;font-size:14px;margin:0 0 12px">'+esc(ev.text)+'</p>'+ev.choices.map((c,i)=>'<button class="opt" onclick="pickChoice('+i+')">'+esc(c.label)+'</button>').join(""));
+};
+try{SHOCKS[1][1]="Someone snatched your phone in the crowd.";}catch(e){}
 const prev=E.tick;
 E.tick=function(dt,t){if(prev){try{prev(dt,t);}catch(e){}}if(bad>4)return;try{step(dt);}catch(e){bad++;console.error("real3d",e);if(bad>4){try{track("r3d_error",{m:String(e&&e.message).slice(0,60)});}catch(x){}}}};
 })();
