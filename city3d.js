@@ -154,7 +154,7 @@ function step(dt){if(!S)return;
   if(rain.visible){rain.position.set(P.position.x,0,P.position.z);const a=rain.geometry.attributes.position;for(let i=0;i<300;i++){let y=a.getY(i)-dt*28;if(y<0)y=30;a.setY(i,y);}a.needsUpdate=true;}
   if(!busy&&now>abCool)for(const b of AB){if(b.id===ZONE&&Math.hypot(P.position.x-b.p.position.x,P.position.z-b.p.position.z)<3.2){abCool=now+100000;areaBoys();break;}}
   audioStep();acc+=dt;if(acc>1){acc=0;sec();audioSec();}}
-function scene_others(dt){const now=performance.now();
+function scene_others(dt){const now=performance.now(),drv=(S.assets||[]).some(i=>i==='keke'||i==='camry'||i==='suv')&&S.ride!==false&&P.userData.v>3;
   PD.forEach(o=>{const t=rp(o.id,o.tu,o.off),p=o.p,dx=t[0]-p.position.x,dz=t[1]-p.position.z,d=Math.hypot(dx,dz);
     if(now<o.pause){anim(p,0,null,tt,dt);return;}
     if(d<.6){o.tu=rnd();o.off=(rnd()-.5)*5;if(o.tu<.15&&rnd()<.5){o.id=ZN[Math.floor(rnd()*7)];}anim(p,0,null,tt,dt);return;}
@@ -163,15 +163,15 @@ function scene_others(dt){const now=performance.now();
   const rad=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false)?2.8:0.9;if(d<rad&&d>.001&&now>down){const k=(rad-d)/d;a.position.x+=dx*k;a.position.z+=dz*k;bump(PD[i]);}
     for(let j=i+1;j<PD.length;j++){const b=PD[j].p;dx=a.position.x-b.position.x;dz=a.position.z-b.position.z;d=Math.hypot(dx,dz);if(d<.7&&d>.001){const k=(.7-d)/2/d;a.position.x+=dx*k;a.position.z+=dz*k;b.position.x-=dx*k;b.position.z-=dz*k;}}}
   VH.forEach((o,i)=>{const[cx,cz]=Z[o.id],fx=cx/o.L*o.dir,fz=cz/o.L*o.dir,px=o.c.position.x,pz=o.c.position.z;let blk=0,who="";
-    const chk=(x,z,w)=>{const rx=x-px,rz=z-pz,al=rx*fx+rz*fz,la=Math.abs(-rx*fz+rz*fx);if(al>.5&&al<8&&la<2.2){blk=1;who=who||w;}};
+    const chk=(x,z,w)=>{const rx=x-px,rz=z-pz,al=rx*fx+rz*fz,la=Math.abs(-rx*fz+rz*fx);if(al>.5&&al<8+o.cv*1.3&&la<2.6){blk=1;who=who||w;}};
     chk(P.position.x,P.position.z,"p");PD.forEach(d=>chk(d.p.position.x,d.p.position.z,"d"));VH.forEach((v,j)=>{if(j<i)chk(v.c.position.x,v.c.position.z,"v");});
     PD.forEach(d=>{const rx=d.p.position.x-px,rz=d.p.position.z-pz,al=rx*fx+rz*fz,ls=-rx*fz+rz*fx;if(o.cv>3&&al>1&&al<12&&Math.abs(ls)<2.6&&now>d.boost){d.boost=now+1800;d.off=(ls>=0?1:-1)*4.6;if(now>d.sh){d.sh=now+6000;shout(d,"Ewoo! 😱");}}});
-    o.bt=blk?o.bt+dt:0;const tg=(now<o.stop||o.bt>.35)?0:o.sp;o.cv+=Math.max(-14*dt,Math.min(6*dt,tg-o.cv));
+    o.bt=blk?o.bt+dt:0;const tg=(now<o.stop||o.bt>.35)?0:o.sp;o.cv+=Math.max(-(blk?32:14)*dt,Math.min(6*dt,tg-o.cv));
     if(o.bt>.35&&who!=="v"&&now>o.hk){o.hk=now+2500;honk(o);if(who==="p"&&o.cv>5)screech();}
     o.u+=o.dir*o.cv*dt/o.L;if(o.u>.97){o.u=.97;o.dir=-1;}if(o.u<.1){o.u=.1;o.dir=1;}
     const q=rp(o.id,o.u,o.dir>0?2:-2);o.c.position.set(q[0],0,q[1]);o.c.rotation.y=Math.atan2(cx*o.dir,cz*o.dir);
     const rx=P.position.x-q[0],rz=P.position.z-q[1],al=rx*fx+rz*fz,la=Math.abs(-rx*fz+rz*fx);
-    if(Math.abs(al)<(o.big?3.2:2.4)&&la<1.5&&now>down){const isDriving=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false);if(isDriving&&o.cv>2.5&&now>hitCool)runOver(o,fx,fz);else{const d=Math.hypot(rx,rz)||1;P.position.x+=rx/d*dt*6;P.position.z+=rz/d*dt*6;}});
+    if(Math.abs(al)<(o.big?3.2:2.4)&&la<1.5&&now>down){if(o.cv>2.5&&now>hitCool&&drv)runOver(o,fx,fz);else{if(o.cv>2.5)o.stop=now+900;const d=Math.hypot(rx,rz)||1;P.position.x+=rx/d*dt*6;P.position.z+=rz/d*dt*6;}}});
   sc.children.forEach(c=>{if(c.userData&&c.userData.auto)anim(c,0,Math.sin(tt*.4+c.userData.o)>.9?"wave":null,tt,dt);});
   Object.keys(NP).forEach(k=>anim(NP[k].p,0,Math.sin(tt*.6+NP[k].p.userData.o)>.7?"wave":null,tt,dt));}
 let bad=0;function loop(now){requestAnimationFrame(loop);if(bad>2||document.hidden||typeof S==="undefined"||!S||!box.isConnected)return;try{if(!built)build();const dt=Math.min(.05,(now-last)/1000);last=now;tt+=dt;step(dt);if(window.EH3D&&EH3D.tick)EH3D.tick(dt,tt);R.render(sc,cam);}catch(e){bad++;console.error("3D error",e);if(bad>2){document.body.classList.remove("w3d");try{track("c3d_error",{m:String(e&&e.message).slice(0,60)});}catch(x){}}}}
