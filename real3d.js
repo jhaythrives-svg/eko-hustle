@@ -183,7 +183,12 @@ function followSync(){const P=E.P;fol.position.set(P.position.x,0,P.position.z);
   mood.position.y=(P.visible?3.5:4.8)+Math.sin(tt*3)*.08;
   const t=TIERS.find(x=>S.level>=x[0]);ring.visible=!!t;if(t){ring.material.color.setHex(t[1]);ring.rotation.z=tt*.8;}}
 function mkPillars(){ZN.forEach(id=>{const m=new T.Mesh(new T.CylinderGeometry(1.2,1.2,100,12,1,true),new T.MeshBasicMaterial({color:0x22c55e,transparent:true,opacity:0,blending:T.AdditiveBlending,depthWrite:false,fog:false}));m.position.set(Z[id][0],50,Z[id][1]);m.visible=false;sc.add(m);pillars[id]=m;});}
-function pillarSync(){const want={};(S.appointments||[]).forEach(x=>{if(x.status==="ready")want[x.loc]=1;});
+let npcP=null;
+function npcSpot(){const a=(S.appointments||[]).find(x=>x.status==="ready"&&x.loc===S.location&&Z[x.loc]);return a?{a,x:Z[a.loc][0]+3,z:Z[a.loc][1]+10}:null;}
+function npcSync(){if(!npcP){npcP=new T.Mesh(new T.CylinderGeometry(.55,.55,70,10,1,true),new T.MeshBasicMaterial({color:0xffd34d,transparent:true,opacity:0,blending:T.AdditiveBlending,depthWrite:false,fog:false}));npcP.visible=false;sc.add(npcP);}
+  const n=npcSpot(),P=E.P;if(!n||Math.hypot(P.position.x-n.x,P.position.z-n.z)<6){npcP.visible=false;return;}
+  npcP.visible=true;npcP.position.set(n.x,35,n.z);npcP.material.opacity=.22+Math.sin(tt*4)*.08;}
+function pillarSync(){npcSync();const want={};(S.appointments||[]).forEach(x=>{if(x.status==="ready")want[x.loc]=1;});
   ZN.forEach(id=>{const p=pillars[id],on=want[id]&&S.location!==id;p.visible=!!on;if(on)p.material.opacity=.16+Math.sin(tt*3)*.06;});}
 
 /* ---------- fireworks + coin pops (one Points object) ---------- */
@@ -230,7 +235,7 @@ function mkBus(){const g=new T.Group();BK(2.2,1.2,5.6,0xf2c200,g,0,.9,0);BK(2.24
 function startTrip(id){const P=E.P,a=Z[S.location]||Z[E.ZONE],b=Z[id],la=Math.hypot(a[0],a[1]),lb=Math.hypot(b[0],b[1]),rp=(zc,L,q)=>[zc[0]/L*q,zc[1]/L*q];
   const fa=Math.atan2(a[1],a[0]),fb=Math.atan2(b[1],b[0]),df=((fb-fa+3*PI)%(2*PI))-PI,n=Math.max(1,Math.ceil(Math.abs(df)/(PI/6))),arc=[];
   for(let i=0;i<=n;i++){const f=fa+df*i/n;arc.push([Math.cos(f)*12.5,Math.sin(f)*12.5]);}
-  const wp=[[a[0],a[1]],rp(a,la,Math.max(18,la-24)),rp(a,la,16)].concat(arc,[rp(b,lb,16),rp(b,lb,Math.max(18,lb-24)),[b[0],b[1]],[b[0],b[1]+11]]);
+  const wp=[[a[0],a[1]],rp(a,la,Math.max(18,la-24)),rp(a,la,16)].concat(arc,[rp(b,lb,16),rp(b,lb,Math.max(18,lb-24)),rp(b,lb,Math.max(18,lb-16))]);
   const own=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false;
   trip={id,wp,i:0,own,t:0,h:P.rotation.y,pos:new T.Vector3(P.position.x,0,P.position.z)};
   if(!own){if(!bus)bus=mkBus();bus.visible=true;}
@@ -244,6 +249,13 @@ function tripStep(dt){if(!trip)return;const P=E.P,w=trip.wp[trip.i],dx=w[0]-trip
   if(bus&&!trip.own){P.visible=false;bus.position.copy(P.position);bus.rotation.y=trip.h;}
   if(canYaw){const tg=trip.h+PI;E.yaw+=(((tg-E.yaw+3*PI)%(2*PI))-PI)*Math.min(1,dt*2.5);}
   E.VH.forEach(o=>{if(Math.hypot(o.c.position.x-P.position.x,o.c.position.z-P.position.z)<11)o.stop=now+700;});}
+const _ca=window.claimAppt;
+window.claimAppt=function(id){
+  if(document.body.classList.contains("w3d")&&ready&&E.P){const a=(S.appointments||[]).find(x=>x.id===id);
+    if(a&&a.status==="ready"&&S.location===a.loc&&Z[a.loc]){const P=E.P,d=Math.hypot(P.position.x-(Z[a.loc][0]+3),P.position.z-(Z[a.loc][1]+10));
+      if(d>6){const who=id.indexOf("tunde")===0?"Tunde":id.indexOf("chief")===0?"the Chief":"your contact";
+        try{closeModal();toast("🚶 Walk up to "+who+" at the gold beam. Check your minimap.");}catch(e){}return;}}}
+  return _ca.apply(this,arguments);};
 const _dt=window.doTravel;
 window.doTravel=function(id){
   if(!document.body.classList.contains("w3d")||!E.P||!ready||typeof _dt!=="function")return _dt.apply(this,arguments);
