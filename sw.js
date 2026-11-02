@@ -1,7 +1,7 @@
 // Eko Hustle service worker. Pages and scripts always load fresh from the network
 // (so the installed app never gets stuck on an old version) and fall back to the
 // cache only when the player is offline. Images and sounds are cached for speed.
-const V = "eh-assets-v2";
+const V = "eh-assets-v4";
 const CORE = [
   "./", 
   "./index.html", 
