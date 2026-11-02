@@ -141,7 +141,7 @@ const rb=$("c3ride");if(rb){rb.textContent=S.ride!==false?"🚶":"🚗";}
   $("c3h").textContent="₦"+fmtMoney(S.cash)+" · ⚡"+S.energy+" · "+LOCS[ZONE].name+(f.ni>.6?" 🌙":"")+(S.health<30?" 🤕":"");}
 const NP={};let last=performance.now(),tt=0,acc=0;
 function step(dt){if(!S)return;
-  const now=performance.now(),busy=!!$modal.firstChild||now<down;let jx=J.x+(K.d?1:0)-(K.a?1:0),jy=J.y+(K.w?1:0)-(K.s?1:0);const l=Math.hypot(jx,jy);if(l>1){jx/=l;jy/=l;}if(busy)jx=jy=0;
+  const now=performance.now(),busy=!!$modal.firstChild||now<down;let jx=J.x+(K.d?1:0)-(K.a?1:0),jy=J.y+(K.w?1:0)-(K.s?1:0);const l=Math.hypot(jx,jy);if(l>1){jx/=l;jy/=l;}if(busy)jx=jy=0;if(!busy&&window.EH3D&&EH3D.steer){const st=EH3D.steer();if(st){jx=st[0];jy=st[1];}}
   const spd=((S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false?10:6.5)*(S.health<30?.7:1),vx=(-Math.sin(yaw)*jy+Math.cos(yaw)*jx)*spd,vz=(-Math.cos(yaw)*jy-Math.sin(yaw)*jx)*spd;
   const px=P.position.x+vx*dt,pz=P.position.z+vz*dt;let canX=true,canZ=true;for(let i=0;i<VH.length;i++){const vc=VH[i].c.position;const cdx=P.position.x-vc.x,cdz=P.position.z-vc.z;const cDist=Math.hypot(cdx,cdz);if(Math.hypot(px-vc.x,P.position.z-vc.z)<2.5&&Math.hypot(px-vc.x,P.position.z-vc.z)<cDist)canX=false;if(Math.hypot(P.position.x-vc.x,pz-vc.z)<2.5&&Math.hypot(P.position.x-vc.x,pz-vc.z)<cDist)canZ=false;}if(!hit(px,P.position.z)&&canX)P.position.x=Math.max(-120,Math.min(120,px));if(!hit(P.position.x,pz)&&canZ)P.position.z=Math.max(-120,Math.min(120,pz));
   const v=Math.hypot(vx,vz);P.userData.v=v;const bestCar=["suv","camry","keke"].find(k=>(S.assets||[]).includes(k));if(bestCar){const isBig=bestCar==="suv"||bestCar==="camry";const carColor={suv:0x1f4e7a,camry:0x8b1d2c,keke:0xe9b949}[bestCar];if(!playerCar||playerCar.userData.type!==bestCar){if(playerCar)sc.remove(playerCar);playerCar=car(carColor,isBig);playerCar.userData.type=bestCar;sc.add(playerCar);}}const isDriving=bestCar&&S.ride!==false;if(isDriving){P.visible=false;playerCar.visible=true;playerCar.position.copy(P.position);playerCar.rotation.y=P.rotation.y;}else{P.visible=true;if(playerCar)playerCar.visible=false;}if(v>.3){const d=((Math.atan2(vx,vz)-P.rotation.y+3*PI)%(2*PI))-PI;P.rotation.y+=d*Math.min(1,dt*10);}
@@ -219,6 +219,6 @@ function mount(){const w=document.querySelector(".scwrap");if(w&&box.parentNode!
 const _rg=window.renderGame;window.renderGame=function(){const r=_rg.apply(this,arguments);try{mount();}catch(e){}return r;};
 const _po=window.pose;window.pose=function(w,p,ms){try{if(w==="av")act(p,ms);}catch(e){}return _po.apply(this,arguments);};
 const _sc=window.showCharacter;window.showCharacter=function(k,t,h){try{say(k,t);}catch(e){}return _sc.apply(this,arguments);};
-window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,R,sun,amb,WM,COL,PD,AB,get rain(){return rain},get hitCool(){return hitCool},set hitCool(v){hitCool=v},get P(){return P},get yaw(){return yaw},set yaw(v){yaw=v},get ZONE(){return ZONE}}; 
+window.EH3D={T,sc,cam,box,Z,ZN,VH,spots,R,sun,amb,WM,COL,PD,AB,get rain(){return rain},get hitCool(){return hitCool},set hitCool(v){hitCool=v},get P(){return P},get yaw(){return yaw},set yaw(v){yaw=v},get ZONE(){return ZONE},steerHook:1}; 
 document.body.classList.add("w3d");try{mount();}catch(e){}requestAnimationFrame(loop);
 })();
