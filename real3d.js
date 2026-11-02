@@ -217,9 +217,42 @@ function step(dt){
   E.PD.forEach(o=>{if(Math.abs(o.off)<4.6)o.off=(o.off<0?-1:1)*(o._l||(o._l=4.9+Math.random()*1.4));});
   sT+=dt;if(sT>1){sT=0;sc.children.forEach(shade);lightCars();towerSync();outfitSync();}
   pillarSync();
+  if(S.location!==myLoc&&trip)myLoc=S.location;
   if(S.location!==myLoc){myLoc=S.location;fade.style.transition="none";fade.style.opacity=.95;void fade.offsetWidth;setTimeout(()=>{fade.style.transition="opacity .9s ease";fade.style.opacity=0;},450);}
+  tripStep(dt);
   governor();
 }
+/* ---------- Move > Travel is now a real trip along the roads (same rules as walking in) ---------- */
+let trip=null,bus=null;const canYaw=!!(Object.getOwnPropertyDescriptor(E,"yaw")||{}).set;
+function mkBus(){const g=new T.Group();BK(2.2,1.2,5.6,0xf2c200,g,0,.9,0);BK(2.24,.26,5.64,0x111111,g,0,.95,0);BK(2,.75,4.7,0x1d2a36,g,0,1.85,-.1);BK(2.2,.18,5.2,0xf2c200,g,0,2.3,-.1);
+  [[-1.05,1.8],[1.05,1.8],[-1.05,-1.8],[1.05,-1.8]].forEach(w=>{const m=new T.Mesh(new T.CylinderGeometry(.45,.45,.3,10),M(0x050505));m.rotation.z=PI/2;m.position.set(w[0],.45,w[1]);g.add(m);});
+  g.visible=false;sc.add(g);lightCar(g,true);shade(g);g.traverse(m=>{if(m.isMesh)m.castShadow=true;});return g;}
+function startTrip(id){const P=E.P,a=Z[S.location]||Z[E.ZONE],b=Z[id],la=Math.hypot(a[0],a[1]),lb=Math.hypot(b[0],b[1]),rp=(zc,L,q)=>[zc[0]/L*q,zc[1]/L*q];
+  const fa=Math.atan2(a[1],a[0]),fb=Math.atan2(b[1],b[0]),df=((fb-fa+3*PI)%(2*PI))-PI,n=Math.max(1,Math.ceil(Math.abs(df)/(PI/6))),arc=[];
+  for(let i=0;i<=n;i++){const f=fa+df*i/n;arc.push([Math.cos(f)*12.5,Math.sin(f)*12.5]);}
+  const wp=[[a[0],a[1]],rp(a,la,Math.max(18,la-24)),rp(a,la,16)].concat(arc,[rp(b,lb,16),rp(b,lb,Math.max(18,lb-24)),[b[0],b[1]],[b[0],b[1]+11]]);
+  const own=(S.assets||[]).some(i=>i==="keke"||i==="camry"||i==="suv")&&S.ride!==false;
+  trip={id,wp,i:0,own,t:0,h:P.rotation.y,pos:new T.Vector3(P.position.x,0,P.position.z)};
+  if(!own){if(!bus)bus=mkBus();bus.visible=true;}
+  try{toast("🚌 On the way to "+LOCS[id].name+"…");}catch(e){}}
+function endTrip(){const id=trip.id;if(bus)bus.visible=false;trip=null;if(S.location!==id){try{doTravelCore(id);}catch(e){}}}
+function tripStep(dt){if(!trip)return;const P=E.P,w=trip.wp[trip.i],dx=w[0]-trip.pos.x,dz=w[1]-trip.pos.z,d=Math.hypot(dx,dz),now=performance.now();trip.t+=dt;
+  if(trip.t>30){endTrip();return;}
+  if(d<2){trip.i++;if(trip.i>=trip.wp.length){endTrip();return;}}
+  else{const st=Math.min(d,24*dt);trip.pos.x+=dx/d*st;trip.pos.z+=dz/d*st;const h=Math.atan2(dx,dz);trip.h+=(((h-trip.h+3*PI)%(2*PI))-PI)*Math.min(1,dt*6);}
+  P.position.set(trip.pos.x,0,trip.pos.z);P.rotation.y=trip.h;P.userData.v=0;E.hitCool=now+1000;
+  if(bus&&!trip.own){P.visible=false;bus.position.copy(P.position);bus.rotation.y=trip.h;}
+  if(canYaw){const tg=trip.h+PI;E.yaw+=(((tg-E.yaw+3*PI)%(2*PI))-PI)*Math.min(1,dt*2.5);}
+  E.VH.forEach(o=>{if(Math.hypot(o.c.position.x-P.position.x,o.c.position.z-P.position.z)<11)o.stop=now+700;});}
+const _dt=window.doTravel;
+window.doTravel=function(id){
+  if(!document.body.classList.contains("w3d")||!E.P||!ready||typeof _dt!=="function")return _dt.apply(this,arguments);
+  const l=LOCS[id];if(!l||id===S.location)return;
+  if(trip)return toast("You are already on the way.");
+  if(S.cash<travelCost(l))return toast("Not enough cash.");
+  if(S.energy<travelEnergy())return toast("Too tired to travel.");
+  closeModal();startTrip(id);};
+
 /* ---------- random street events now match what the 3D world shows ---------- */
 const rainNow=()=>{try{return(S.day*7+Object.keys(LOCS).indexOf(S.location))%5===0;}catch(e){return false;}};
 const AREA={ojota:1,ikeja:1,surulere:1};let lastEv="";
