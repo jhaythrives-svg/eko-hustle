@@ -225,6 +225,7 @@ function step(dt){
   if(S.location!==myLoc&&trip)myLoc=S.location;
   if(S.location!==myLoc){myLoc=S.location;fade.style.transition="none";fade.style.opacity=.95;void fade.offsetWidth;setTimeout(()=>{fade.style.transition="opacity .9s ease";fade.style.opacity=0;},450);}
   tripStep(dt);
+  walkStep(dt);
   governor();
 }
 /* ---------- Move > Travel is now a real trip along the roads (same rules as walking in) ---------- */
@@ -249,6 +250,29 @@ function tripStep(dt){if(!trip)return;const P=E.P,w=trip.wp[trip.i],dx=w[0]-trip
   if(bus&&!trip.own){P.visible=false;bus.position.copy(P.position);bus.rotation.y=trip.h;}
   if(canYaw){const tg=trip.h+PI;E.yaw+=(((tg-E.yaw+3*PI)%(2*PI))-PI)*Math.min(1,dt*2.5);}
   E.VH.forEach(o=>{if(Math.hypot(o.c.position.x-P.position.x,o.c.position.z-P.position.z)<11)o.stop=now+700;});}
+/* ---------- Work and Eat happen at their spots: tap the menu from far away and you walk (or drive) there ---------- */
+let walk=null;
+const spotXY=k=>{const z=Z[S.location]||Z[E.ZONE];return k==="eat"?[z[0]-7,z[1]+6]:[z[0]+7,z[1]+6];};
+const nearSpot=k=>{const q=spotXY(k),P=E.P;return Math.hypot(P.position.x-q[0],P.position.z-q[1])<6.5;};
+E.steer=function(){if(!walk)return null;const P=E.P,dx=walk.x-P.position.x,dz=walk.z-P.position.z,d=Math.hypot(dx,dz);if(d<.5)return[0,0];
+  let wx=dx/d,wz=dz/d;if(walk.nudge>0){const t=wx;wx=-wz*walk.side*.9+wx*.4;wz=t*walk.side*.9+wz*.4;}
+  const l=Math.hypot(wx,wz)||1;wx/=l;wz/=l;const y=E.yaw,sn=Math.sin(y),cs=Math.cos(y);return[wx*cs-wz*sn,-(wx*sn+wz*cs)];};
+function startWalk(tab){const q=spotXY(tab==="eat"?"eat":"work");closeModal();
+  walk={tab,x:q[0],z:q[1],t:0,ck:0,stall:0,nudge:0,side:1,lx:E.P.position.x,lz:E.P.position.z};}
+function walkStep(dt){if(!walk)return;const P=E.P;if(document.querySelector(".modal"))return;walk.t+=dt;walk.ck+=dt;if(walk.nudge>0)walk.nudge-=dt;
+  const d=Math.hypot(P.position.x-walk.x,P.position.z-walk.z);
+  if(d<2.2||walk.t>14){if(d>=2.2)P.position.set(walk.x,0,walk.z+1.5);const t=walk.tab;walk=null;_ow.call(window,t);return;}
+  if(walk.ck>.5){walk.ck=0;const mv=Math.hypot(P.position.x-walk.lx,P.position.z-walk.lz);walk.lx=P.position.x;walk.lz=P.position.z;
+    if(mv<.4){walk.stall++;if(walk.stall%3===0){walk.side*=-1;walk.nudge=1;}if(walk.stall>=7)P.position.set(walk.x,0,walk.z+1.5);}else walk.stall=0;}}
+const _ow=window.openWork;
+window.openWork=function(tab){tab=tab||"jobs";
+  if(!E.steerHook||!document.body.classList.contains("w3d")||!ready||!E.P||trip||tab==="learn")return _ow.apply(this,arguments);
+  if(walk)return;
+  if(nearSpot(tab==="eat"?"eat":"work"))return _ow.apply(this,arguments);
+  startWalk(tab);};
+{const js=box.querySelector("#c3js");if(js)js.addEventListener("pointerdown",()=>{walk=null;},true);}
+addEventListener("keydown",e=>{if(walk&&e.key&&/^(w|a|s|d|arrow.*)$/i.test(e.key))walk=null;});
+
 const _ca=window.claimAppt;
 window.claimAppt=function(id){
   if(document.body.classList.contains("w3d")&&ready&&E.P){const a=(S.appointments||[]).find(x=>x.id===id);
