@@ -86,7 +86,7 @@ const SC=[0xe9b949,0x2de2c1,0xff4fa3,0xc0392b,0x7ad0ff,0xa4e05a];
 function statics(){
   const bl=sc.children.filter(o=>o.isMesh&&o.geometry.type==="BoxGeometry"&&o.material&&o.material.emissiveMap);
   const laneC=new T.CanvasTexture(cvs(256,64,(g,w,h)=>{g.fillStyle="#e8e8e8";g.fillRect(0,3,w,3);g.fillRect(0,h-6,w,3);g.fillStyle="#f2c230";for(let x=0;x<w;x+=128)g.fillRect(x,h/2-2,70,4);}));
-  const sw=M(0x6f7378),poles=[],glows=[],trees=[],PALM={lekki:1,vi:1,ajah:1,ikeja:1},keep=(x,z)=>blocked(x,z,1.2)||Math.hypot(x,z)<22||Math.hypot(x-13,z-24)<9||ZN.some(q=>[[0,11],[7,6],[-7,6],[3,10]].some(o=>Math.hypot(x-(Z[q][0]+o[0]),z-(Z[q][1]+o[1]))<4.5));
+  const sw=M(0x6f7378),poles=[],glows=[],trees=[],PALM={lekki:1,vi:1,ajah:1,ikeja:1},keep=(x,z)=>blocked(x,z,1.2)||Math.hypot(x,z)<22||Math.hypot(x-13,z-24)<9||ZN.some(q=>[[0,11],[7,6],[-7,6],[3,10],[9,-1],[11.5,-1]].some(o=>Math.hypot(x-(Z[q][0]+o[0]),z-(Z[q][1]+o[1]))<4.5));
   ZN.forEach(id=>{const[cx,cz]=Z[id],L=Math.hypot(cx,cz),ux=cx/L,uz=cz/L,px=-uz,pz=ux,yaw=-Math.atan2(cz,cx),s0=16,s1=L-24,len=s1-s0,mid=(s0+s1)/2;
     const t=laneC.clone();t.needsUpdate=true;t.wrapS=T.RepeatWrapping;t.repeat.set(len/8,1);
     const lm=new T.Mesh(new T.PlaneGeometry(len,6.6),new T.MeshLambertMaterial({map:t,transparent:true,alphaTest:.5,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
