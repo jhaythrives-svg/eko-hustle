@@ -1,7 +1,7 @@
 // Eko Hustle service worker. Pages and scripts always load fresh from the network
 // (so the installed app never gets stuck on an old version) and fall back to the
 // cache only when the player is offline. Images and sounds are cached for speed.
-const V = "eh-assets-v6";
+const V = "eh-assets-v7";
 const CORE = [
   "./", 
   "./index.html", 
@@ -10,6 +10,7 @@ const CORE = [
   "./city3d.js",
   "./wow3d.js",
   "./real3d.js"
+  "./home.js"
 ];
 
 self.addEventListener("install", e => {
